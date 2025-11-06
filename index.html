@@ -1,86 +1,21 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Portal Hunter: Awakening</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Roboto+Mono&display=swap');
-    
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      height: 100vh;
-      background: radial-gradient(ellipse at center, #0a0a0f 0%, #000 100%);
-      color: #eee;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      font-family: 'Roboto Mono', monospace;
-      overflow: hidden;
-    }
-
-    h1 {
-      font-family: 'Cinzel Decorative', cursive;
-      font-size: 3rem;
-      color: #39f;
-      text-shadow: 0 0 10px #39f, 0 0 20px #39f, 0 0 40px #0ff;
-      animation: glow 3s ease-in-out infinite alternate;
-      margin-bottom: 20px;
-    }
-
-    @keyframes glow {
-      from { text-shadow: 0 0 10px #39f, 0 0 20px #39f, 0 0 40px #0ff; }
-      to { text-shadow: 0 0 20px #0ff, 0 0 40px #0ff, 0 0 60px #0ff; }
-    }
-
-    p {
-      font-size: 1rem;
-      color: #aaa;
-      width: 80%;
-      text-align: center;
-      max-width: 500px;
-      margin-bottom: 30px;
-    }
-
-    button {
-      background: linear-gradient(90deg, #0066ff, #00ccff);
-      border: none;
-      padding: 12px 28px;
-      border-radius: 8px;
-      font-size: 1rem;
-      color: #fff;
-      cursor: pointer;
-      box-shadow: 0 0 12px #00ccff88;
-      transition: all 0.3s;
-    }
-
-    button:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 24px #00ccffcc;
-    }
-
-    footer {
-      position: absolute;
-      bottom: 10px;
-      font-size: 0.75rem;
-      opacity: 0.5;
-    }
-  </style>
 </head>
 <body>
   <h1>Portal Hunter: Awakening</h1>
-  <p>Você desperta em um mundo esquecido, entre portais e ecos do desconhecido.  
-  Seu destino será decidido por suas escolhas.</p>
-  <button id="startBtn">Iniciar Jornada</button>
+  <p>Bem-vindo ao início da sua jornada, caçador de portais.</p>
 
-  <footer>v0.1 — desenvolvido por Léo</footer>
+  <button id="start">Entrar</button>
 
   <script>
-    document.getElementById('startBtn').addEventListener('click', () => {
-      // Aqui futuramente chamaremos o backend ou o jogo em si.
-      window.location.href = 'game.html';
+    document.getElementById("start").addEventListener("click", async () => {
+      const response = await fetch("/api/start");
+      const data = await response.json();
+      alert(data.message);
     });
   </script>
 </body>
