@@ -4,10 +4,35 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Portal Hunter: Awakening</title>
+  <style>
+    body {
+      background: radial-gradient(circle at center, #0a0a0a, #1a1a1a);
+      color: #eee;
+      font-family: 'Trebuchet MS', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    h1 { color: #6ef1ff; margin-bottom: 20px; }
+    button {
+      padding: 10px 30px;
+      border: none;
+      border-radius: 8px;
+      background-color: #6ef1ff;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    button:hover { background-color: #4fd0dd; }
+  </style>
 </head>
 <body>
-  <h1>Portal Hunter: Awakeningg</h1>
+  <h1>Portal Hunter: Awakening</h1>
   <p>Bem-vindo, caçador de portais.</p>
-  <button onclick="window.location.href='login.html'">Entrar no Portal</button>
+  <button onclick="window.location.replace('login.html')">Entrar no Portal</button>
 </body>
 </html>
