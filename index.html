@@ -7,16 +7,7 @@
 </head>
 <body>
   <h1>Portal Hunter: Awakening</h1>
-  <p>Bem-vindo ao início da sua jornada, caçador de portais.</p>
-
-  <button id="start">Entrar</button>
-
-  <script>
-    document.getElementById("start").addEventListener("click", async () => {
-      const response = await fetch("/api/start");
-      const data = await response.json();
-      alert(data.message);
-    });
-  </script>
+  <p>Bem-vindo, caçador de portais.</p>
+  <button onclick="window.location.href='login.html'">Entrar no Portal</button>
 </body>
 </html>
