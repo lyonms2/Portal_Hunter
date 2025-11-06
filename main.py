@@ -1,51 +1,54 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from http.server import BaseHTTPRequestHandler
+import json
 from supabase import create_client, Client
 import os
 
-app = FastAPI()
+# === Configuração Supabase ===
+SUPABASE_URL = "https://mygsvqcdzdntadjvfvmy.supabase.co"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15Z3N2cWNkemRudGFkanZmdm15Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI0NjM4OTYsImV4cCI6MjA3ODAzOTg5Nn0.UH5eN-qb5VIbPcBpoBEJ1lChjYiQLPuc92qtggbqRoU"
 
-# Configuração CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# Conexão com Supabase usando variáveis de ambiente
-url = os.getenv("SUPABASE_URL")
-key = os.getenv("SUPABASE_KEY")
-supabase: Client = create_client(url, key)
-
-class AuthData(BaseModel):
-    email: str
-    password: str
-
-@app.get("/api/start")
-def start_game():
-    return {"message": "Conexão com o Portal estabelecida com sucesso!"}
-
-@app.post("/api/signup")
-def signup(data: AuthData):
-    try:
-        result = supabase.auth.sign_up({"email": data.email, "password": data.password})
-        if result.user:
-            return {"message": f"Conta criada para {data.email}"}
+class handler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        if self.path == "/api":
+            self.send_response(200)
+            self.send_header("Content-type", "application/json")
+            self.end_headers()
+            message = {"message": "Conexão com o Portal estabelecida com sucesso!"}
+            self.wfile.write(json.dumps(message).encode())
         else:
-            return {"message": "Erro ao criar conta."}
-    except Exception as e:
-        return {"message": f"Erro: {str(e)}"}
+            self.send_response(404)
+            self.end_headers()
 
-@app.post("/api/login")
-def login(data: AuthData):
-    try:
-        result = supabase.auth.sign_in_with_password({"email": data.email, "password": data.password})
-        if result.session:
-            return {"message": f"Bem-vindo, {data.email}!"}
+    def do_POST(self):
+        if self.path == "/api/login":
+            content_length = int(self.headers["Content-Length"])
+            post_data = self.rfile.read(content_length)
+            body = json.loads(post_data)
+
+            email = body.get("email")
+            password = body.get("password")
+
+            # tentativa de login via Supabase
+            try:
+                auth_response = supabase.auth.sign_in_with_password({
+                    "email": email,
+                    "password": password
+                })
+                data = {
+                    "message": "Login bem-sucedido!",
+                    "user": str(auth_response.user.id) if auth_response.user else None
+                }
+                self.send_response(200)
+            except Exception as e:
+                data = {"error": str(e)}
+                self.send_response(400)
+
+            self.send_header("Content-type", "application/json")
+            self.end_headers()
+            self.wfile.write(json.dumps(data).encode())
+
         else:
-            return {"message": "Credenciais inválidas."}
-    except Exception as e:
-        return {"message": f"Erro: {str(e)}"}
+            self.send_response(404)
+            self.end_headers()
