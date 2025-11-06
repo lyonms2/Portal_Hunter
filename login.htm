@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portal Hunter - Login</title>
+</head>
+<body>
+  <h2>Login / Registro</h2>
+
+  <div id="auth">
+    <input type="email" id="email" placeholder="Seu email" />
+    <input type="password" id="password" placeholder="Sua senha" />
+    <button id="signup">Registrar</button>
+    <button id="login">Entrar</button>
+  </div>
+
+  <p id="status"></p>
+  <button onclick="window.location.href='index.html'">Voltar</button>
+
+  <script>
+    async function request(path, body) {
+      const res = await fetch(path, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      return res.json();
+    }
+
+    document.getElementById("signup").addEventListener("click", async () => {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      const res = await request("/api/signup", { email, password });
+      document.getElementById("status").textContent = res.message;
+    });
+
+    document.getElementById("login").addEventListener("click", async () => {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      const res = await request("/api/login", { email, password });
+      document.getElementById("status").textContent = res.message;
+
+      if (res.message.startsWith("Bem-vindo")) {
+        setTimeout(() => window.location.href = "index.html", 1500);
+      }
+    });
+  </script>
+</body>
+</html>
