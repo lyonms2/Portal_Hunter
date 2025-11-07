@@ -2,20 +2,50 @@ import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_KEY
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 );
 
 export async function POST(request) {
-  const { email, senha } = await request.json();
+  try {
+    const { email, senha } = await request.json();
 
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password: senha,
-  });
+    // Validação básica
+    if (!email || !senha) {
+      return Response.json(
+        { message: "Email e senha são obrigatórios" },
+        { status: 400 }
+      );
+    }
 
-  if (error) {
-    return Response.json({ message: "Falha ao entrar no portal: " + error.message }, { status: 400 });
+    // Tentar fazer login
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password: senha,
+    });
+
+    if (error) {
+      console.error("Erro no login:", error);
+      return Response.json(
+        { message: "Credenciais inválidas. Verifique email e senha." },
+        { status: 401 }
+      );
+    }
+
+    // Login bem-sucedido
+    return Response.json({
+      message: "Portal aberto com sucesso, caçador!",
+      user: {
+        id: data.user.id,
+        email: data.user.email,
+      },
+      session: data.session,
+    });
+
+  } catch (error) {
+    console.error("Erro no servidor:", error);
+    return Response.json(
+      { message: "Erro ao processar login. Tente novamente." },
+      { status: 500 }
+    );
   }
-
-  return Response.json({ message: "Portal aberto com sucesso, caçador!" });
 }
