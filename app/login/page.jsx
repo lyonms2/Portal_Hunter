@@ -1,20 +1,54 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [mensagem, setMensagem] = useState({ texto: "", tipo: "" });
 
   const handleLogin = async () => {
-    const response = await fetch("/api/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, senha }),
-    });
+    setMensagem({ texto: "", tipo: "" });
+    setLoading(true);
 
-    const data = await response.json();
-    alert(data.message);
+    try {
+      const response = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, senha }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setMensagem({ texto: data.message, tipo: "success" });
+        // Salvar sessão no localStorage
+        localStorage.setItem("user", JSON.stringify(data.user));
+        localStorage.setItem("session", JSON.stringify(data.session));
+        // Redirecionar para dashboard (criaremos depois)
+        setTimeout(() => {
+          router.push("/dashboard");
+        }, 1500);
+      } else {
+        setMensagem({ texto: data.message, tipo: "error" });
+      }
+    } catch (error) {
+      setMensagem({ 
+        texto: "Erro de conexão. Verifique sua internet e tente novamente.", 
+        tipo: "error" 
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && !loading) {
+      handleLogin();
+    }
   };
 
   return (
@@ -34,7 +68,7 @@ export default function LoginPage() {
       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4">
         {/* Botão Voltar */}
         <button
-          onClick={() => window.location.href = "/"}
+          onClick={() => router.push("/")}
           className="absolute top-8 left-8 text-cyan-400 hover:text-cyan-300 transition-colors flex items-center gap-2 font-mono text-sm group"
         >
           <span className="group-hover:-translate-x-1 transition-transform">←</span> 
@@ -54,6 +88,17 @@ export default function LoginPage() {
             <p className="text-slate-400 font-mono text-sm mt-6">Identifique-se para acessar o sistema</p>
           </div>
 
+          {/* Mensagem de feedback */}
+          {mensagem.texto && (
+            <div className={`mb-6 p-4 rounded-lg border ${
+              mensagem.tipo === 'success' 
+                ? 'bg-green-950/50 border-green-500/30 text-green-400' 
+                : 'bg-red-950/50 border-red-500/30 text-red-400'
+            }`}>
+              <p className="text-sm font-mono">{mensagem.texto}</p>
+            </div>
+          )}
+
           {/* Formulário */}
           <div className="relative group mb-6">
             <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500/20 via-blue-500/20 to-purple-500/20 rounded-lg blur opacity-50 group-hover:opacity-75 transition-opacity"></div>
@@ -70,7 +115,9 @@ export default function LoginPage() {
                     placeholder="hunter@zone-7.net"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-4 py-3.5 bg-slate-900/80 border border-slate-700/50 rounded text-slate-100 placeholder-slate-600 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all font-mono"
+                    onKeyPress={handleKeyPress}
+                    disabled={loading}
+                    className="w-full px-4 py-3.5 bg-slate-900/80 border border-slate-700/50 rounded text-slate-100 placeholder-slate-600 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all font-mono disabled:opacity-50"
                   />
                   <div className="absolute right-3 top-1/2 -translate-y-1/2">
                     <div className="w-2 h-2 bg-slate-600 rounded-full"></div>
@@ -89,7 +136,9 @@ export default function LoginPage() {
                     placeholder="••••••••••••"
                     value={senha}
                     onChange={(e) => setSenha(e.target.value)}
-                    className="w-full px-4 py-3.5 bg-slate-900/80 border border-slate-700/50 rounded text-slate-100 placeholder-slate-600 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all font-mono"
+                    onKeyPress={handleKeyPress}
+                    disabled={loading}
+                    className="w-full px-4 py-3.5 bg-slate-900/80 border border-slate-700/50 rounded text-slate-100 placeholder-slate-600 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all font-mono disabled:opacity-50"
                   />
                   <div className="absolute right-3 top-1/2 -translate-y-1/2">
                     <div className="w-2 h-2 bg-slate-600 rounded-full"></div>
@@ -100,13 +149,14 @@ export default function LoginPage() {
               {/* Botão de Login */}
               <button
                 onClick={handleLogin}
-                className="w-full group/btn relative mb-6"
+                disabled={loading}
+                className="w-full group/btn relative mb-6 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500 rounded blur opacity-40 group-hover/btn:opacity-75 transition-all duration-300"></div>
                 
                 <div className="relative px-6 py-4 bg-slate-950 rounded border border-cyan-500/50 group-hover/btn:border-cyan-400 transition-all">
                   <span className="text-lg font-bold tracking-wider uppercase bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent">
-                    Iniciar Sessão
+                    {loading ? "Autenticando..." : "Iniciar Sessão"}
                   </span>
                 </div>
               </button>
@@ -117,7 +167,10 @@ export default function LoginPage() {
                   Recuperar acesso
                 </button>
                 <span className="text-slate-700">|</span>
-                <button className="text-slate-500 hover:text-cyan-400 transition-colors">
+                <button 
+                  onClick={() => router.push("/cadastro")}
+                  className="text-slate-500 hover:text-cyan-400 transition-colors"
+                >
                   Novo hunter
                 </button>
               </div>
