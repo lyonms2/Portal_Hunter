@@ -27,19 +27,28 @@ export async function POST(request) {
       );
     }
 
+    console.log("Inicializando jogador:", userId);
+
     // Verificar se já existe
-    const { data: existing } = await supabase
+    const { data: existing, error: selectError } = await supabase
       .from('player_stats')
       .select('*')
       .eq('user_id', userId)
-      .single();
+      .maybeSingle();
+
+    if (selectError) {
+      console.error("Erro ao buscar stats:", selectError);
+    }
 
     if (existing) {
+      console.log("Jogador já existe:", existing);
       return Response.json({
         message: "Jogador já inicializado",
         stats: existing
       });
     }
+
+    console.log("Criando novo jogador...");
 
     // Criar stats iniciais
     const { data: stats, error } = await supabase
@@ -63,6 +72,8 @@ export async function POST(request) {
         { status: 500 }
       );
     }
+
+    console.log("Jogador criado com sucesso:", stats);
 
     return Response.json({
       message: "Jogador inicializado com sucesso!",
