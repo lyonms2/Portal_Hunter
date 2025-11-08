@@ -44,7 +44,6 @@ export default function DashboardPage() {
 
   const handleLogout = () => {
     localStorage.removeItem("user");
-    localStorage.removeItem("session");
     router.push("/");
   };
 
@@ -208,4 +207,5 @@ export default function DashboardPage() {
       </div>
   );
 }
+
 
