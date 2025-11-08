@@ -29,6 +29,7 @@ export default function DashboardPage() {
         });
 
         const data = await response.json();
+        console.log("Resposta da API:", data);
         setStats(data.stats);
       } catch (error) {
         console.error("Erro ao inicializar:", error);
