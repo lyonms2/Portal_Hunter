@@ -1,12 +1,23 @@
 import { createClient } from "@supabase/supabase-js";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+let supabase = null;
+
+if (supabaseUrl && supabaseKey) {
+  supabase = createClient(supabaseUrl, supabaseKey);
+}
 
 export async function POST(request) {
   try {
+    if (!supabase) {
+      return Response.json(
+        { message: "Serviço temporariamente indisponível" },
+        { status: 503 }
+      );
+    }
+
     const { userId } = await request.json();
 
     if (!userId) {
