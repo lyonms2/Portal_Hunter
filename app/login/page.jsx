@@ -26,10 +26,9 @@ export default function LoginPage() {
 
       if (response.ok) {
         setMensagem({ texto: data.message, tipo: "success" });
-        // Salvar sessão no localStorage
+        // Salvar apenas dados básicos do usuário
         localStorage.setItem("user", JSON.stringify(data.user));
-        localStorage.setItem("session", JSON.stringify(data.session));
-        // Redirecionar para dashboard (criaremos depois)
+        
         setTimeout(() => {
           router.push("/dashboard");
         }, 1500);
