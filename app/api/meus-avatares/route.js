@@ -4,7 +4,6 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 let supabase = null;
-
 if (supabaseUrl && supabaseKey) {
   supabase = createClient(supabaseUrl, supabaseKey);
 }
@@ -49,13 +48,13 @@ export async function GET(request) {
       );
     }
 
+    // CORREÇÃO: Template literal correto com parênteses
     console.log(`Encontrados ${avatares?.length || 0} avatares`);
 
     return Response.json({
       avatares: avatares || [],
       total: avatares?.length || 0
     });
-
   } catch (error) {
     console.error("Erro no servidor:", error);
     return Response.json(
@@ -85,6 +84,28 @@ export async function PUT(request) {
 
     console.log("Ativando avatar:", avatarId, "para usuário:", userId);
 
+    // Verificar se o avatar pertence ao usuário e está vivo
+    const { data: avatarToActivate, error: checkError } = await supabase
+      .from('avatares')
+      .select('*')
+      .eq('id', avatarId)
+      .eq('user_id', userId)
+      .single();
+
+    if (checkError || !avatarToActivate) {
+      return Response.json(
+        { message: "Avatar não encontrado ou não pertence ao usuário" },
+        { status: 404 }
+      );
+    }
+
+    if (!avatarToActivate.vivo) {
+      return Response.json(
+        { message: "Não é possível ativar um avatar destruído" },
+        { status: 400 }
+      );
+    }
+
     // Desativar todos os avatares do usuário
     const { error: deactivateError } = await supabase
       .from('avatares')
@@ -93,6 +114,10 @@ export async function PUT(request) {
 
     if (deactivateError) {
       console.error("Erro ao desativar avatares:", deactivateError);
+      return Response.json(
+        { message: "Erro ao desativar avatares anteriores" },
+        { status: 500 }
+      );
     }
 
     // Ativar o avatar selecionado
@@ -118,7 +143,6 @@ export async function PUT(request) {
       message: "Avatar ativado com sucesso!",
       avatar
     });
-
   } catch (error) {
     console.error("Erro no servidor:", error);
     return Response.json(
