@@ -10,9 +10,11 @@ export default function DashboardPage() {
   const [stats, setStats] = useState(null);
   const [avatares, setAvatares] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingAvatares, setLoadingAvatares] = useState(true);
 
   // Função para gerar código de caçador
   const gerarCodigoCacador = (userId) => {
+    if (!userId) return "HNT-000-000";
     const prefixo = userId.slice(0, 3).toUpperCase();
     const sufixo = userId.slice(-3).toUpperCase();
     return `HNT-${prefixo}-${sufixo}`;
@@ -20,44 +22,98 @@ export default function DashboardPage() {
 
   // Função para gerar nome de caçador
   const gerarNomeCacador = (email) => {
+    if (!email) return "Caçador";
     const username = email.split('@')[0];
     return username.charAt(0).toUpperCase() + username.slice(1);
   };
 
-  // Função para calcular dias desde o registro
+  // Função para calcular dias desde o registro (com tratamento de erro)
   const calcularDiasRegistro = () => {
     if (!stats?.created_at) return 0;
     
-    const dataRegistro = new Date(stats.created_at);
-    const hoje = new Date();
-    const diferencaMs = hoje - dataRegistro;
-    const dias = Math.floor(diferencaMs / (1000 * 60 * 60 * 24));
-    
-    // Retornar pelo menos 1 dia se for o mesmo dia
-    return dias === 0 ? 1 : dias;
+    try {
+      const dataRegistro = new Date(stats.created_at);
+      
+      // Verificar se a data é válida
+      if (isNaN(dataRegistro.getTime())) {
+        console.warn('Data de registro inválida:', stats.created_at);
+        return 0;
+      }
+      
+      const hoje = new Date();
+      const diferencaMs = hoje - dataRegistro;
+      const dias = Math.floor(diferencaMs / (1000 * 60 * 60 * 24));
+      
+      // Retornar pelo menos 1 dia se for o mesmo dia
+      return dias === 0 ? 1 : dias;
+    } catch (error) {
+      console.error('Erro ao calcular dias de registro:', error);
+      return 0;
+    }
   };
 
-  // Função para formatar data de registro
+  // Função para formatar data de registro (com tratamento de erro)
   const formatarDataRegistro = () => {
     if (!stats?.created_at) return "Data não disponível";
     
-    const data = new Date(stats.created_at);
-    const dia = String(data.getDate()).padStart(2, '0');
-    const mes = String(data.getMonth() + 1).padStart(2, '0');
-    const ano = data.getFullYear();
-    
-    return `${dia}/${mes}/${ano}`;
+    try {
+      const data = new Date(stats.created_at);
+      
+      // Verificar se a data é válida
+      if (isNaN(data.getTime())) {
+        return "Data inválida";
+      }
+      
+      const dia = String(data.getDate()).padStart(2, '0');
+      const mes = String(data.getMonth() + 1).padStart(2, '0');
+      const ano = data.getFullYear();
+      
+      return `${dia}/${mes}/${ano}`;
+    } catch (error) {
+      console.error('Erro ao formatar data:', error);
+      return "Erro na data";
+    }
   };
 
-  // Função para determinar classificação baseada em missões
+  // Função para determinar classificação baseada em missões (com ícones e bordas)
   const getClassificacao = () => {
     const totalMissoes = stats?.missoes_completadas || 0;
     
-    if (totalMissoes >= 1000) return { nome: "ELITE", cor: "text-amber-400" };
-    if (totalMissoes >= 500) return { nome: "VETERANO", cor: "text-purple-400" };
-    if (totalMissoes >= 100) return { nome: "EXPERIENTE", cor: "text-blue-400" };
-    if (totalMissoes >= 10) return { nome: "ATIVO", cor: "text-green-400" };
-    return { nome: "RECRUTA", cor: "text-slate-400" };
+    if (totalMissoes >= 1000) return { 
+      nome: "ELITE", 
+      cor: "text-amber-400",
+      icone: "👑",
+      borda: "border-amber-400/50",
+      bg: "bg-amber-500/10"
+    };
+    if (totalMissoes >= 500) return { 
+      nome: "VETERANO", 
+      cor: "text-purple-400",
+      icone: "⭐",
+      borda: "border-purple-400/50",
+      bg: "bg-purple-500/10"
+    };
+    if (totalMissoes >= 100) return { 
+      nome: "EXPERIENTE", 
+      cor: "text-blue-400",
+      icone: "🎖️",
+      borda: "border-blue-400/50",
+      bg: "bg-blue-500/10"
+    };
+    if (totalMissoes >= 10) return { 
+      nome: "ATIVO", 
+      cor: "text-green-400",
+      icone: "✓",
+      borda: "border-green-400/50",
+      bg: "bg-green-500/10"
+    };
+    return { 
+      nome: "RECRUTA", 
+      cor: "text-slate-400",
+      icone: "🆕",
+      borda: "border-slate-600/50",
+      bg: "bg-slate-500/10"
+    };
   };
 
   useEffect(() => {
@@ -72,6 +128,7 @@ export default function DashboardPage() {
       setUser(parsedUser);
 
       try {
+        // Carregar stats do jogador
         const response = await fetch("/api/inicializar-jogador", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -81,13 +138,23 @@ export default function DashboardPage() {
         const data = await response.json();
         setStats(data.stats);
 
+        // Carregar avatares
+        setLoadingAvatares(true);
         const avatarResponse = await fetch(`/api/meus-avatares?userId=${parsedUser.id}`);
         const avatarData = await avatarResponse.json();
-        setAvatares(avatarData.avatares || []);
+        
+        if (avatarResponse.ok) {
+          setAvatares(avatarData.avatares || []);
+        } else {
+          console.error("Erro ao carregar avatares:", avatarData.message);
+          setAvatares([]);
+        }
       } catch (error) {
         console.error("Erro ao inicializar:", error);
+        setAvatares([]);
       } finally {
         setLoading(false);
+        setLoadingAvatares(false);
       }
     };
 
@@ -108,6 +175,7 @@ export default function DashboardPage() {
   }
 
   const classificacao = getClassificacao();
+  const avatarAtivo = avatares.find(av => av.ativo && av.vivo);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-gray-100 relative overflow-hidden">
@@ -173,9 +241,12 @@ export default function DashboardPage() {
                           {user?.email?.charAt(0).toUpperCase()}
                         </span>
                       </div>
-                      <div className="mt-2 text-center">
-                        <div className={`text-xs font-bold ${classificacao.cor} font-mono`}>
-                          {classificacao.nome}
+                      <div className="mt-2">
+                        <div className={`text-center px-3 py-1.5 rounded border ${classificacao.borda} ${classificacao.bg}`}>
+                          <div className={`text-xs font-bold ${classificacao.cor} font-mono flex items-center justify-center gap-1.5`}>
+                            <span>{classificacao.icone}</span>
+                            <span>{classificacao.nome}</span>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -250,24 +321,42 @@ export default function DashboardPage() {
               <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500/10 to-purple-500/10 rounded blur"></div>
               <div className="relative bg-slate-950/50 backdrop-blur border border-slate-800/50 rounded p-6">
                 <h3 className="text-cyan-400 font-bold mb-4 text-sm uppercase tracking-wider">Estatísticas de Campo</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <div className="text-slate-500 text-xs mb-1">✅ Missões Completadas</div>
-                    <div className="text-xl font-bold text-slate-300">{stats?.missoes_completadas || 0}</div>
+                
+                {loadingAvatares ? (
+                  <div className="text-center py-8 text-slate-500 font-mono text-sm animate-pulse">
+                    Carregando estatísticas...
                   </div>
-                  <div>
-                    <div className="text-slate-500 text-xs mb-1">🔵 Total de Avatares</div>
-                    <div className="text-xl font-bold text-slate-300">{avatares.length}</div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <div className="text-slate-500 text-xs mb-1">✅ Missões Completadas</div>
+                      <div className="text-xl font-bold text-slate-300">{stats?.missoes_completadas || 0}</div>
+                    </div>
+                    <div>
+                      <div className="text-slate-500 text-xs mb-1">🔵 Total de Avatares</div>
+                      <div className="text-xl font-bold text-slate-300">{avatares.length}</div>
+                    </div>
+                    
+                    {avatares.length === 0 ? (
+                      <div className="col-span-2 text-center py-4 bg-slate-900/30 rounded border border-slate-800/50">
+                        <span className="text-slate-500 text-sm">
+                          🔮 Nenhum avatar invocado ainda
+                        </span>
+                      </div>
+                    ) : (
+                      <>
+                        <div>
+                          <div className="text-slate-500 text-xs mb-1">💚 Avatares Vivos</div>
+                          <div className="text-xl font-bold text-green-400">{avatares.filter(av => av.vivo).length}</div>
+                        </div>
+                        <div>
+                          <div className="text-slate-500 text-xs mb-1">☠️ Avatares Mortos</div>
+                          <div className="text-xl font-bold text-red-400">{avatares.filter(av => !av.vivo).length}</div>
+                        </div>
+                      </>
+                    )}
                   </div>
-                  <div>
-                    <div className="text-slate-500 text-xs mb-1">💚 Avatares Vivos</div>
-                    <div className="text-xl font-bold text-green-400">{avatares.filter(av => av.vivo).length}</div>
-                  </div>
-                  <div>
-                    <div className="text-slate-500 text-xs mb-1">☠️ Avatares Mortos</div>
-                    <div className="text-xl font-bold text-red-400">{avatares.filter(av => !av.vivo).length}</div>
-                  </div>
-                </div>
+                )}
               </div>
             </div>
           </div>
@@ -306,12 +395,32 @@ export default function DashboardPage() {
                   <div className="text-2xl">⚔️</div>
                   <div className="text-left flex-1">
                     <div className="font-bold text-cyan-400 text-sm">Meus Avatares</div>
-                    <div className="text-xs text-slate-500">Gerenciar coleção</div>
+                    <div className="text-xs text-slate-500">
+                      {loadingAvatares ? 'Carregando...' : `${avatares.length} ${avatares.length === 1 ? 'avatar' : 'avatares'}`}
+                    </div>
                   </div>
                   <div className="text-cyan-400">→</div>
                 </div>
               </div>
             </button>
+
+            {/* Alerta se não tem avatar ativo */}
+            {!loadingAvatares && avatares.length > 0 && !avatarAtivo && (
+              <div className="relative group">
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-amber-500/20 to-orange-500/20 rounded blur"></div>
+                <div className="relative bg-slate-950/80 backdrop-blur border border-amber-900/30 rounded p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="text-2xl">⚠️</div>
+                    <div>
+                      <div className="font-bold text-amber-400 text-sm mb-1">Atenção!</div>
+                      <div className="text-xs text-slate-400">
+                        Nenhum avatar ativo. Ative um avatar na seção "Meus Avatares" para entrar em missões.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Botão Missões (desabilitado) */}
             <button
@@ -334,4 +443,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
