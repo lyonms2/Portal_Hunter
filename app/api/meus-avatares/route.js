@@ -20,7 +20,6 @@ export async function GET(request) {
       );
     }
 
-    // Extrair userId dos parâmetros de query string
     const url = new URL(request.url);
     const userId = url.searchParams.get('userId');
 
@@ -33,12 +32,13 @@ export async function GET(request) {
 
     console.log("Buscando avatares do usuário:", userId);
 
-    // Buscar todos os avatares do usuário
+    // 🔧 CORREÇÃO: Adicionado .limit(1000) para garantir que todos os avatares sejam retornados
     const { data: avatares, error } = await supabase
       .from('avatares')
       .select('*')
       .eq('user_id', userId)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(1000); // ← MUDANÇA AQUI
 
     if (error) {
       console.error("Erro ao buscar avatares:", error);
@@ -48,7 +48,6 @@ export async function GET(request) {
       );
     }
 
-    // CORREÇÃO: Template literal correto com parênteses
     console.log(`Encontrados ${avatares?.length || 0} avatares`);
 
     return Response.json({
