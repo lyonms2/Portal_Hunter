@@ -448,105 +448,193 @@ export default function DashboardPage() {
 
           {/* Coluna Direita - Ações Rápidas */}
           <div className="space-y-4">
-            {/* Botão Invocar Avatar */}
+            {/* Botão Invocar Avatar - O OCULTISTA */}
             <button
               onClick={() => router.push("/ocultista")}
               className="w-full group relative"
             >
-              <div className="absolute -inset-1 bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-500 rounded-lg blur opacity-50 group-hover:opacity-75 transition-all duration-300"></div>
+              <div className="absolute -inset-1 bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-cyan-500/20 rounded-lg blur opacity-50 group-hover:opacity-75 transition-all duration-300"></div>
               
-              <div className="relative bg-slate-950 rounded-lg border border-purple-500/50 group-hover:border-purple-400 transition-all p-6">
-                <div className="text-center">
-                  <div className="text-4xl mb-2">🔮</div>
-                  <div className="text-lg font-bold bg-gradient-to-r from-purple-300 to-cyan-300 bg-clip-text text-transparent mb-1">
-                    O OCULTISTA
+              <div className="relative bg-slate-950/80 backdrop-blur-xl border border-purple-900/30 rounded-lg p-5 group-hover:border-purple-500/50 transition-all">
+                <div className="flex items-center gap-4">
+                  <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-lg flex items-center justify-center border border-purple-500/30 group-hover:border-purple-400/50 transition-all">
+                    <span className="text-2xl">🔮</span>
                   </div>
-                  <div className="text-xs text-slate-400 font-mono">
-                    {stats?.primeira_invocacao ? "Primeira invocação: GRATUITA" : "Invocar Avatares"}
+                  <div className="flex-1 text-left">
+                    <div className="font-bold text-purple-300 text-base mb-0.5 group-hover:text-purple-200 transition-colors">
+                      O OCULTISTA
+                    </div>
+                    <div className="text-xs text-slate-400 font-mono">
+                      {stats?.primeira_invocacao ? "Primeira invocação GRATUITA" : "Invocar novos avatares"}
+                    </div>
+                  </div>
+                  <div className="text-purple-400 group-hover:translate-x-1 group-hover:text-purple-300 transition-all text-xl">
+                    →
                   </div>
                 </div>
               </div>
             </button>
-
+          
             {/* Botão Necromante */}
             <button
               onClick={() => router.push("/necromante")}
               className="w-full group relative"
             >
-              <div className="absolute -inset-1 bg-gradient-to-r from-purple-500 via-red-500 to-purple-500 rounded-lg blur opacity-50 group-hover:opacity-75 transition-all duration-300"></div>
+              <div className="absolute -inset-1 bg-gradient-to-r from-red-500/20 via-purple-500/20 to-red-500/20 rounded-lg blur opacity-50 group-hover:opacity-75 transition-all duration-300"></div>
               
-              <div className="relative bg-slate-950 rounded-lg border border-purple-500/50 group-hover:border-red-400 transition-all p-6">
-                <div className="text-center">
-                  <div className="text-4xl mb-2">⚰️</div>
-                  <div className="text-lg font-bold bg-gradient-to-r from-purple-300 to-red-300 bg-clip-text text-transparent mb-1">
-                    O NECROMANTE
+              <div className="relative bg-slate-950/80 backdrop-blur-xl border border-red-900/30 rounded-lg p-5 group-hover:border-red-500/50 transition-all">
+                <div className="flex items-center gap-4">
+                  <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-red-500/20 to-purple-500/20 rounded-lg flex items-center justify-center border border-red-500/30 group-hover:border-red-400/50 transition-all">
+                    <span className="text-2xl">⚰️</span>
                   </div>
-                  <div className="text-xs text-slate-400 font-mono">
-                    Ressuscitar Avatares
+                  <div className="flex-1 text-left">
+                    <div className="font-bold text-red-300 text-base mb-0.5 group-hover:text-red-200 transition-colors">
+                      O NECROMANTE
+                    </div>
+                    <div className="text-xs text-slate-400 font-mono">
+                      Ressuscitar avatares caídos
+                    </div>
+                  </div>
+                  <div className="text-red-400 group-hover:translate-x-1 group-hover:text-red-300 transition-all text-xl">
+                    →
                   </div>
                 </div>
               </div>
             </button>
-
+          
             {/* Botão Meus Avatares */}
             <button
               onClick={() => router.push("/avatares")}
               className="w-full group relative"
             >
-              <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded blur opacity-50 group-hover:opacity-75 transition-opacity"></div>
+              <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500/20 via-blue-500/20 to-cyan-500/20 rounded-lg blur opacity-50 group-hover:opacity-75 transition-all duration-300"></div>
               
-              <div className="relative bg-slate-950/80 backdrop-blur border border-cyan-900/30 rounded p-4 group-hover:border-cyan-500/50 transition-all">
-                <div className="flex items-center gap-3">
-                  <div className="text-2xl">⚔️</div>
-                  <div className="text-left flex-1">
-                    <div className="font-bold text-cyan-400 text-sm">Meus Avatares</div>
-                    <div className="text-xs text-slate-500">
-                      {loadingAvatares ? 'Carregando...' : `${avatares.length} ${avatares.length === 1 ? 'avatar' : 'avatares'}`}
+              <div className="relative bg-slate-950/80 backdrop-blur-xl border border-cyan-900/30 rounded-lg p-5 group-hover:border-cyan-500/50 transition-all">
+                <div className="flex items-center gap-4">
+                  <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-lg flex items-center justify-center border border-cyan-500/30 group-hover:border-cyan-400/50 transition-all">
+                    <span className="text-2xl">⚔️</span>
+                  </div>
+                  <div className="flex-1 text-left">
+                    <div className="font-bold text-cyan-300 text-base mb-0.5 group-hover:text-cyan-200 transition-colors">
+                      MEUS AVATARES
+                    </div>
+                    <div className="text-xs text-slate-400 font-mono">
+                      {loadingAvatares ? 'Carregando...' : `${avatares.length} ${avatares.length === 1 ? 'avatar' : 'avatares'} invocados`}
                     </div>
                   </div>
-                  <div className="text-cyan-400">→</div>
+                  <div className="text-cyan-400 group-hover:translate-x-1 group-hover:text-cyan-300 transition-all text-xl">
+                    →
+                  </div>
                 </div>
               </div>
             </button>
-
+          
             {/* Alerta se não tem avatar ativo */}
             {!loadingAvatares && avatares.length > 0 && !avatarAtivo && (
               <div className="relative group">
                 <div className="absolute -inset-0.5 bg-gradient-to-r from-amber-500/20 to-orange-500/20 rounded blur"></div>
-                <div className="relative bg-slate-950/80 backdrop-blur border border-amber-900/30 rounded p-4">
+                <div className="relative bg-slate-950/80 backdrop-blur-xl border border-amber-900/30 rounded-lg p-4">
                   <div className="flex items-start gap-3">
-                    <div className="text-2xl">⚠️</div>
-                    <div>
+                    <div className="text-xl mt-0.5">⚠️</div>
+                    <div className="flex-1">
                       <div className="font-bold text-amber-400 text-sm mb-1">Atenção!</div>
-                      <div className="text-xs text-slate-400">
-                        Nenhum avatar ativo. Ative um avatar na seção "Meus Avatares" para entrar em missões.
+                      <div className="text-xs text-slate-400 leading-relaxed">
+                        Nenhum avatar ativo. Ative um avatar para entrar em missões.
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
             )}
-
-            {/* Botão Missões (desabilitado) */}
+          
+            {/* Divisor */}
+            <div className="h-px bg-gradient-to-r from-transparent via-slate-700/50 to-transparent my-2"></div>
+          
+            {/* Botão Missões (em breve) */}
             <button
               disabled
-              className="w-full group relative opacity-50 cursor-not-allowed"
+              className="w-full group relative opacity-60 cursor-not-allowed"
             >
-              <div className="relative bg-slate-950/80 backdrop-blur border border-slate-800/30 rounded p-4">
-                <div className="flex items-center gap-3">
-                  <div className="text-2xl">🌀</div>
-                  <div className="text-left flex-1">
-                    <div className="font-bold text-slate-500 text-sm">Missões</div>
-                    <div className="text-xs text-slate-600">Em breve...</div>
+              <div className="absolute -inset-1 bg-gradient-to-r from-green-500/10 via-emerald-500/10 to-green-500/10 rounded-lg blur opacity-30"></div>
+              
+              <div className="relative bg-slate-950/80 backdrop-blur-xl border border-slate-800/30 rounded-lg p-5">
+                <div className="flex items-center gap-4">
+                  <div className="flex-shrink-0 w-12 h-12 bg-slate-900/50 rounded-lg flex items-center justify-center border border-slate-700/30">
+                    <span className="text-2xl opacity-50">🌀</span>
+                  </div>
+                  <div className="flex-1 text-left">
+                    <div className="font-bold text-slate-500 text-base mb-0.5">
+                      MISSÕES
+                    </div>
+                    <div className="text-xs text-slate-600 font-mono">
+                      Em desenvolvimento...
+                    </div>
+                  </div>
+                  <div className="text-slate-600 text-xl">
+                    🔒
+                  </div>
+                </div>
+              </div>
+            </button>
+          
+            {/* Botão Trade (em breve) */}
+            <button
+              disabled
+              className="w-full group relative opacity-60 cursor-not-allowed"
+            >
+              <div className="absolute -inset-1 bg-gradient-to-r from-amber-500/10 via-yellow-500/10 to-amber-500/10 rounded-lg blur opacity-30"></div>
+              
+              <div className="relative bg-slate-950/80 backdrop-blur-xl border border-slate-800/30 rounded-lg p-5">
+                <div className="flex items-center gap-4">
+                  <div className="flex-shrink-0 w-12 h-12 bg-slate-900/50 rounded-lg flex items-center justify-center border border-slate-700/30">
+                    <span className="text-2xl opacity-50">💱</span>
+                  </div>
+                  <div className="flex-1 text-left">
+                    <div className="font-bold text-slate-500 text-base mb-0.5">
+                      TRADE
+                    </div>
+                    <div className="text-xs text-slate-600 font-mono">
+                      Sistema de trocas em breve
+                    </div>
+                  </div>
+                  <div className="text-slate-600 text-xl">
+                    🔒
+                  </div>
+                </div>
+              </div>
+            </button>
+          
+            {/* Botão Ranking (em breve) */}
+            <button
+              disabled
+              className="w-full group relative opacity-60 cursor-not-allowed"
+            >
+              <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/10 via-indigo-500/10 to-blue-500/10 rounded-lg blur opacity-30"></div>
+              
+              <div className="relative bg-slate-950/80 backdrop-blur-xl border border-slate-800/30 rounded-lg p-5">
+                <div className="flex items-center gap-4">
+                  <div className="flex-shrink-0 w-12 h-12 bg-slate-900/50 rounded-lg flex items-center justify-center border border-slate-700/30">
+                    <span className="text-2xl opacity-50">🏆</span>
+                  </div>
+                  <div className="flex-1 text-left">
+                    <div className="font-bold text-slate-500 text-base mb-0.5">
+                      RANKING
+                    </div>
+                    <div className="text-xs text-slate-600 font-mono">
+                      Tabela de classificação em breve
+                    </div>
+                  </div>
+                  <div className="text-slate-600 text-xl">
+                    🔒
                   </div>
                 </div>
               </div>
             </button>
           </div>
-        </div>
-      </div>
+        </div> {/* Fecha grid grid-cols-1 lg:grid-cols-3 */}
+      </div> {/* Fecha container mx-auto px-4 py-8 */}
 
-      {/* Modal Editar Nome */}
+      {/* Modal Editar Nome - FORA do container, mas DENTRO do min-h-screen */}
       {modalEditarNome && (
         <div 
           className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
@@ -621,7 +709,6 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
-    </div>
+    </div> {/* Fecha min-h-screen bg-gradient-to-br */}
   );
 }
-
