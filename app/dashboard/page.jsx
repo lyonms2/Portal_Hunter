@@ -468,6 +468,26 @@ export default function DashboardPage() {
               </div>
             </button>
 
+            {/* Botão Necromante */}
+            <button
+              onClick={() => router.push("/necromante")}
+              className="w-full group relative"
+            >
+              <div className="absolute -inset-1 bg-gradient-to-r from-purple-500 via-red-500 to-purple-500 rounded-lg blur opacity-50 group-hover:opacity-75 transition-all duration-300"></div>
+              
+              <div className="relative bg-slate-950 rounded-lg border border-purple-500/50 group-hover:border-red-400 transition-all p-6">
+                <div className="text-center">
+                  <div className="text-4xl mb-2">⚰️</div>
+                  <div className="text-lg font-bold bg-gradient-to-r from-purple-300 to-red-300 bg-clip-text text-transparent mb-1">
+                    O NECROMANTE
+                  </div>
+                  <div className="text-xs text-slate-400 font-mono">
+                    Ressuscitar Avatares
+                  </div>
+                </div>
+              </div>
+            </button>
+
             {/* Botão Meus Avatares */}
             <button
               onClick={() => router.push("/avatares")}
@@ -604,3 +624,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+
