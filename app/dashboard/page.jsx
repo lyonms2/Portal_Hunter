@@ -26,8 +26,15 @@ export default function DashboardPage() {
 
   // Função para calcular dias desde o registro
   const calcularDiasRegistro = () => {
-    // Por enquanto retorna um valor fixo, mas você pode salvar a data de registro no banco
-    return Math.floor(Math.random() * 100) + 1;
+    if (!stats?.created_at) return 0;
+    
+    const dataRegistro = new Date(stats.created_at);
+    const hoje = new Date();
+    const diferencaMs = hoje - dataRegistro;
+    const dias = Math.floor(diferencaMs / (1000 * 60 * 60 * 24));
+    
+    // Retornar pelo menos 1 dia se for o mesmo dia
+    return dias === 0 ? 1 : dias;
   };
 
   // Função para determinar classificação baseada em stats
@@ -316,3 +323,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+
