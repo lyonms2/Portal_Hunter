@@ -32,13 +32,12 @@ export async function GET(request) {
 
     console.log("Buscando avatares do usuário:", userId);
 
-    // 🔧 CORREÇÃO: Adicionado .limit(1000) para garantir que todos os avatares sejam retornados
     const { data: avatares, error } = await supabase
       .from('avatares')
       .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
-      .limit(1000); // ← MUDANÇA AQUI
+      .limit(1000);
 
     if (error) {
       console.error("Erro ao buscar avatares:", error);
@@ -64,6 +63,8 @@ export async function GET(request) {
 }
 
 export async function PUT(request) {
+  console.log("=== INÍCIO PUT - ATIVAR AVATAR ===");
+  
   try {
     if (!supabase) {
       return Response.json(
@@ -74,6 +75,8 @@ export async function PUT(request) {
 
     const { userId, avatarId } = await request.json();
 
+    console.log("Recebido:", { userId, avatarId });
+
     if (!userId || !avatarId) {
       return Response.json(
         { message: "userId e avatarId são obrigatórios" },
@@ -81,7 +84,7 @@ export async function PUT(request) {
       );
     }
 
-    console.log("Ativando avatar:", avatarId, "para usuário:", userId);
+    console.log("1. Verificando se avatar existe...");
 
     // Verificar se o avatar pertence ao usuário e está vivo
     const { data: avatarToActivate, error: checkError } = await supabase
@@ -91,33 +94,52 @@ export async function PUT(request) {
       .eq('user_id', userId)
       .single();
 
-    if (checkError || !avatarToActivate) {
+    if (checkError) {
+      console.error("Erro ao verificar avatar:", checkError);
+      return Response.json(
+        { message: "Avatar não encontrado: " + checkError.message },
+        { status: 404 }
+      );
+    }
+
+    if (!avatarToActivate) {
+      console.error("Avatar não encontrado");
       return Response.json(
         { message: "Avatar não encontrado ou não pertence ao usuário" },
         { status: 404 }
       );
     }
 
+    console.log("Avatar encontrado:", avatarToActivate.nome);
+
     if (!avatarToActivate.vivo) {
+      console.error("Avatar está morto");
       return Response.json(
         { message: "Não é possível ativar um avatar destruído" },
         { status: 400 }
       );
     }
 
-    // Desativar todos os avatares do usuário
-    const { error: deactivateError } = await supabase
+    console.log("2. Desativando todos os avatares do usuário...");
+
+    // Desativar todos os avatares do usuário primeiro
+    const { error: deactivateError, data: deactivated } = await supabase
       .from('avatares')
       .update({ ativo: false })
-      .eq('user_id', userId);
+      .eq('user_id', userId)
+      .select();
 
     if (deactivateError) {
       console.error("Erro ao desativar avatares:", deactivateError);
       return Response.json(
-        { message: "Erro ao desativar avatares anteriores" },
+        { message: "Erro ao desativar avatares anteriores: " + deactivateError.message },
         { status: 500 }
       );
     }
+
+    console.log(`Desativados ${deactivated?.length || 0} avatares`);
+
+    console.log("3. Ativando avatar selecionado...");
 
     // Ativar o avatar selecionado
     const { data: avatar, error: activateError } = await supabase
@@ -136,14 +158,33 @@ export async function PUT(request) {
       );
     }
 
-    console.log("Avatar ativado com sucesso:", avatar);
+    if (!avatar) {
+      console.error("Avatar não foi ativado (retorno vazio)");
+      return Response.json(
+        { message: "Erro: avatar não foi ativado" },
+        { status: 500 }
+      );
+    }
+
+    console.log("✅ Avatar ativado com sucesso:", avatar.nome, "| ativo:", avatar.ativo);
+
+    // Verificar se realmente salvou
+    const { data: verificacao } = await supabase
+      .from('avatares')
+      .select('id, nome, ativo')
+      .eq('id', avatarId)
+      .single();
+
+    console.log("Verificação final:", verificacao);
 
     return Response.json({
       message: "Avatar ativado com sucesso!",
-      avatar
+      avatar,
+      verificacao
     });
+
   } catch (error) {
-    console.error("Erro no servidor:", error);
+    console.error("❌ ERRO NO SERVIDOR:", error);
     return Response.json(
       { message: "Erro ao processar: " + error.message },
       { status: 500 }
