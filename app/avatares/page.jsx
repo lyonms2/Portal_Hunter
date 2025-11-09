@@ -58,11 +58,10 @@ export default function AvatarsPage() {
       const data = await response.json();
 
       if (response.ok) {
-        // Atualizar lista local
-        setAvatares(prev => prev.map(av => ({
-          ...av,
-          ativo: av.id === avatarId
-        })));
+        console.log('Avatar ativado com sucesso:', data.avatar);
+        
+        // IMPORTANTE: Recarregar avatares do banco após ativar
+        await carregarAvatares(user.id);
         
         // Mostrar modal de sucesso
         setModalConfirmacao({
@@ -70,8 +69,6 @@ export default function AvatarsPage() {
           mensagem: `${avatarNome} foi ativado com sucesso!`,
           avatar: data.avatar
         });
-        
-        console.log('Avatar ativado:', data.avatar);
       } else {
         // Mostrar modal de erro
         setModalConfirmacao({
