@@ -631,10 +631,10 @@ export default function DashboardPage() {
               </div>
             </button>
           </div>
-        </div> {/* Fecha grid grid-cols-1 lg:grid-cols-3 */}
-      </div> {/* Fecha container mx-auto px-4 py-8 */}
+        </div>
+      </div>
 
-      {/* Modal Editar Nome - FORA do container, mas DENTRO do min-h-screen */}
+      {/* Modal Editar Nome */}
       {modalEditarNome && (
         <div 
           className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
@@ -647,14 +647,12 @@ export default function DashboardPage() {
             <div className="relative group">
               <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500/30 via-blue-500/30 to-purple-500/30 rounded-lg blur opacity-75"></div>
               
-              <div className="relative bg-slate-950/95 backdrop-blur-xl border border-cyan-900/30 rounded-lg overflow-hidden">
-                {/* Header */}
+              <div className="relative bg-slate-950/95 backdrop-blur-xl border border-cyan-900/30 rounded-lg overflow-hidden">                
                 <div className="p-4 text-center font-bold text-lg bg-gradient-to-r from-cyan-600 to-blue-600">
                   ✏️ EDITAR NOME DE OPERAÇÃO
                 </div>
 
-                <div className="p-6">
-                  {/* Input */}
+                <div className="p-6">                  
                   <div className="mb-4">
                     <label className="block text-cyan-400 text-xs uppercase tracking-widest mb-2 font-mono">
                       Novo Nome
@@ -673,15 +671,13 @@ export default function DashboardPage() {
                       <span className="text-xs text-slate-500">{novoNome.length}/30</span>
                     </div>
                   </div>
-
-                  {/* Erro */}
+                  
                   {erroNome && (
                     <div className="mb-4 p-3 bg-red-950/50 border border-red-500/30 rounded">
                       <p className="text-sm text-red-400">{erroNome}</p>
                     </div>
                   )}
-
-                  {/* Botões */}
+                  
                   <div className="flex gap-3">
                     <button
                       onClick={() => setModalEditarNome(false)}
@@ -709,6 +705,7 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
-    </div> {/* Fecha min-h-screen bg-gradient-to-br */}
+    </div>
   );
 }
+
