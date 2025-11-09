@@ -116,15 +116,15 @@ export default function DashboardPage() {
                 {/* Recursos */}
                 <div className="grid grid-cols-3 gap-3">
                   <div className="bg-slate-900/50 rounded p-3 border border-amber-500/20">
-                    <div className="text-xs text-slate-500 uppercase font-mono mb-1">Moedas</div>
+                    <div className="text-xs text-slate-500 uppercase font-mono mb-1">💰 Moedas</div>
                     <div className="text-2xl font-bold text-amber-400">{stats?.moedas || 0}</div>
                   </div>
                   <div className="bg-slate-900/50 rounded p-3 border border-purple-500/20">
-                    <div className="text-xs text-slate-500 uppercase font-mono mb-1">Fragmentos</div>
+                    <div className="text-xs text-slate-500 uppercase font-mono mb-1">💎 Fragmentos</div>
                     <div className="text-2xl font-bold text-purple-400">{stats?.fragmentos || 0}</div>
                   </div>
                   <div className="bg-slate-900/50 rounded p-3 border border-red-500/20">
-                    <div className="text-xs text-slate-500 uppercase font-mono mb-1">Dívida</div>
+                    <div className="text-xs text-slate-500 uppercase font-mono mb-1">🔴 Dívida</div>
                     <div className="text-2xl font-bold text-red-400">{stats?.divida || 0}</div>
                   </div>
                 </div>
@@ -220,5 +220,6 @@ export default function DashboardPage() {
     </div>
   );
 }
+
 
 
