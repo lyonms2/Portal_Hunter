@@ -37,15 +37,26 @@ export default function DashboardPage() {
     return dias === 0 ? 1 : dias;
   };
 
-  // Função para determinar classificação baseada em stats
+  // Função para formatar data de registro
+  const formatarDataRegistro = () => {
+    if (!stats?.created_at) return "Data não disponível";
+    
+    const data = new Date(stats.created_at);
+    const dia = String(data.getDate()).padStart(2, '0');
+    const mes = String(data.getMonth() + 1).padStart(2, '0');
+    const ano = data.getFullYear();
+    
+    return `${dia}/${mes}/${ano}`;
+  };
+
+  // Função para determinar classificação baseada em missões
   const getClassificacao = () => {
     const totalMissoes = stats?.missoes_completadas || 0;
-    const totalAvatares = avatares.length;
     
-    if (totalMissoes >= 50 || totalAvatares >= 10) return { nome: "ELITE", cor: "text-amber-400" };
-    if (totalMissoes >= 25 || totalAvatares >= 5) return { nome: "VETERANO", cor: "text-purple-400" };
-    if (totalMissoes >= 10 || totalAvatares >= 3) return { nome: "EXPERIENTE", cor: "text-blue-400" };
-    if (totalMissoes >= 1 || totalAvatares >= 1) return { nome: "ATIVO", cor: "text-green-400" };
+    if (totalMissoes >= 1000) return { nome: "ELITE", cor: "text-amber-400" };
+    if (totalMissoes >= 500) return { nome: "VETERANO", cor: "text-purple-400" };
+    if (totalMissoes >= 100) return { nome: "EXPERIENTE", cor: "text-blue-400" };
+    if (totalMissoes >= 10) return { nome: "ATIVO", cor: "text-green-400" };
     return { nome: "RECRUTA", cor: "text-slate-400" };
   };
 
@@ -226,7 +237,7 @@ export default function DashboardPage() {
                       <div className="w-6 h-6 bg-cyan-500/20 rounded-full border border-cyan-500/50 flex items-center justify-center">
                         <span className="text-cyan-400 text-xs">✓</span>
                       </div>
-                      <span className="text-xs text-slate-500 font-mono">DOCUMENTO VERIFICADO</span>
+                      <span className="text-xs text-slate-500 font-mono">Membro desde: {formatarDataRegistro()}</span>
                     </div>
                     <div className="text-xs text-slate-600 font-mono">OCD-2025 // v2.1.4</div>
                   </div>
@@ -323,4 +334,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
