@@ -9,6 +9,8 @@ export default function AvatarsPage() {
   const [avatares, setAvatares] = useState([]);
   const [avatarSelecionado, setAvatarSelecionado] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [modalConfirmacao, setModalConfirmacao] = useState(null); // {tipo: 'sucesso'/'erro', mensagem: ''}
+  const [ativando, setAtivando] = useState(false);
 
   useEffect(() => {
     const userData = localStorage.getItem("user");
@@ -24,11 +26,13 @@ export default function AvatarsPage() {
 
   const carregarAvatares = async (userId) => {
     try {
+      setLoading(true);
       const response = await fetch(`/api/meus-avatares?userId=${userId}`);
       const data = await response.json();
       
       if (response.ok) {
         setAvatares(data.avatares);
+        console.log('Avatares carregados:', data.avatares);
       } else {
         console.error("Erro ao carregar avatares:", data.message);
       }
@@ -39,7 +43,11 @@ export default function AvatarsPage() {
     }
   };
 
-  const ativarAvatar = async (avatarId) => {
+  const ativarAvatar = async (avatarId, avatarNome) => {
+    if (ativando) return; // Previne cliques múltiplos
+    
+    setAtivando(true);
+    
     try {
       const response = await fetch("/api/meus-avatares", {
         method: "PUT",
@@ -55,14 +63,35 @@ export default function AvatarsPage() {
           ...av,
           ativo: av.id === avatarId
         })));
-        alert("Avatar ativado com sucesso!");
+        
+        // Mostrar modal de sucesso
+        setModalConfirmacao({
+          tipo: 'sucesso',
+          mensagem: `${avatarNome} foi ativado com sucesso!`,
+          avatar: data.avatar
+        });
+        
+        console.log('Avatar ativado:', data.avatar);
       } else {
-        alert(data.message);
+        // Mostrar modal de erro
+        setModalConfirmacao({
+          tipo: 'erro',
+          mensagem: data.message || 'Erro ao ativar avatar'
+        });
       }
     } catch (error) {
       console.error("Erro ao ativar avatar:", error);
-      alert("Erro ao ativar avatar");
+      setModalConfirmacao({
+        tipo: 'erro',
+        mensagem: 'Erro de conexão ao ativar avatar'
+      });
+    } finally {
+      setAtivando(false);
     }
+  };
+
+  const fecharModal = () => {
+    setModalConfirmacao(null);
   };
 
   const getCorRaridade = (raridade) => {
@@ -386,11 +415,12 @@ export default function AvatarsPage() {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            ativarAvatar(avatar.id);
+                            ativarAvatar(avatar.id, avatar.nome);
                           }}
-                          className="w-full py-2 bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold rounded transition-colors"
+                          disabled={ativando}
+                          className="w-full py-2 bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          Ativar
+                          {ativando ? 'Ativando...' : 'Ativar'}
                         </button>
                       )}
                     </div>
@@ -402,7 +432,75 @@ export default function AvatarsPage() {
         )}
       </div>
 
-      {/* Modal de Detalhes (mantém o mesmo) */}
+      {/* Modal de Confirmação */}
+      {modalConfirmacao && (
+        <div 
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"
+          onClick={fecharModal}
+        >
+          <div 
+            className="max-w-md w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="relative group">
+              <div className={`absolute -inset-1 ${
+                modalConfirmacao.tipo === 'sucesso' 
+                  ? 'bg-gradient-to-r from-green-500/30 via-cyan-500/30 to-blue-500/30' 
+                  : 'bg-gradient-to-r from-red-500/30 via-orange-500/30 to-red-500/30'
+              } rounded-lg blur opacity-75 animate-pulse`}></div>
+              
+              <div className="relative bg-slate-950/95 backdrop-blur-xl border-2 border-cyan-900/50 rounded-lg overflow-hidden">
+                {/* Header */}
+                <div className={`p-4 text-center font-bold text-lg ${
+                  modalConfirmacao.tipo === 'sucesso'
+                    ? 'bg-gradient-to-r from-green-600 to-cyan-600'
+                    : 'bg-gradient-to-r from-red-600 to-orange-600'
+                }`}>
+                  {modalConfirmacao.tipo === 'sucesso' ? '✅ SUCESSO' : '❌ ERRO'}
+                </div>
+
+                <div className="p-8 text-center">
+                  {/* Ícone */}
+                  <div className="text-6xl mb-4">
+                    {modalConfirmacao.tipo === 'sucesso' ? '⚔️' : '⚠️'}
+                  </div>
+
+                  {/* Mensagem */}
+                  <p className="text-xl text-slate-200 font-bold mb-2">
+                    {modalConfirmacao.mensagem}
+                  </p>
+
+                  {modalConfirmacao.tipo === 'sucesso' && (
+                    <p className="text-sm text-slate-400 font-mono mb-6">
+                      Avatar pronto para combate
+                    </p>
+                  )}
+
+                  {/* Botão */}
+                  <button
+                    onClick={fecharModal}
+                    className="group/btn relative inline-block mt-4"
+                  >
+                    <div className={`absolute -inset-1 ${
+                      modalConfirmacao.tipo === 'sucesso'
+                        ? 'bg-gradient-to-r from-cyan-500 to-blue-500'
+                        : 'bg-gradient-to-r from-red-500 to-orange-500'
+                    } rounded blur opacity-50 group-hover/btn:opacity-75 transition-all duration-300`}></div>
+                    
+                    <div className="relative px-8 py-3 bg-slate-950 rounded border border-cyan-500/50 group-hover/btn:border-cyan-400 transition-all">
+                      <span className="font-bold tracking-wider uppercase bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent">
+                        Entendido
+                      </span>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Detalhes do Avatar */}
       {avatarSelecionado && (
         <div 
           className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
@@ -508,6 +606,23 @@ export default function AvatarsPage() {
       <div className="absolute inset-0 pointer-events-none opacity-[0.015]">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-cyan-500/50 to-transparent animate-scan"></div>
       </div>
+
+      <style jsx>{`
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+            transform: scale(0.95);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+
+        .animate-fade-in {
+          animation: fade-in 0.3s ease-out;
+        }
+      `}</style>
     </div>
   );
 }
