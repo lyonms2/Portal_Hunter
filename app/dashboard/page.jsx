@@ -138,19 +138,19 @@ export default function DashboardPage() {
                 <h3 className="text-cyan-400 font-bold mb-4 text-sm uppercase tracking-wider">Estatísticas</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <div className="text-slate-500 text-xs mb-1">Missões Completadas</div>
+                    <div className="text-slate-500 text-xs mb-1">✅ Missões Completadas</div>
                     <div className="text-xl font-bold text-slate-300">{stats?.missoes_completadas || 0}</div>
                   </div>
                   <div>
-                    <div className="text-slate-500 text-xs mb-1">Total de Avatares</div>
+                    <div className="text-slate-500 text-xs mb-1">🔵 Total de Avatares</div>
                     <div className="text-xl font-bold text-slate-300">{avatares.length}</div>
                   </div>
                   <div>
-                    <div className="text-slate-500 text-xs mb-1">Avatares Vivos</div>
+                    <div className="text-slate-500 text-xs mb-1">💚 Avatares Vivos</div>
                     <div className="text-xl font-bold text-green-400">{avatares.filter(av => av.vivo).length}</div>
                   </div>
                   <div>
-                    <div className="text-slate-500 text-xs mb-1">Avatares Mortos</div>
+                    <div className="text-slate-500 text-xs mb-1">☠️ Avatares Mortos</div>
                     <div className="text-xl font-bold text-red-400">{avatares.filter(av => !av.vivo).length}</div>
                   </div>
                 </div>
@@ -220,4 +220,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
 
