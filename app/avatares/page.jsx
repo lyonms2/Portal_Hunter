@@ -76,6 +76,17 @@ export default function AvatarsPage() {
     }
   };
 
+  const getCorBorda = (raridade) => {
+    switch (raridade) {
+      case 'Lendário':
+        return 'border-amber-500/50';
+      case 'Raro':
+        return 'border-purple-500/50';
+      default:
+        return 'border-slate-700/50';
+    }
+  };
+
   const getCorElemento = (elemento) => {
     const cores = {
       'Fogo': 'text-orange-400',
@@ -88,6 +99,23 @@ export default function AvatarsPage() {
     };
     return cores[elemento] || 'text-gray-400';
   };
+
+  const getEmojiElemento = (elemento) => {
+    const emojis = {
+      'Fogo': '🔥',
+      'Água': '💧',
+      'Terra': '🪨',
+      'Vento': '💨',
+      'Eletricidade': '⚡',
+      'Sombra': '🌑',
+      'Luz': '✨'
+    };
+    return emojis[elemento] || '⭐';
+  };
+
+  // Separar avatar ativo dos outros
+  const avatarAtivo = avatares.find(av => av.ativo && av.vivo);
+  const avataresinativos = avatares.filter(av => !av.ativo || !av.vivo);
 
   if (loading) {
     return (
@@ -119,17 +147,26 @@ export default function AvatarsPage() {
               MINHA COLEÇÃO
             </h1>
             <p className="text-slate-400 font-mono text-sm">
-              {avatares.length} {avatares.length === 1 ? 'Avatar' : 'Avatares'} invocados
+              {avatares.length} {avatares.length === 1 ? 'Avatar' : 'Avatares'} | {avatares.filter(a => a.vivo).length} Vivos | {avatares.filter(a => !a.vivo).length} Destruídos
             </p>
           </div>
           
-          <button
-            onClick={() => router.push("/dashboard")}
-            className="text-cyan-400 hover:text-cyan-300 transition-colors flex items-center gap-2 font-mono text-sm group"
-          >
-            <span className="group-hover:-translate-x-1 transition-transform">←</span> 
-            <span>VOLTAR</span>
-          </button>
+          <div className="flex gap-4">
+            <button
+              onClick={() => router.push("/ocultista")}
+              className="text-purple-400 hover:text-purple-300 transition-colors flex items-center gap-2 font-mono text-sm group"
+            >
+              <span>🔮</span>
+              <span>INVOCAR</span>
+            </button>
+            <button
+              onClick={() => router.push("/dashboard")}
+              className="text-cyan-400 hover:text-cyan-300 transition-colors flex items-center gap-2 font-mono text-sm group"
+            >
+              <span className="group-hover:-translate-x-1 transition-transform">←</span> 
+              <span>VOLTAR</span>
+            </button>
+          </div>
         </div>
 
         {/* Lista vazia */}
@@ -155,96 +192,217 @@ export default function AvatarsPage() {
           </div>
         )}
 
-        {/* Grid de Avatares */}
-        {avatares.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {avatares.map((avatar) => (
-              <div
-                key={avatar.id}
-                className="relative group cursor-pointer"
-                onClick={() => setAvatarSelecionado(avatar)}
+        {/* Avatar Ativo em Destaque */}
+        {avatarAtivo && (
+          <div className="mb-12">
+            <h2 className="text-2xl font-bold text-cyan-400 mb-6 flex items-center gap-3">
+              <span className="text-3xl">⚔️</span>
+              <span>AVATAR ATIVO</span>
+            </h2>
+
+            <div className="relative group">
+              <div className="absolute -inset-2 bg-gradient-to-r from-green-500/30 via-cyan-500/30 to-blue-500/30 rounded-lg blur-xl animate-pulse"></div>
+              
+              <div 
+                className="relative bg-slate-950/90 backdrop-blur-xl border-2 border-green-500/50 rounded-lg overflow-hidden cursor-pointer transform transition-all hover:scale-[1.02]"
+                onClick={() => setAvatarSelecionado(avatarAtivo)}
               >
-                <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500/20 via-blue-500/20 to-purple-500/20 rounded-lg blur opacity-50 group-hover:opacity-75 transition-opacity"></div>
-                
-                <div className="relative bg-slate-950/80 backdrop-blur-xl border border-cyan-900/30 rounded-lg overflow-hidden group-hover:border-cyan-500/50 transition-all">
-                  {/* Badge de raridade */}
-                  <div className={`p-2 text-center font-bold text-xs bg-gradient-to-r ${getCorRaridade(avatar.raridade)}`}>
-                    {avatar.raridade.toUpperCase()}
+                {/* Badge de raridade */}
+                <div className={`p-3 text-center font-bold text-lg bg-gradient-to-r ${getCorRaridade(avatarAtivo.raridade)} relative overflow-hidden`}>
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse"></div>
+                  <span className="relative">{avatarAtivo.raridade.toUpperCase()}</span>
+                </div>
+
+                {/* Badge ATIVO pulsante */}
+                <div className="absolute top-16 right-4 z-10">
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-green-500 rounded-full blur-lg animate-pulse"></div>
+                    <div className="relative bg-green-500 text-white text-xs font-bold px-4 py-2 rounded-full flex items-center gap-2">
+                      <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                      ATIVO
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6 p-8">
+                  {/* Coluna Esquerda - Visual do Avatar */}
+                  <div>
+                    <div className={`bg-slate-900/70 rounded-lg p-6 aspect-square border-2 ${getCorBorda(avatarAtivo.raridade)} flex items-center justify-center`}>
+                      <div className="text-8xl">{getEmojiElemento(avatarAtivo.elemento)}</div>
+                    </div>
                   </div>
 
-                  {/* Badge de ativo */}
-                  {avatar.ativo && (
-                    <div className="absolute top-12 right-3 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full z-10">
-                      ✓ ATIVO
-                    </div>
-                  )}
-
-                  <div className="p-6">
+                  {/* Coluna Direita - Info */}
+                  <div className="space-y-4">
                     {/* Nome */}
-                    <h3 className="text-xl font-bold text-cyan-400 mb-2 truncate">
-                      {avatar.nome}
-                    </h3>
-
-                    {/* Elemento */}
-                    <div className="mb-4">
-                      <span className={`text-sm font-mono ${getCorElemento(avatar.elemento)}`}>
-                        {avatar.elemento}
-                      </span>
-                    </div>
-
-                    {/* Stats resumidos */}
-                    <div className="grid grid-cols-4 gap-2 mb-4">
-                      <div className="text-center">
-                        <div className="text-red-400 font-bold text-lg">{avatar.forca}</div>
-                        <div className="text-xs text-slate-500">FOR</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-green-400 font-bold text-lg">{avatar.agilidade}</div>
-                        <div className="text-xs text-slate-500">AGI</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-blue-400 font-bold text-lg">{avatar.resistencia}</div>
-                        <div className="text-xs text-slate-500">RES</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-purple-400 font-bold text-lg">{avatar.foco}</div>
-                        <div className="text-xs text-slate-500">FOC</div>
+                    <div>
+                      <h3 className="text-3xl font-black text-cyan-400 mb-2">
+                        {avatarAtivo.nome}
+                      </h3>
+                      <div className="flex items-center gap-3">
+                        <span className={`text-lg font-mono ${getCorElemento(avatarAtivo.elemento)}`}>
+                          {getEmojiElemento(avatarAtivo.elemento)} {avatarAtivo.elemento}
+                        </span>
                       </div>
                     </div>
 
-                    {/* Info adicional */}
-                    <div className="flex justify-between text-xs text-slate-500 mb-4">
-                      <span>Nv. {avatar.nivel}</span>
-                      <span>Vínculo: {avatar.vinculo}%</span>
+                    {/* Descrição */}
+                    <p className="text-slate-300 text-sm leading-relaxed italic border-l-2 border-cyan-500/50 pl-4">
+                      {avatarAtivo.descricao}
+                    </p>
+
+                    {/* Stats */}
+                    <div className="grid grid-cols-4 gap-3">
+                      <div className="bg-slate-900/50 rounded p-3 text-center border border-red-500/20">
+                        <div className="text-xs text-slate-500 uppercase mb-1">FOR</div>
+                        <div className="text-2xl font-bold text-red-400">{avatarAtivo.forca}</div>
+                      </div>
+                      <div className="bg-slate-900/50 rounded p-3 text-center border border-green-500/20">
+                        <div className="text-xs text-slate-500 uppercase mb-1">AGI</div>
+                        <div className="text-2xl font-bold text-green-400">{avatarAtivo.agilidade}</div>
+                      </div>
+                      <div className="bg-slate-900/50 rounded p-3 text-center border border-blue-500/20">
+                        <div className="text-xs text-slate-500 uppercase mb-1">RES</div>
+                        <div className="text-2xl font-bold text-blue-400">{avatarAtivo.resistencia}</div>
+                      </div>
+                      <div className="bg-slate-900/50 rounded p-3 text-center border border-purple-500/20">
+                        <div className="text-xs text-slate-500 uppercase mb-1">FOC</div>
+                        <div className="text-2xl font-bold text-purple-400">{avatarAtivo.foco}</div>
+                      </div>
                     </div>
 
-                    {/* Botão ativar */}
-                    {!avatar.ativo && avatar.vivo && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          ativarAvatar(avatar.id);
-                        }}
-                        className="w-full py-2 bg-cyan-600 hover:bg-cyan-500 text-white text-sm font-bold rounded transition-colors"
-                      >
-                        Ativar
-                      </button>
-                    )}
-
-                    {!avatar.vivo && (
-                      <div className="w-full py-2 bg-red-900/50 text-red-400 text-sm font-bold rounded text-center">
-                        ☠️ Destruído
+                    {/* Progresso */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-slate-900/50 rounded p-3">
+                        <div className="text-xs text-slate-500 mb-2">NÍVEL</div>
+                        <div className="text-xl font-bold text-cyan-400">{avatarAtivo.nivel}</div>
+                        <div className="w-full bg-slate-700 rounded-full h-1.5 mt-2">
+                          <div className="bg-cyan-400 h-1.5 rounded-full" style={{width: `${(avatarAtivo.experiencia % 100)}%`}}></div>
+                        </div>
                       </div>
-                    )}
+                      <div className="bg-slate-900/50 rounded p-3">
+                        <div className="text-xs text-slate-500 mb-2">VÍNCULO</div>
+                        <div className="text-xl font-bold text-purple-400">{avatarAtivo.vinculo}%</div>
+                        <div className="w-full bg-slate-700 rounded-full h-1.5 mt-2">
+                          <div className="bg-purple-400 h-1.5 rounded-full" style={{width: `${avatarAtivo.vinculo}%`}}></div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Habilidades resumidas */}
+                    <div className="bg-slate-900/50 rounded p-3">
+                      <div className="text-xs text-slate-500 mb-2 uppercase">Habilidades</div>
+                      <div className="flex flex-wrap gap-2">
+                        {avatarAtivo.habilidades.map((hab, index) => (
+                          <span key={index} className="text-xs bg-purple-900/50 text-purple-300 px-2 py-1 rounded">
+                            {hab.nome}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-            ))}
+            </div>
+          </div>
+        )}
+
+        {/* Outros Avatares */}
+        {avataresinativos.length > 0 && (
+          <div>
+            <h2 className="text-2xl font-bold text-slate-400 mb-6 flex items-center gap-3">
+              <span className="text-3xl">📚</span>
+              <span>OUTROS AVATARES ({avataresinativos.length})</span>
+            </h2>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {avataresinativos.map((avatar) => (
+                <div
+                  key={avatar.id}
+                  className="relative group cursor-pointer"
+                  onClick={() => setAvatarSelecionado(avatar)}
+                >
+                  <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500/20 via-blue-500/20 to-purple-500/20 rounded-lg blur opacity-50 group-hover:opacity-75 transition-opacity"></div>
+                  
+                  <div className={`relative bg-slate-950/80 backdrop-blur-xl border ${getCorBorda(avatar.raridade)} rounded-lg overflow-hidden group-hover:border-cyan-500/50 transition-all ${!avatar.vivo ? 'opacity-50' : ''}`}>
+                    {/* Badge de raridade */}
+                    <div className={`p-2 text-center font-bold text-xs bg-gradient-to-r ${getCorRaridade(avatar.raridade)}`}>
+                      {avatar.raridade.toUpperCase()}
+                    </div>
+
+                    {/* Badge de morto */}
+                    {!avatar.vivo && (
+                      <div className="absolute top-12 right-2 bg-red-900 text-white text-xs font-bold px-2 py-1 rounded z-10">
+                        ☠️ MORTO
+                      </div>
+                    )}
+
+                    <div className="p-4">
+                      {/* Visual do avatar */}
+                      <div className={`bg-slate-900/50 rounded p-4 aspect-square border ${getCorBorda(avatar.raridade)} flex items-center justify-center mb-3`}>
+                        <div className="text-5xl">{getEmojiElemento(avatar.elemento)}</div>
+                      </div>
+
+                      {/* Nome */}
+                      <h3 className="text-base font-bold text-cyan-400 mb-1 truncate">
+                        {avatar.nome}
+                      </h3>
+
+                      {/* Elemento */}
+                      <div className="mb-3">
+                        <span className={`text-xs font-mono ${getCorElemento(avatar.elemento)}`}>
+                          {getEmojiElemento(avatar.elemento)} {avatar.elemento}
+                        </span>
+                      </div>
+
+                      {/* Stats resumidos */}
+                      <div className="grid grid-cols-4 gap-1 mb-3">
+                        <div className="text-center">
+                          <div className="text-red-400 font-bold text-sm">{avatar.forca}</div>
+                          <div className="text-[10px] text-slate-500">FOR</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-green-400 font-bold text-sm">{avatar.agilidade}</div>
+                          <div className="text-[10px] text-slate-500">AGI</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-blue-400 font-bold text-sm">{avatar.resistencia}</div>
+                          <div className="text-[10px] text-slate-500">RES</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-purple-400 font-bold text-sm">{avatar.foco}</div>
+                          <div className="text-[10px] text-slate-500">FOC</div>
+                        </div>
+                      </div>
+
+                      {/* Info adicional */}
+                      <div className="flex justify-between text-[10px] text-slate-500 mb-3">
+                        <span>Nv. {avatar.nivel}</span>
+                        <span>Vínculo: {avatar.vinculo}%</span>
+                      </div>
+
+                      {/* Botão ativar */}
+                      {!avatar.ativo && avatar.vivo && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            ativarAvatar(avatar.id);
+                          }}
+                          className="w-full py-2 bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold rounded transition-colors"
+                        >
+                          Ativar
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
 
-      {/* Modal de Detalhes */}
+      {/* Modal de Detalhes (mantém o mesmo) */}
       {avatarSelecionado && (
         <div 
           className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
@@ -267,7 +425,7 @@ export default function AvatarsPage() {
                   {/* Fechar */}
                   <button
                     onClick={() => setAvatarSelecionado(null)}
-                    className="absolute top-4 right-4 text-slate-400 hover:text-white text-2xl"
+                    className="absolute top-4 right-4 text-slate-400 hover:text-white text-2xl z-10"
                   >
                     ×
                   </button>
@@ -280,7 +438,7 @@ export default function AvatarsPage() {
                   {/* Elemento */}
                   <div className="text-center mb-6">
                     <span className={`inline-block px-4 py-1 bg-slate-800 rounded-full text-sm font-mono ${getCorElemento(avatarSelecionado.elemento)}`}>
-                      {avatarSelecionado.elemento}
+                      {getEmojiElemento(avatarSelecionado.elemento)} {avatarSelecionado.elemento}
                     </span>
                   </div>
 
