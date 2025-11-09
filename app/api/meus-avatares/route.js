@@ -9,6 +9,9 @@ if (supabaseUrl && supabaseKey) {
   supabase = createClient(supabaseUrl, supabaseKey);
 }
 
+// Forçar rota dinâmica
+export const dynamic = 'force-dynamic';
+
 export async function GET(request) {
   try {
     if (!supabase) {
@@ -18,8 +21,9 @@ export async function GET(request) {
       );
     }
 
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
+    // Extrair userId dos parâmetros de query string
+    const url = new URL(request.url);
+    const userId = url.searchParams.get('userId');
 
     if (!userId) {
       return Response.json(
