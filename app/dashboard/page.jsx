@@ -285,10 +285,10 @@ export default function DashboardPage() {
                 <div className="text-center">
                   <div className="text-4xl mb-2">🔮</div>
                   <div className="text-lg font-bold bg-gradient-to-r from-purple-300 to-cyan-300 bg-clip-text text-transparent mb-1">
-                    INVOCAR AVATAR
+                    O OCULTISTA
                   </div>
                   <div className="text-xs text-slate-400 font-mono">
-                    {stats?.primeira_invocacao ? "Primeira invocação: GRATUITA" : "Custo: 100 moedas"}
+                    {stats?.primeira_invocacao ? "Primeira invocação: GRATUITA" : "Invocar Avatares"}
                   </div>
                 </div>
               </div>
@@ -334,3 +334,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+
