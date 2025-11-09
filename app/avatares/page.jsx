@@ -115,7 +115,7 @@ export default function AvatarsPage() {
 
   // Separar avatar ativo dos outros
   const avatarAtivo = avatares.find(av => av.ativo && av.vivo);
-  const avataresinativos = avatares.filter(av => !av.ativo || !av.vivo);
+  const avataresInativos = avatares.filter(av => !av.ativo || !av.vivo);
 
   if (loading) {
     return (
@@ -308,15 +308,15 @@ export default function AvatarsPage() {
         )}
 
         {/* Outros Avatares */}
-        {avataresinativos.length > 0 && (
+        {avataresInativos.length > 0 && (
           <div>
             <h2 className="text-2xl font-bold text-slate-400 mb-6 flex items-center gap-3">
               <span className="text-3xl">📚</span>
-              <span>OUTROS AVATARES ({avataresinativos.length})</span>
+              <span>OUTROS AVATARES ({avataresInativos.length})</span>
             </h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {avataresinativos.map((avatar) => (
+              {avataresInativos.map((avatar) => (
                 <div
                   key={avatar.id}
                   className="relative group cursor-pointer"
