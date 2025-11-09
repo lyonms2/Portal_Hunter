@@ -27,7 +27,7 @@ export default function AvatarsPage() {
   const carregarAvatares = async (userId) => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/meus-avatares?userId=${userId}`);
+      const response = await fetch(`/api/meus-avatares?userId=${userId}&t=${Date.now()}`);
       const data = await response.json();
       
       if (response.ok) {
