@@ -8,6 +8,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [stats, setStats] = useState(null);
+  const [avatares, setAvatares] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -32,6 +33,11 @@ export default function DashboardPage() {
         const data = await response.json();
         console.log("Resposta da API:", data);
         setStats(data.stats);
+
+        // Buscar avatares do jogador
+        const avatarResponse = await fetch(`/api/avatares?userId=${parsedUser.id}`);
+        const avatarData = await avatarResponse.json();
+        setAvatares(avatarData.avatares || []);
       } catch (error) {
         console.error("Erro ao inicializar:", error);
       } finally {
@@ -136,8 +142,16 @@ export default function DashboardPage() {
                     <div className="text-xl font-bold text-slate-300">{stats?.missoes_completadas || 0}</div>
                   </div>
                   <div>
-                    <div className="text-slate-500 text-xs mb-1">Avatares Ativos</div>
-                    <div className="text-xl font-bold text-slate-300">0</div>
+                    <div className="text-slate-500 text-xs mb-1">Total de Avatares</div>
+                    <div className="text-xl font-bold text-slate-300">{avatares.length}</div>
+                  </div>
+                  <div>
+                    <div className="text-slate-500 text-xs mb-1">Avatares Vivos</div>
+                    <div className="text-xl font-bold text-green-400">{avatares.filter(av => av.vivo).length}</div>
+                  </div>
+                  <div>
+                    <div className="text-slate-500 text-xs mb-1">Avatares Mortos</div>
+                    <div className="text-xl font-bold text-red-400">{avatares.filter(av => !av.vivo).length}</div>
                   </div>
                 </div>
               </div>
