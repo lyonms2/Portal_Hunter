@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import AvatarSVG from '../components/AvatarSVG';
 
 export default function AvatarsPage() {
   const router = useRouter();
@@ -254,7 +255,7 @@ export default function AvatarsPage() {
                   {/* Coluna Esquerda - Visual do Avatar */}
                   <div>
                     <div className={`bg-slate-900/70 rounded-lg p-6 aspect-square border-2 ${getCorBorda(avatarAtivo.raridade)} flex items-center justify-center`}>
-                      <div className="text-8xl">{getEmojiElemento(avatarAtivo.elemento)}</div>
+                      <AvatarSVG avatar={avatarAtivo} tamanho={200} />
                     </div>
                   </div>
 
@@ -366,7 +367,7 @@ export default function AvatarsPage() {
                     <div className="p-4">
                       {/* Visual do avatar */}
                       <div className={`bg-slate-900/50 rounded p-4 aspect-square border ${getCorBorda(avatar.raridade)} flex items-center justify-center mb-3`}>
-                        <div className="text-5xl">{getEmojiElemento(avatar.elemento)}</div>
+                        <AvatarSVG avatar={avatar} tamanho={120} />
                       </div>
 
                       {/* Nome */}
