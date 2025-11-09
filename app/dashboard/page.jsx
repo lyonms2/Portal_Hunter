@@ -72,7 +72,7 @@ export default function DashboardPage() {
             <h1 className="text-4xl font-black bg-gradient-to-r from-cyan-300 via-blue-300 to-purple-300 bg-clip-text text-transparent mb-2">
               CENTRAL DE COMANDO
             </h1>
-            <p className="text-slate-400 font-mono text-sm">Bem-vindo de volta, Hunter</p>
+            <p className="text-slate-400 font-mono text-sm">Bem-vindo de volta, Caçador!</p>
           </div>
           
           <button
@@ -220,6 +220,7 @@ export default function DashboardPage() {
     </div>
   );
 }
+
 
 
 
