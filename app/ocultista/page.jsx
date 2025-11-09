@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import AvatarSVG from '../components/AvatarSVG';
 
 export default function OcultistaPage() {
   const router = useRouter();
@@ -251,7 +252,9 @@ export default function OcultistaPage() {
               </div>
 
               {/* Card do Avatar */}
-              <div className="relative group max-w-3xl mx-auto">
+              <div className="flex justify-center py-8 bg-slate-900/30">
+                <AvatarSVG avatar={avatarGerado} tamanho={250} />
+              </div>
                 <div className="absolute -inset-1 bg-gradient-to-r from-purple-500/30 via-pink-500/30 to-cyan-500/30 rounded-lg blur opacity-75"></div>
                 
                 <div className="relative bg-slate-950/90 backdrop-blur-xl border border-purple-900/30 rounded-lg overflow-hidden">
