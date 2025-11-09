@@ -35,7 +35,7 @@ export default function DashboardPage() {
         setStats(data.stats);
 
         // Buscar avatares do jogador
-        const avatarResponse = await fetch(`/api/avatares?userId=${parsedUser.id}`);
+        const avatarResponse = await fetch(`/api/meus-avatares?userId=${parsedUser.id}`);
         const avatarData = await avatarResponse.json();
         setAvatares(avatarData.avatares || []);
       } catch (error) {
@@ -220,3 +220,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+
