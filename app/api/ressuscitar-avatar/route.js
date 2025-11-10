@@ -43,7 +43,7 @@ export async function POST(request) {
 
     // 3. Verificar se jogador tem recursos
     const { data: stats, error: statsError } = await supabase
-      .from('jogadores')
+      .from('player_stats')
       .select('moedas, fragmentos')
       .eq('user_id', userId)
       .single();
@@ -97,7 +97,7 @@ export async function POST(request) {
 
     // 5. Deduzir recursos do jogador
     const { error: updateStatsError } = await supabase
-      .from('jogadores')
+      .from('player_stats')
       .update({
         moedas: stats.moedas - custo.moedas,
         fragmentos: stats.fragmentos - custo.fragmentos
@@ -113,7 +113,7 @@ export async function POST(request) {
 
     // 6. Buscar stats atualizados
     const { data: statsAtualizados } = await supabase
-      .from('jogadores')
+      .from('player_stats')
       .select('*')
       .eq('user_id', userId)
       .single();
