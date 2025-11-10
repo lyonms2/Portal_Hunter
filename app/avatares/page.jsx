@@ -250,6 +250,19 @@ export default function AvatarsPage() {
                     </div>
                   </div>
                 </div>
+                
+                {/* Badge Marca da Morte (se tiver) */}
+                {avatarAtivo.marca_morte && (
+                  <div className="absolute top-28 right-4 z-10">
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-red-900 rounded blur-lg opacity-50"></div>
+                      <div className="relative bg-red-900/90 text-white text-xs font-bold px-3 py-1.5 rounded border border-red-500/50 flex items-center gap-1.5">
+                        <span>💀</span>
+                        <span>MARCA DA MORTE</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 <div className="grid md:grid-cols-2 gap-6 p-8">
                   {/* Coluna Esquerda - Visual do Avatar */}
@@ -363,6 +376,12 @@ export default function AvatarsPage() {
                         ☠️ MORTO
                       </div>
                     )}
+                    {/* Badge Marca da Morte (ADICIONAR ESTE BLOCO) */}
+                    {avatar.vivo && avatar.marca_morte && (
+                      <div className="absolute top-12 left-2 bg-red-900/90 text-white text-xs font-bold px-2 py-1 rounded z-10 border border-red-500/50 flex items-center gap-1">
+                        <span>💀</span>
+                      </div>
+                    )}
 
                     <div className="p-4">
                       {/* Visual do avatar */}
@@ -385,19 +404,31 @@ export default function AvatarsPage() {
                       {/* Stats resumidos */}
                       <div className="grid grid-cols-4 gap-1 mb-3">
                         <div className="text-center">
-                          <div className="text-red-400 font-bold text-sm">{avatar.forca}</div>
+                          <div className={`font-bold text-sm ${avatar.marca_morte ? 'text-red-400' : 'text-red-400'}`}>
+                            {avatar.forca}
+                            {avatar.marca_morte && <span className="text-[8px] ml-0.5">💀</span>}
+                          </div>
                           <div className="text-[10px] text-slate-500">FOR</div>
                         </div>
                         <div className="text-center">
-                          <div className="text-green-400 font-bold text-sm">{avatar.agilidade}</div>
+                          <div className={`font-bold text-sm ${avatar.marca_morte ? 'text-green-400/70' : 'text-green-400'}`}>
+                            {avatar.agilidade}
+                            {avatar.marca_morte && <span className="text-[8px] ml-0.5">💀</span>}
+                          </div>
                           <div className="text-[10px] text-slate-500">AGI</div>
                         </div>
                         <div className="text-center">
-                          <div className="text-blue-400 font-bold text-sm">{avatar.resistencia}</div>
+                          <div className={`font-bold text-sm ${avatar.marca_morte ? 'text-blue-400/70' : 'text-blue-400'}`}>
+                            {avatar.resistencia}
+                            {avatar.marca_morte && <span className="text-[8px] ml-0.5">💀</span>}
+                          </div>
                           <div className="text-[10px] text-slate-500">RES</div>
                         </div>
                         <div className="text-center">
-                          <div className="text-purple-400 font-bold text-sm">{avatar.foco}</div>
+                          <div className={`font-bold text-sm ${avatar.marca_morte ? 'text-purple-400/70' : 'text-purple-400'}`}>
+                            {avatar.foco}
+                            {avatar.marca_morte && <span className="text-[8px] ml-0.5">💀</span>}
+                          </div>
                           <div className="text-[10px] text-slate-500">FOC</div>
                         </div>
                       </div>
@@ -536,6 +567,13 @@ export default function AvatarsPage() {
                     <span className={`inline-block px-4 py-1 bg-slate-800 rounded-full text-sm font-mono ${getCorElemento(avatarSelecionado.elemento)}`}>
                       {getEmojiElemento(avatarSelecionado.elemento)} {avatarSelecionado.elemento}
                     </span>
+                    
+                    {/* Badge Marca da Morte no modal */}
+                    {avatarSelecionado.marca_morte && (
+                      <span className="inline-block ml-2 px-3 py-1 bg-red-900/80 border border-red-500/50 rounded-full text-xs font-bold text-white">
+                        💀 MARCA DA MORTE
+                      </span>
+                    )}
                   </div>
 
                   {/* Descrição */}
