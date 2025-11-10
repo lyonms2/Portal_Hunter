@@ -536,7 +536,7 @@ export default function AvatarsPage() {
           onClick={() => setAvatarSelecionado(null)}
         >
           <div 
-            className="max-w-3xl w-full max-h-[90vh] overflow-y-auto"
+            className="max-w-4xl w-full"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="relative group">
@@ -544,90 +544,142 @@ export default function AvatarsPage() {
               
               <div className="relative bg-slate-950/95 backdrop-blur-xl border border-cyan-900/30 rounded-lg overflow-hidden">
                 {/* Header com raridade */}
-                <div className={`p-4 text-center font-bold text-lg bg-gradient-to-r ${getCorRaridade(avatarSelecionado.raridade)}`}>
-                  {avatarSelecionado.raridade.toUpperCase()}
+                <div className={`p-3 text-center font-bold text-lg bg-gradient-to-r ${getCorRaridade(avatarSelecionado.raridade)} relative overflow-hidden`}>
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse"></div>
+                  <span className="relative">{avatarSelecionado.raridade.toUpperCase()}</span>
                 </div>
-
-                <div className="p-8">
-                  {/* Fechar */}
-                  <button
-                    onClick={() => setAvatarSelecionado(null)}
-                    className="absolute top-4 right-4 text-slate-400 hover:text-white text-2xl z-10"
-                  >
-                    ×
-                  </button>
-
-                  {/* Nome */}
-                  <h3 className="text-3xl font-black text-center mb-2 bg-gradient-to-r from-cyan-300 to-purple-300 bg-clip-text text-transparent">
-                    {avatarSelecionado.nome}
-                  </h3>
-
-                  {/* Elemento */}
-                  <div className="text-center mb-6">
-                    <span className={`inline-block px-4 py-1 bg-slate-800 rounded-full text-sm font-mono ${getCorElemento(avatarSelecionado.elemento)}`}>
-                      {getEmojiElemento(avatarSelecionado.elemento)} {avatarSelecionado.elemento}
-                    </span>
-                    
-                    {/* Badge Marca da Morte no modal */}
-                    {avatarSelecionado.marca_morte && (
-                      <span className="inline-block ml-2 px-3 py-1 bg-red-900/80 border border-red-500/50 rounded-full text-xs font-bold text-white">
-                        💀 MARCA DA MORTE
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Descrição */}
-                  <p className="text-slate-300 text-center leading-relaxed mb-8 italic">
-                    {avatarSelecionado.descricao}
-                  </p>
-
-                  <div className="h-px bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent mb-8"></div>
-
-                  {/* Stats */}
-                  <div className="grid grid-cols-4 gap-4 mb-8">
-                    <div className="bg-slate-900/50 rounded p-4 text-center border border-red-500/20">
-                      <div className="text-xs text-slate-500 uppercase mb-1">Força</div>
-                      <div className="text-3xl font-bold text-red-400">{avatarSelecionado.forca}</div>
-                    </div>
-                    <div className="bg-slate-900/50 rounded p-4 text-center border border-green-500/20">
-                      <div className="text-xs text-slate-500 uppercase mb-1">Agilidade</div>
-                      <div className="text-3xl font-bold text-green-400">{avatarSelecionado.agilidade}</div>
-                    </div>
-                    <div className="bg-slate-900/50 rounded p-4 text-center border border-blue-500/20">
-                      <div className="text-xs text-slate-500 uppercase mb-1">Resistência</div>
-                      <div className="text-3xl font-bold text-blue-400">{avatarSelecionado.resistencia}</div>
-                    </div>
-                    <div className="bg-slate-900/50 rounded p-4 text-center border border-purple-500/20">
-                      <div className="text-xs text-slate-500 uppercase mb-1">Foco</div>
-                      <div className="text-3xl font-bold text-purple-400">{avatarSelecionado.foco}</div>
-                    </div>
-                  </div>
-
-                  {/* Habilidades */}
-                  <div className="space-y-3 mb-8">
-                    <h4 className="text-cyan-400 font-bold text-sm uppercase tracking-wider">Habilidades</h4>
-                    {avatarSelecionado.habilidades.map((hab, index) => (
-                      <div key={index} className="bg-slate-900/50 rounded p-3 border border-slate-700/50">
-                        <div className="font-bold text-purple-400 text-sm mb-1">{hab.nome}</div>
-                        <div className="text-slate-400 text-xs">{hab.descricao}</div>
+      
+                {/* Botão Fechar */}
+                <button
+                  onClick={() => setAvatarSelecionado(null)}
+                  className="absolute top-3 right-3 w-8 h-8 bg-slate-900/80 hover:bg-red-900/80 rounded-full flex items-center justify-center text-slate-400 hover:text-white transition-all z-20 border border-slate-700/50 hover:border-red-500/50"
+                >
+                  ✕
+                </button>
+      
+                <div className="p-6">
+                  <div className="grid md:grid-cols-2 gap-6">
+                    {/* Coluna Esquerda - Imagem do Avatar */}
+                    <div className="space-y-4">
+                      {/* Avatar em destaque */}
+                      <div className={`bg-slate-900/70 rounded-lg p-6 aspect-square border-2 ${getCorBorda(avatarSelecionado.raridade)} flex items-center justify-center relative overflow-hidden`}>
+                        {/* Efeito de brilho de fundo */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-purple-500/5"></div>
+                        <div className="relative">
+                          <AvatarSVG avatar={avatarSelecionado} tamanho={280} />
+                        </div>
                       </div>
-                    ))}
-                  </div>
-
-                  {/* Info adicional */}
-                  <div className="grid grid-cols-3 gap-4 text-center text-sm">
-                    <div>
-                      <div className="text-slate-500 text-xs mb-1">Nível</div>
-                      <div className="text-cyan-400 font-bold">{avatarSelecionado.nivel}</div>
+      
+                      {/* Nome e Elemento */}
+                      <div className="text-center">
+                        <h3 className="text-3xl font-black mb-2 bg-gradient-to-r from-cyan-300 to-purple-300 bg-clip-text text-transparent">
+                          {avatarSelecionado.nome}
+                        </h3>
+                        
+                        <div className="flex items-center justify-center gap-2 flex-wrap">
+                          <span className={`inline-block px-3 py-1 bg-slate-800 rounded-full text-sm font-mono ${getCorElemento(avatarSelecionado.elemento)}`}>
+                            {getEmojiElemento(avatarSelecionado.elemento)} {avatarSelecionado.elemento}
+                          </span>
+                          
+                          {/* Badge Marca da Morte */}
+                          {avatarSelecionado.marca_morte && (
+                            <span className="inline-block px-3 py-1 bg-red-900/80 border border-red-500/50 rounded-full text-xs font-bold text-white">
+                              💀 MARCA DA MORTE
+                            </span>
+                          )}
+                        </div>
+                      </div>
+      
+                      {/* Descrição */}
+                      <div className="bg-slate-900/50 rounded-lg p-4 border border-slate-700/30">
+                        <p className="text-slate-300 text-sm leading-relaxed italic text-center">
+                          "{avatarSelecionado.descricao}"
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <div className="text-slate-500 text-xs mb-1">Vínculo</div>
-                      <div className="text-purple-400 font-bold">{avatarSelecionado.vinculo}%</div>
-                    </div>
-                    <div>
-                      <div className="text-slate-500 text-xs mb-1">Status</div>
-                      <div className={avatarSelecionado.vivo ? "text-green-400 font-bold" : "text-red-400 font-bold"}>
-                        {avatarSelecionado.vivo ? 'Ativo' : 'Destruído'}
+      
+                    {/* Coluna Direita - Informações */}
+                    <div className="space-y-4">
+                      {/* Stats Principais */}
+                      <div>
+                        <h4 className="text-cyan-400 font-bold text-xs uppercase tracking-wider mb-3">Atributos</h4>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="bg-slate-900/50 rounded-lg p-3 text-center border border-red-500/20">
+                            <div className="text-xs text-slate-500 uppercase mb-1">Força</div>
+                            <div className="text-2xl font-bold text-red-400">{avatarSelecionado.forca}</div>
+                          </div>
+                          <div className="bg-slate-900/50 rounded-lg p-3 text-center border border-green-500/20">
+                            <div className="text-xs text-slate-500 uppercase mb-1">Agilidade</div>
+                            <div className="text-2xl font-bold text-green-400">{avatarSelecionado.agilidade}</div>
+                          </div>
+                          <div className="bg-slate-900/50 rounded-lg p-3 text-center border border-blue-500/20">
+                            <div className="text-xs text-slate-500 uppercase mb-1">Resistência</div>
+                            <div className="text-2xl font-bold text-blue-400">{avatarSelecionado.resistencia}</div>
+                          </div>
+                          <div className="bg-slate-900/50 rounded-lg p-3 text-center border border-purple-500/20">
+                            <div className="text-xs text-slate-500 uppercase mb-1">Foco</div>
+                            <div className="text-2xl font-bold text-purple-400">{avatarSelecionado.foco}</div>
+                          </div>
+                        </div>
+                      </div>
+      
+                      {/* Progresso */}
+                      <div>
+                        <h4 className="text-cyan-400 font-bold text-xs uppercase tracking-wider mb-3">Progresso</h4>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="bg-slate-900/50 rounded-lg p-3">
+                            <div className="text-xs text-slate-500 mb-2 uppercase">Nível</div>
+                            <div className="text-xl font-bold text-cyan-400 mb-2">{avatarSelecionado.nivel}</div>
+                            <div className="w-full bg-slate-700 rounded-full h-1.5">
+                              <div className="bg-cyan-400 h-1.5 rounded-full transition-all" style={{width: `${(avatarSelecionado.experiencia % 100)}%`}}></div>
+                            </div>
+                          </div>
+                          <div className="bg-slate-900/50 rounded-lg p-3">
+                            <div className="text-xs text-slate-500 mb-2 uppercase">Vínculo</div>
+                            <div className="text-xl font-bold text-purple-400 mb-2">{avatarSelecionado.vinculo}%</div>
+                            <div className="w-full bg-slate-700 rounded-full h-1.5">
+                              <div className="bg-purple-400 h-1.5 rounded-full transition-all" style={{width: `${avatarSelecionado.vinculo}%`}}></div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+      
+                      {/* Habilidades */}
+                      <div>
+                        <h4 className="text-cyan-400 font-bold text-xs uppercase tracking-wider mb-3">Habilidades</h4>
+                        <div className="space-y-2 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
+                          {avatarSelecionado.habilidades.map((hab, index) => (
+                            <div key={index} className="bg-slate-900/50 rounded-lg p-3 border border-slate-700/30">
+                              <div className="font-bold text-purple-400 text-sm mb-1">{hab.nome}</div>
+                              <div className="text-slate-400 text-xs leading-relaxed">{hab.descricao}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+      
+                      {/* Status */}
+                      <div className="grid grid-cols-3 gap-3 pt-2 border-t border-slate-800/50">
+                        <div className="text-center">
+                          <div className="text-xs text-slate-500 mb-1">Nível</div>
+                          <div className="text-cyan-400 font-bold text-sm">{avatarSelecionado.nivel}</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-xs text-slate-500 mb-1">Vínculo</div>
+                          <div className="text-purple-400 font-bold text-sm">{avatarSelecionado.vinculo}%</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-xs text-slate-500 mb-1">Status</div>
+                          <div className={`font-bold text-sm flex items-center justify-center gap-1 ${avatarSelecionado.vivo ? 'text-green-400' : 'text-red-400'}`}>
+                            {avatarSelecionado.vivo ? (
+                              <>
+                                <span>Vivo</span>
+                                {avatarSelecionado.marca_morte && <span className="text-xs">💀</span>}
+                              </>
+                            ) : (
+                              <>☠️ Morto</>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -637,13 +689,27 @@ export default function AvatarsPage() {
           </div>
         </div>
       )}
-
-      {/* Efeito de scan */}
-      <div className="absolute inset-0 pointer-events-none opacity-[0.015]">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-cyan-500/50 to-transparent animate-scan"></div>
-      </div>
-
+      
       <style jsx>{`
+        /* Scrollbar customizada para habilidades */
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+      
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: rgba(15, 23, 42, 0.5);
+          border-radius: 3px;
+        }
+      
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(6, 182, 212, 0.5);
+          border-radius: 3px;
+        }
+      
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(6, 182, 212, 0.7);
+        }
+      
         @keyframes fade-in {
           from {
             opacity: 0;
@@ -654,11 +720,8 @@ export default function AvatarsPage() {
             transform: scale(1);
           }
         }
-
+      
         .animate-fade-in {
           animation: fade-in 0.3s ease-out;
         }
       `}</style>
-    </div>
-  );
-}
