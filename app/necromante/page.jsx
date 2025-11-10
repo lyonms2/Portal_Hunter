@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import BackgroundEffects from "@/components/BackgroundEffects";
+import AvatarSVG from '../components/AvatarSVG';
 
 export default function NecromantePage() {
   const router = useRouter();
@@ -10,9 +10,9 @@ export default function NecromantePage() {
   const [stats, setStats] = useState(null);
   const [avataresMortos, setAvataresMortos] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [processando, setProcessando] = useState(false);
+  const [etapa, setEtapa] = useState('introducao'); // introducao, selecionando, ritual, revelacao
   const [avatarSelecionado, setAvatarSelecionado] = useState(null);
-  const [modalConfirmar, setModalConfirmar] = useState(false);
+  const [processando, setProcessando] = useState(false);
   const [mensagem, setMensagem] = useState(null);
 
   // Custos por raridade
@@ -61,28 +61,23 @@ export default function NecromantePage() {
     init();
   }, [router]);
 
-  const abrirModal = (avatar) => {
+  const selecionarAvatar = (avatar) => {
     setAvatarSelecionado(avatar);
-    setModalConfirmar(true);
-    setMensagem(null);
+    setEtapa('selecionando');
   };
 
-  const ressuscitar = async () => {
-    if (!avatarSelecionado) return;
-
-    const custo = custos[avatarSelecionado.raridade];
-    
-    // Verificar recursos
-    if (stats.moedas < custo.moedas || stats.fragmentos < custo.fragmentos) {
-      setMensagem({
-        tipo: 'erro',
-        texto: `Recursos insuficientes! Necessário: ${custo.moedas} moedas e ${custo.fragmentos} fragmentos`
-      });
-      return;
-    }
-
+  const iniciarRitual = () => {
+    setEtapa('ritual');
     setProcessando(true);
+    setMensagem(null);
 
+    // Simular ritual (3 segundos)
+    setTimeout(() => {
+      realizarRessurreicao();
+    }, 3000);
+  };
+
+  const realizarRessurreicao = async () => {
     try {
       const response = await fetch("/api/ressuscitar-avatar", {
         method: "POST",
@@ -96,24 +91,15 @@ export default function NecromantePage() {
       const data = await response.json();
 
       if (response.ok) {
-        setMensagem({
-          tipo: 'sucesso',
-          texto: '⚰️ Ritual concluído! O avatar retornou do além...'
-        });
-        
-        // Atualizar stats e lista
         setStats(data.stats);
-        setAvataresMortos(prev => prev.filter(av => av.id !== avatarSelecionado.id));
-        
-        setTimeout(() => {
-          setModalConfirmar(false);
-          setAvatarSelecionado(null);
-        }, 2000);
+        setAvatarSelecionado(data.avatar);
+        setEtapa('revelacao');
       } else {
         setMensagem({
           tipo: 'erro',
           texto: data.message || 'Erro ao ressuscitar avatar'
         });
+        setEtapa('introducao');
       }
     } catch (error) {
       console.error("Erro:", error);
@@ -121,14 +107,23 @@ export default function NecromantePage() {
         tipo: 'erro',
         texto: 'Erro ao realizar ritual'
       });
+      setEtapa('introducao');
     } finally {
       setProcessando(false);
     }
   };
 
+  const voltarAoDashboard = () => {
+    router.push("/dashboard");
+  };
+
+  const verAvatares = () => {
+    router.push("/avatares");
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center">
         <div className="text-purple-400 font-mono animate-pulse">Adentrando as sombras...</div>
       </div>
     );
@@ -136,186 +131,550 @@ export default function NecromantePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 text-gray-100 relative overflow-hidden">
-      <BackgroundEffects />
+      {/* Partículas de fundo (mais sombrias) */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute w-96 h-96 bg-purple-900/10 rounded-full blur-3xl top-20 -left-48 animate-pulse"></div>
+        <div className="absolute w-96 h-96 bg-red-900/10 rounded-full blur-3xl bottom-20 -right-48 animate-pulse" style={{animationDelay: '2s'}}></div>
+        <div className="absolute w-64 h-64 bg-purple-900/10 rounded-full blur-3xl top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-pulse" style={{animationDelay: '4s'}}></div>
+      </div>
 
-      <div className="relative z-10 container mx-auto px-4 py-8 max-w-6xl">
-        {/* Header */}
-        <div className="text-center mb-12">
+      {/* Grid hexagonal */}
+      <div className="absolute inset-0 opacity-[0.02] bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTYiIGhlaWdodD0iMTAwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxwYXRoIGQ9Ik0yOCAwTDAgMTVWMzVMMjggNTBMNTYgMzVWMTVaTTI4IDUwTDAgNjVWODVMMjggMTAwTDU2IDg1VjY1WiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjcHVycGxlIiBzdHJva2Utd2lkdGg9IjAuNSIvPjwvc3ZnPg==')] pointer-events-none"></div>
+
+      {/* Vinheta mais escura */}
+      <div className="absolute inset-0 shadow-[inset_0_0_150px_rgba(0,0,0,0.95)] pointer-events-none"></div>
+
+      <div className="relative z-10 min-h-screen flex items-center justify-center px-4 py-8">
+        {/* Botão Voltar */}
+        {etapa === 'introducao' && (
           <button
-            onClick={() => router.push("/dashboard")}
-            className="absolute left-4 top-4 text-slate-400 hover:text-cyan-400 transition-colors"
+            onClick={voltarAoDashboard}
+            className="absolute top-8 left-8 text-purple-400 hover:text-purple-300 transition-colors flex items-center gap-2 font-mono text-sm group"
           >
-            ← Voltar
+            <span className="group-hover:-translate-x-1 transition-transform">←</span> 
+            <span>RETORNAR</span>
           </button>
+        )}
 
-          <div className="text-6xl mb-4">⚰️</div>
-          <h1 className="text-5xl font-black bg-gradient-to-r from-purple-300 via-red-300 to-purple-300 bg-clip-text text-transparent mb-3">
-            O NECROMANTE
-          </h1>
-          <p className="text-slate-400 font-mono text-sm max-w-2xl mx-auto">
-            "Aqueles que cruzaram o véu podem retornar... mas a morte deixa cicatrizes eternas."
-          </p>
-        </div>
+        <div className="max-w-5xl w-full">
+          {/* ETAPA 1: INTRODUÇÃO */}
+          {etapa === 'introducao' && (
+            <div className="space-y-8 animate-fade-in">
+              {/* Título */}
+              <div className="text-center mb-12">
+                <div className="text-7xl mb-4 animate-pulse-slow">⚰️</div>
+                <h1 className="text-5xl font-black bg-gradient-to-r from-purple-300 via-red-300 to-purple-300 bg-clip-text text-transparent mb-4">
+                  O NECROMANTE
+                </h1>
+                <div className="h-px w-64 mx-auto bg-gradient-to-r from-transparent via-purple-500 to-transparent mb-4"></div>
+                <p className="text-slate-400 font-mono text-sm">Mestre dos Rituais de Ressurreição</p>
+              </div>
 
-        {/* Recursos do Jogador */}
-        <div className="flex justify-center gap-4 mb-8">
-          <div className="bg-slate-950/80 backdrop-blur border border-amber-500/30 rounded px-4 py-2">
-            <span className="text-amber-400 font-bold">💰 {stats?.moedas || 0}</span>
-          </div>
-          <div className="bg-slate-950/80 backdrop-blur border border-purple-500/30 rounded px-4 py-2">
-            <span className="text-purple-400 font-bold">💎 {stats?.fragmentos || 0}</span>
-          </div>
-        </div>
+              {/* Recursos */}
+              <div className="flex justify-center gap-4 mb-8">
+                <div className="bg-slate-950/80 backdrop-blur border border-amber-500/30 rounded px-6 py-3">
+                  <span className="text-amber-400 font-bold text-lg">💰 {stats?.moedas || 0}</span>
+                </div>
+                <div className="bg-slate-950/80 backdrop-blur border border-purple-500/30 rounded px-6 py-3">
+                  <span className="text-purple-400 font-bold text-lg">💎 {stats?.fragmentos || 0}</span>
+                </div>
+              </div>
 
-        {/* Lista de Avatares Mortos */}
-        {avataresMortos.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="text-6xl mb-4 opacity-50">☠️</div>
-            <h3 className="text-xl font-bold text-slate-400 mb-2">Nenhuma alma perdida</h3>
-            <p className="text-slate-500 text-sm">Todos os seus avatares ainda caminham entre os vivos...</p>
-          </div>
-        ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {avataresMortos.map((avatar) => {
-              const custo = custos[avatar.raridade];
-              const podeRessuscitar = stats?.moedas >= custo.moedas && stats?.fragmentos >= custo.fragmentos;
+              {/* Diálogo do Necromante */}
+              <div className="relative group mb-12">
+                <div className="absolute -inset-1 bg-gradient-to-r from-purple-500/20 via-red-500/20 to-purple-500/20 rounded-lg blur opacity-50"></div>
+                
+                <div className="relative bg-slate-950/90 backdrop-blur-xl border border-purple-900/30 rounded-lg p-8">
+                  <div className="flex gap-4 mb-6">
+                    <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-red-600 rounded-full flex items-center justify-center text-3xl flex-shrink-0 border-2 border-purple-500/50">
+                      💀
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-purple-400 font-bold mb-2">O Necromante</h3>
+                      <div className="space-y-3 text-slate-300 leading-relaxed">
+                        <p className="font-mono text-sm">
+                          "Ah... sinto o peso da perda em sua alma. Você vem buscar aqueles que cruzaram o véu..."
+                        </p>
+                        <p className="font-mono text-sm">
+                          "A morte não é o fim, caçador. Com os rituais corretos, posso trazer seus avatares de volta. 
+                          Mas saiba: eles retornarão... <span className="text-red-400">diferentes</span>. Mais fracos. Marcados pela morte."
+                        </p>
+                        <p className="font-mono text-sm">
+                          "O preço é alto, e as cicatrizes são eternas. Mas o vínculo entre caçador e avatar pode transcender até mesmo a morte."
+                        </p>
+                      </div>
+                    </div>
+                  </div>
 
-              return (
-                <div key={avatar.id} className="relative group">
-                  <div className="absolute -inset-1 bg-gradient-to-r from-purple-500/20 to-red-500/20 rounded-lg blur opacity-50"></div>
+                  <div className="h-px bg-gradient-to-r from-transparent via-purple-500/50 to-transparent mb-6"></div>
+
+                  {/* Tabela de Custos */}
+                  <div className="bg-slate-900/50 rounded-lg p-4">
+                    <h4 className="text-purple-400 font-bold text-sm uppercase tracking-wider mb-3 text-center">
+                      Custos do Ritual
+                    </h4>
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="text-center p-3 bg-slate-800/50 rounded border border-slate-700/50">
+                        <div className="text-slate-400 text-xs mb-2">COMUM</div>
+                        <div className="text-amber-400 font-bold text-sm">500 💰</div>
+                        <div className="text-purple-400 font-bold text-sm">50 💎</div>
+                      </div>
+                      <div className="text-center p-3 bg-slate-800/50 rounded border border-purple-700/50">
+                        <div className="text-purple-400 text-xs mb-2">RARO</div>
+                        <div className="text-amber-400 font-bold text-sm">1000 💰</div>
+                        <div className="text-purple-400 font-bold text-sm">100 💎</div>
+                      </div>
+                      <div className="text-center p-3 bg-slate-800/50 rounded border border-amber-700/50">
+                        <div className="text-amber-400 text-xs mb-2">LENDÁRIO</div>
+                        <div className="text-amber-400 font-bold text-sm">1500 💰</div>
+                        <div className="text-purple-400 font-bold text-sm">150 💎</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Almas Perdidas */}
+              {avataresMortos.length === 0 ? (
+                <div className="text-center py-16">
+                  <div className="text-6xl mb-4 opacity-30">☠️</div>
+                  <h3 className="text-xl font-bold text-slate-400 mb-2">Nenhuma Alma Perdida</h3>
+                  <p className="text-slate-500 text-sm mb-6">Todos os seus avatares ainda caminham entre os vivos...</p>
+                  <button
+                    onClick={voltarAoDashboard}
+                    className="text-purple-400 hover:text-purple-300 transition-colors font-mono text-sm"
+                  >
+                    Retornar ao Dashboard
+                  </button>
+                </div>
+              ) : (
+                <div>
+                  <h3 className="text-center text-purple-400 font-bold text-xl mb-6 uppercase tracking-wider">
+                    ☠️ Almas Aguardando o Ritual ☠️
+                  </h3>
                   
-                  <div className="relative bg-slate-950/90 backdrop-blur-xl border border-purple-900/50 rounded-lg overflow-hidden">
-                    {/* Badge */}
-                    <div className={`px-4 py-2 text-center font-bold text-sm ${
-                      avatar.raridade === 'Lendário' ? 'bg-gradient-to-r from-amber-600 to-yellow-500' :
-                      avatar.raridade === 'Raro' ? 'bg-gradient-to-r from-purple-600 to-pink-600' :
-                      'bg-gradient-to-r from-slate-700 to-slate-600'
-                    }`}>
-                      {avatar.raridade.toUpperCase()} ☠️
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {avataresMortos.map((avatar) => {
+                      const custo = custos[avatar.raridade];
+                      const podeRessuscitar = stats?.moedas >= custo.moedas && stats?.fragmentos >= custo.fragmentos;
+
+                      return (
+                        <div key={avatar.id} className="relative group">
+                          <div className="absolute -inset-1 bg-gradient-to-r from-purple-500/20 to-red-500/20 rounded-lg blur opacity-50 group-hover:opacity-75 transition-all"></div>
+                          
+                          <div className="relative bg-slate-950/90 backdrop-blur-xl border border-purple-900/50 rounded-lg overflow-hidden hover:border-purple-500/50 transition-all">
+                            {/* Badge */}
+                            <div className={`px-4 py-2 text-center font-bold text-sm ${
+                              avatar.raridade === 'Lendário' ? 'bg-gradient-to-r from-amber-600 to-yellow-500' :
+                              avatar.raridade === 'Raro' ? 'bg-gradient-to-r from-purple-600 to-pink-600' :
+                              'bg-gradient-to-r from-slate-700 to-slate-600'
+                            }`}>
+                              {avatar.raridade.toUpperCase()} ☠️
+                            </div>
+
+                            <div className="p-4">
+                              {/* Avatar (cinza/dessaturado) */}
+                              <div className="mb-4 opacity-40 grayscale-[80%] hover:grayscale-[50%] transition-all">
+                                <AvatarSVG avatar={avatar} tamanho={150} />
+                              </div>
+
+                              {/* Info */}
+                              <div className="text-center mb-4">
+                                <h3 className="text-lg font-bold text-slate-300 mb-1">{avatar.nome}</h3>
+                                <p className="text-xs text-slate-500">{avatar.elemento} • Nível {avatar.nivel}</p>
+                              </div>
+
+                              {/* Custo */}
+                              <div className="bg-slate-900/50 rounded p-3 mb-3 border border-slate-800/50">
+                                <div className="text-xs text-slate-500 mb-2 text-center">Custo:</div>
+                                <div className="flex justify-center gap-4">
+                                  <span className={`text-sm font-bold ${stats?.moedas >= custo.moedas ? 'text-amber-400' : 'text-red-400'}`}>
+                                    💰 {custo.moedas}
+                                  </span>
+                                  <span className={`text-sm font-bold ${stats?.fragmentos >= custo.fragmentos ? 'text-purple-400' : 'text-red-400'}`}>
+                                    💎 {custo.fragmentos}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Botão */}
+                              <button
+                                onClick={() => selecionarAvatar(avatar)}
+                                disabled={!podeRessuscitar}
+                                className={`w-full group/btn relative ${!podeRessuscitar ? 'opacity-50 cursor-not-allowed' : ''}`}
+                              >
+                                <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500 to-red-500 rounded blur opacity-50 group-hover/btn:opacity-75 transition-all"></div>
+                                <div className="relative px-4 py-3 bg-slate-950 rounded border border-purple-500/50 transition-all">
+                                  <span className="font-bold text-sm text-purple-300">
+                                    {podeRessuscitar ? '⚰️ INICIAR RITUAL' : '❌ SEM RECURSOS'}
+                                  </span>
+                                </div>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Mensagem de erro */}
+              {mensagem && mensagem.tipo === 'erro' && (
+                <div className="relative group max-w-2xl mx-auto">
+                  <div className="absolute -inset-1 bg-red-500/30 rounded-lg blur"></div>
+                  <div className="relative bg-red-950/50 border border-red-500/30 rounded p-4">
+                    <p className="text-red-400 text-center font-mono text-sm">{mensagem.texto}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ETAPA 2: CONFIRMAÇÃO */}
+          {etapa === 'selecionando' && avatarSelecionado && (
+            <div className="space-y-8 animate-fade-in">
+              <div className="text-center mb-8">
+                <div className="text-6xl mb-4">⚰️</div>
+                <h2 className="text-4xl font-black bg-gradient-to-r from-purple-300 to-red-300 bg-clip-text text-transparent mb-2">
+                  CONFIRMAR RITUAL
+                </h2>
+                <p className="text-slate-400 font-mono text-sm">O ritual de necromancia é irreversível</p>
+              </div>
+
+              <div className="relative group max-w-2xl mx-auto">
+                <div className="absolute -inset-1 bg-gradient-to-r from-purple-500/30 to-red-500/30 rounded-lg blur opacity-75"></div>
+                
+                <div className="relative bg-slate-950/90 backdrop-blur-xl border border-purple-900/30 rounded-lg overflow-hidden">
+                  {/* Avatar Preview */}
+                  <div className="flex justify-center py-6 bg-slate-900/30">
+                    <div className="opacity-50 grayscale-[70%]">
+                      <AvatarSVG avatar={avatarSelecionado} tamanho={200} />
+                    </div>
+                  </div>
+
+                  <div className="p-8">
+                    <h3 className="text-2xl font-bold text-center mb-4 text-purple-300">
+                      {avatarSelecionado.nome}
+                    </h3>
+
+                    {/* Avisos */}
+                    <div className="bg-red-950/30 border border-red-500/30 rounded p-4 mb-6">
+                      <h4 className="text-red-400 font-bold mb-3 text-sm text-center">⚠️ CONSEQUÊNCIAS DO RITUAL:</h4>
+                      <ul className="text-xs text-slate-300 space-y-2">
+                        <li className="flex items-start gap-2">
+                          <span className="text-red-400">•</span>
+                          <span>Stats reduzidos em <span className="text-red-400 font-bold">50%</span></span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-red-400">•</span>
+                          <span>Vínculo resetado para <span className="text-red-400 font-bold">0%</span></span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-red-400">•</span>
+                          <span><span className="text-purple-400 font-bold">Marca da Morte</span> (penalidade temporária)</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-red-400">•</span>
+                          <span>Avatar volta "diferente"</span>
+                        </li>
+                      </ul>
                     </div>
 
-                    <div className="p-4">
-                      {/* SVG do Avatar (cinza/dessaturado) */}
-                      <div className="mb-4 opacity-40 grayscale" dangerouslySetInnerHTML={{ __html: avatar.avatar_svg }} />
-
-                      {/* Info */}
-                      <div className="text-center mb-4">
-                        <h3 className="text-lg font-bold text-slate-300 mb-1">{avatar.nome}</h3>
-                        <p className="text-xs text-slate-500">{avatar.elemento} • Nível {avatar.nivel}</p>
+                    {/* Custo */}
+                    <div className="bg-slate-900/50 rounded p-4 mb-6">
+                      <div className="text-center mb-2">
+                        <span className="text-slate-400 text-sm font-mono">Custo Total do Ritual:</span>
                       </div>
-
-                      {/* Custo */}
-                      <div className="bg-slate-900/50 rounded p-3 mb-3">
-                        <div className="text-xs text-slate-500 mb-2 text-center">Custo do Ritual:</div>
-                        <div className="flex justify-center gap-4">
-                          <span className={`text-sm font-bold ${stats?.moedas >= custo.moedas ? 'text-amber-400' : 'text-red-400'}`}>
-                            💰 {custo.moedas}
-                          </span>
-                          <span className={`text-sm font-bold ${stats?.fragmentos >= custo.fragmentos ? 'text-purple-400' : 'text-red-400'}`}>
-                            💎 {custo.fragmentos}
-                          </span>
-                        </div>
+                      <div className="flex justify-center gap-6">
+                        <span className="text-2xl font-bold text-amber-400">
+                          💰 {custos[avatarSelecionado.raridade].moedas}
+                        </span>
+                        <span className="text-2xl font-bold text-purple-400">
+                          💎 {custos[avatarSelecionado.raridade].fragmentos}
+                        </span>
                       </div>
+                    </div>
 
-                      {/* Botão */}
+                    {/* Botões */}
+                    <div className="flex gap-4">
                       <button
-                        onClick={() => abrirModal(avatar)}
-                        disabled={!podeRessuscitar}
-                        className={`w-full group/btn relative ${!podeRessuscitar ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        onClick={() => setEtapa('introducao')}
+                        className="flex-1 px-6 py-4 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded transition-colors font-bold"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        onClick={iniciarRitual}
+                        className="flex-1 group/btn relative"
                       >
                         <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500 to-red-500 rounded blur opacity-50 group-hover/btn:opacity-75 transition-all"></div>
-                        <div className="relative px-4 py-3 bg-slate-950 rounded border border-purple-500/50 transition-all">
+                        <div className="relative px-6 py-4 bg-slate-950 rounded border border-purple-500/50 transition-all">
                           <span className="font-bold text-purple-300">
-                            {podeRessuscitar ? '⚰️ RESSUSCITAR' : '❌ SEM RECURSOS'}
+                            ⚰️ REALIZAR RITUAL
                           </span>
                         </div>
                       </button>
                     </div>
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+              </div>
+            </div>
+          )}
 
-      {/* Modal de Confirmação */}
-      {modalConfirmar && avatarSelecionado && (
-        <div 
-          className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-          onClick={() => !processando && setModalConfirmar(false)}
-        >
-          <div 
-            className="max-w-lg w-full"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="relative group">
-              <div className="absolute -inset-1 bg-gradient-to-r from-purple-500/50 to-red-500/50 rounded-lg blur opacity-75"></div>
+          {/* ETAPA 3: RITUAL */}
+          {etapa === 'ritual' && (
+            <div className="text-center space-y-8 animate-fade-in">
+              <div className="text-8xl animate-pulse-ritual mb-8">⚰️</div>
               
-              <div className="relative bg-slate-950/95 backdrop-blur-xl border border-purple-900/50 rounded-lg overflow-hidden">
-                {/* Header */}
-                <div className="p-6 text-center bg-gradient-to-r from-purple-900/30 to-red-900/30 border-b border-purple-500/30">
-                  <div className="text-4xl mb-2">⚰️</div>
-                  <h2 className="text-2xl font-bold text-purple-300">RITUAL DE NECROMANCIA</h2>
-                </div>
-
-                <div className="p-6">
-                  {/* Avisos */}
-                  <div className="bg-red-950/30 border border-red-500/30 rounded p-4 mb-4">
-                    <h3 className="text-red-400 font-bold mb-2 text-sm">⚠️ CONSEQUÊNCIAS DO RITUAL:</h3>
-                    <ul className="text-xs text-slate-300 space-y-1">
-                      <li>• Stats reduzidos em 50%</li>
-                      <li>• Vínculo resetado para 0%</li>
-                      <li>• Marca da Morte (penalidade temporária)</li>
-                      <li>• Avatar volta "diferente"</li>
-                    </ul>
+              <div className="relative group max-w-2xl mx-auto">
+                <div className="absolute -inset-1 bg-gradient-to-r from-purple-500/50 via-red-500/50 to-purple-500/50 rounded-lg blur animate-pulse"></div>
+                
+                <div className="relative bg-slate-950/90 backdrop-blur-xl border border-purple-900/30 rounded-lg p-8">
+                  <h2 className="text-3xl font-black bg-gradient-to-r from-purple-300 via-red-300 to-purple-300 bg-clip-text text-transparent mb-6">
+                    RITUAL EM ANDAMENTO
+                  </h2>
+                  
+                  <div className="space-y-4 text-slate-300 font-mono text-sm mb-8">
+                    <p className="animate-pulse">Invocando energias ancestrais...</p>
+                    <p className="animate-pulse" style={{animationDelay: '0.5s'}}>Atravessando o véu entre mundos...</p>
+                    <p className="animate-pulse" style={{animationDelay: '1s'}}>Reanimando a essência perdida...</p>
+                    <p className="animate-pulse text-red-400" style={{animationDelay: '1.5s'}}>A morte está sendo desafiada...</p>
                   </div>
 
-                  {/* Info do Avatar */}
-                  <div className="text-center mb-4">
-                    <h3 className="text-lg font-bold text-slate-300">{avatarSelecionado.nome}</h3>
-                    <p className="text-sm text-slate-500">{avatarSelecionado.elemento} • {avatarSelecionado.raridade}</p>
-                  </div>
-
-                  {/* Mensagem */}
-                  {mensagem && (
-                    <div className={`p-3 rounded mb-4 ${
-                      mensagem.tipo === 'sucesso' 
-                        ? 'bg-green-950/50 border border-green-500/30 text-green-400'
-                        : 'bg-red-950/50 border border-red-500/30 text-red-400'
-                    }`}>
-                      <p className="text-sm text-center">{mensagem.texto}</p>
+                  {/* Círculo de necromancia */}
+                  <div className="relative w-32 h-32 mx-auto mb-6">
+                    <div className="absolute inset-0 border-4 border-purple-500/30 rounded-full animate-spin-slow"></div>
+                    <div className="absolute inset-2 border-4 border-red-500/30 rounded-full animate-spin-reverse"></div>
+                    <div className="absolute inset-0 flex items-center justify-center text-4xl animate-pulse">
+                      💀
                     </div>
-                  )}
+                  </div>
 
-                  {/* Botões */}
-                  <div className="flex gap-3">
-                    <button
-                      onClick={() => setModalConfirmar(false)}
-                      disabled={processando}
-                      className="flex-1 px-4 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded transition-colors disabled:opacity-50"
-                    >
-                      Cancelar
-                    </button>
-                    <button
-                      onClick={ressuscitar}
-                      disabled={processando}
-                      className="flex-1 group/btn relative disabled:opacity-50"
-                    >
-                      <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500 to-red-500 rounded blur opacity-50 group-hover/btn:opacity-75 transition-all"></div>
-                      <div className="relative px-4 py-3 bg-slate-950 rounded border border-purple-500/50 transition-all">
-                        <span className="font-bold text-purple-300">
-                          {processando ? 'REALIZANDO...' : '⚰️ RESSUSCITAR'}
-                        </span>
-                      </div>
-                    </button>
+                  {/* Barra de loading */}
+                  <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-purple-500 via-red-500 to-purple-500 animate-loading-bar"></div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
+
+          {/* ETAPA 4: REVELAÇÃO */}
+          {etapa === 'revelacao' && avatarSelecionado && (
+            <div className="space-y-8 animate-fade-in">
+              <div className="text-center mb-8">
+                <div className="text-6xl mb-4 animate-bounce-slow">✨</div>
+                <h2 className="text-4xl font-black bg-gradient-to-r from-purple-300 via-red-300 to-purple-300 bg-clip-text text-transparent mb-2">
+                  RITUAL COMPLETO
+                </h2>
+                <p className="text-slate-400 font-mono text-sm">O avatar retornou do além...</p>
+              </div>
+
+              <div className="relative group max-w-2xl mx-auto">
+                <div className="flex justify-center py-8 bg-slate-900/30 rounded-t-lg">
+                  <AvatarSVG avatar={avatarSelecionado} tamanho={250} />
+                </div>
+
+                <div className="absolute -inset-1 bg-gradient-to-r from-purple-500/30 via-red-500/30 to-purple-500/30 rounded-lg blur opacity-75"></div>
+                
+                <div className="relative bg-slate-950/90 backdrop-blur-xl border border-purple-900/30 rounded-lg overflow-hidden">
+                  <div className="bg-gradient-to-r from-purple-600 to-red-600 p-4 text-center">
+                    <span className="font-bold text-lg">☠️ RESSUSCITADO ☠️</span>
+                  </div>
+
+                  <div className="p-8">
+                    <h3 className="text-3xl font-black text-center mb-4 text-purple-300">
+                      {avatarSelecionado.nome}
+                    </h3>
+
+                    {/* Marca da Morte */}
+                    <div className="bg-red-950/30 border border-red-500/30 rounded p-4 mb-6">
+                      <div className="flex items-center gap-3 justify-center">
+                        <span className="text-2xl">💀</span>
+                        <div className="text-center">
+                          <div className="text-red-400 font-bold text-sm">MARCA DA MORTE</div>
+                          <div className="text-xs text-slate-400">Stats reduzidos • Vínculo 0%</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="h-px bg-gradient-to-r from-transparent via-purple-500/50 to-transparent mb-6"></div>
+
+                    {/* Stats (reduzidos) */}
+                    <div className="grid grid-cols-3 gap-4 mb-6 text-center">
+                      <div>
+                        <div className="text-slate-500 text-xs mb-1">Nível</div>
+                        <div className="text-cyan-400 font-bold">{avatarSelecionado.nivel}</div>
+                      </div>
+                      <div>
+                        <div className="text-slate-500 text-xs mb-1">Vínculo</div>
+                        <div className="text-red-400 font-bold">0%</div>
+                      </div>
+                      <div>
+                        <div className="text-slate-500 text-xs mb-1">Status</div>
+                        <div className="text-green-400 font-bold flex items-center justify-center gap-1">
+                          <span>Vivo</span>
+                          <span className="text-red-400 text-xs">💀</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Mensagem do Necromante */}
+                    <div className="bg-slate-900/50 rounded p-4 mb-6 border border-purple-500/20">
+                      <p className="text-slate-300 text-sm font-mono italic text-center">
+                        "Está feito. Seu avatar retornou, mas carrega as cicatrizes da morte. 
+                        Cuide bem dele desta vez, caçador..."
+                      </p>
+                    </div>
+
+                    {/* Botões */}
+                    <div className="flex gap-4">
+                      <button
+                        onClick={voltarAoDashboard}
+                        className="flex-1 px-6 py-4 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded transition-colors font-bold"
+                      >
+                        Dashboard
+                      </button>
+                      <button
+                        onClick={verAvatares}
+                        className="flex-1 group/btn relative"
+                      >
+                        <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500 to-blue-500 rounded blur opacity-50 group-hover/btn:opacity-75 transition-all"></div>
+                        <div className="relative px-6 py-4 bg-slate-950 rounded border border-cyan-500/50 transition-all">
+                          <span className="font-bold text-cyan-300">
+                            Ver Avatares
+                          </span>
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-      )}
+      </div>
+
+      {/* Efeito de scan (mais lento e sombrio) */}
+      <div className="absolute inset-0 pointer-events-none opacity-[0.01]">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-500/50 to-transparent animate-scan-slow"></div>
+      </div>
+
+      {/* Névoa flutuante */}
+      <div className="absolute inset-0 pointer-events-none opacity-10">
+        <div className="absolute bottom-0 left-0 w-full h-64 bg-gradient-to-t from-purple-900/30 to-transparent animate-pulse-slow"></div>
+      </div>
+
+      <style jsx>{`
+        @keyframes scan-slow {
+          0% {
+            transform: translateY(-100%);
+          }
+          100% {
+            transform: translateY(100%);
+          }
+        }
+        
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes pulse-slow {
+          0%, 100% {
+            opacity: 0.3;
+          }
+          50% {
+            opacity: 0.6;
+          }
+        }
+
+        @keyframes pulse-ritual {
+          0%, 100% {
+            opacity: 0.5;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 1;
+            transform: scale(1.1);
+          }
+        }
+
+        @keyframes spin-slow {
+          from {
+            transform: rotate(0deg);
+          }
+          to {
+            transform: rotate(360deg);
+          }
+        }
+
+        @keyframes spin-reverse {
+          from {
+            transform: rotate(360deg);
+          }
+          to {
+            transform: rotate(0deg);
+          }
+        }
+
+        @keyframes loading-bar {
+          0% {
+            width: 0%;
+          }
+          100% {
+            width: 100%;
+          }
+        }
+
+        @keyframes bounce-slow {
+          0%, 100% {
+            transform: translateY(0);
+          }
+          50% {
+            transform: translateY(-20px);
+          }
+        }
+
+        .animate-fade-in {
+          animation: fade-in 0.8s ease-out;
+        }
+
+        .animate-pulse-slow {
+          animation: pulse-slow 4s ease-in-out infinite;
+        }
+
+        .animate-pulse-ritual {
+          animation: pulse-ritual 2s ease-in-out infinite;
+        }
+
+        .animate-spin-slow {
+          animation: spin-slow 4s linear infinite;
+        }
+
+        .animate-spin-reverse {
+          animation: spin-reverse 3s linear infinite;
+        }
+
+        .animate-loading-bar {
+          animation: loading-bar 3s ease-out;
+        }
+
+        .animate-scan-slow {
+          animation: scan-slow 8s linear infinite;
+        }
+
+        .animate-bounce-slow {
+          animation: bounce-slow 2s ease-in-out infinite;
+        }
+      `}</style>
     </div>
   );
 }
