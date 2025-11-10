@@ -512,7 +512,7 @@ export default function DashboardPage() {
               <div className="relative bg-slate-950/80 backdrop-blur-xl border border-cyan-900/30 rounded-lg p-5 group-hover:border-cyan-500/50 transition-all">
                 <div className="flex items-center gap-4">
                   <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-lg flex items-center justify-center border border-cyan-500/30 group-hover:border-cyan-400/50 transition-all">
-                    <span className="text-2xl">⚔️</span>
+                    <span className="text-2xl">📚</span>
                   </div>
                   <div className="flex-1 text-left">
                     <div className="font-bold text-cyan-300 text-base mb-0.5 group-hover:text-cyan-200 transition-colors">
@@ -572,6 +572,33 @@ export default function DashboardPage() {
                   </div>
                   <div className="text-slate-600 text-xl">
                     🔒
+                  </div>
+                </div>
+              </div>
+            </button>
+
+            {/* Botão Arena (habilitado) */}
+            <button
+              onClick={() => router.push("/arena")}
+              className="w-full group relative"
+            >
+              <div className="absolute -inset-1 bg-gradient-to-r from-red-500/20 via-orange-500/20 to-red-500/20 rounded-lg blur opacity-50 group-hover:opacity-75 transition-all duration-300"></div>
+              
+              <div className="relative bg-slate-950/80 backdrop-blur-xl border border-red-900/30 rounded-lg p-5 group-hover:border-red-500/50 transition-all">
+                <div className="flex items-center gap-4">
+                  <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-red-500/20 to-orange-500/20 rounded-lg flex items-center justify-center border border-red-500/30 group-hover:border-red-400/50 transition-all">
+                    <span className="text-2xl">⚔️</span>
+                  </div>
+                  <div className="flex-1 text-left">
+                    <div className="font-bold text-red-300 text-base mb-0.5 group-hover:text-red-200 transition-colors">
+                      ARENA
+                    </div>
+                    <div className="text-xs text-slate-400 font-mono">
+                      Batalhas PvP e torneios
+                    </div>
+                  </div>
+                  <div className="text-red-400 group-hover:translate-x-1 group-hover:text-red-300 transition-all text-xl">
+                    →
                   </div>
                 </div>
               </div>
@@ -708,4 +735,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
 
