@@ -242,7 +242,7 @@ export async function POST(request) {
           elemento: avatar.elemento
         }]);
     } catch (error) {
-      console.log("Histórico não registrado (tabela pode não existir)");
+      console.log("Erro ao registrar histórico:", error);
     }
 
     // Mensagem especial baseada na raridade
