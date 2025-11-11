@@ -4,13 +4,109 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AvatarSVG from '../components/AvatarSVG';
 
+// ============================================================
+// FUNÇÕES AUXILIARES
+// ============================================================
+
+// Função para obter informações de exaustão
+const getInfoExaustao = (exaustao) => {
+  if (exaustao >= 100) {
+    return { emoji: '💀💀', cor: 'text-gray-400', nome: 'COLAPSADO', corBg: 'bg-gray-900', corBorda: 'border-gray-700' };
+  } else if (exaustao >= 80) {
+    return { emoji: '💀', cor: 'text-red-600', nome: 'COLAPSO IMINENTE', corBg: 'bg-red-900/30', corBorda: 'border-red-700' };
+  } else if (exaustao >= 60) {
+    return { emoji: '🔴', cor: 'text-red-400', nome: 'EXAUSTO', corBg: 'bg-red-900/20', corBorda: 'border-red-600' };
+  } else if (exaustao >= 40) {
+    return { emoji: '🟠', cor: 'text-orange-400', nome: 'CANSADO', corBg: 'bg-orange-900/20', corBorda: 'border-orange-600' };
+  } else if (exaustao >= 20) {
+    return { emoji: '💛', cor: 'text-yellow-400', nome: 'ALERTA', corBg: 'bg-yellow-900/20', corBorda: 'border-yellow-600' };
+  } else {
+    return { emoji: '💚', cor: 'text-green-400', nome: 'DESCANSADO', corBg: 'bg-green-900/20', corBorda: 'border-green-600' };
+  }
+};
+
+// Função para calcular XP necessário para próximo nível
+const calcularXPNecessario = (nivel) => {
+  const XP_BASE = 100;
+  const MULTIPLICADOR = 1.15;
+  return Math.floor(XP_BASE * Math.pow(MULTIPLICADOR, nivel - 1));
+};
+
+// ============================================================
+// COMPONENTES
+// ============================================================
+
+// Componente: Badge de Exaustão
+const BadgeExaustao = ({ exaustao, tamanho = 'normal' }) => {
+  const info = getInfoExaustao(exaustao || 0);
+  const isSmall = tamanho === 'small';
+  
+  return (
+    <div className={`${info.corBg} ${isSmall ? 'px-2 py-1' : 'px-3 py-1.5'} rounded-lg border ${info.corBorda} flex items-center gap-2`}>
+      <span className={isSmall ? 'text-xs' : 'text-sm'}>{info.emoji}</span>
+      <div className="flex flex-col">
+        <span className={`${info.cor} font-bold ${isSmall ? 'text-[10px]' : 'text-xs'}`}>
+          {info.nome}
+        </span>
+        {!isSmall && (
+          <span className="text-slate-500 text-[9px]">
+            {exaustao || 0}/100
+          </span>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Componente: Barra de Exaustão
+const BarraExaustao = ({ exaustao }) => {
+  const info = getInfoExaustao(exaustao || 0);
+  
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <span className="text-xs text-slate-500 uppercase">Exaustão</span>
+        <span className={`text-xs font-bold ${info.cor}`}>
+          {info.emoji} {exaustao || 0}/100
+        </span>
+      </div>
+      <div className="w-full bg-slate-700 rounded-full h-2 overflow-hidden">
+        <div 
+          className={`h-full ${
+            exaustao >= 80 ? 'bg-red-500' :
+            exaustao >= 60 ? 'bg-orange-500' :
+            exaustao >= 40 ? 'bg-yellow-500' :
+            exaustao >= 20 ? 'bg-green-400' :
+            'bg-green-500'
+          } transition-all`}
+          style={{width: `${Math.min(exaustao || 0, 100)}%`}}
+        ></div>
+      </div>
+      {exaustao >= 80 && (
+        <p className="text-[10px] text-red-400 font-mono">
+          ⚠️ Não pode lutar! Necessita descanso.
+        </p>
+      )}
+      {exaustao >= 60 && exaustao < 80 && (
+        <p className="text-[10px] text-orange-400 font-mono">
+          ⚠️ Risco alto! Penalidades severas.
+        </p>
+      )}
+    </div>
+  );
+};
+
+// ============================================================
+// COMPONENTE PRINCIPAL
+// ============================================================
+
 export default function AvatarsPage() {
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [avatares, setAvatares] = useState([]);
   const [avatarSelecionado, setAvatarSelecionado] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [modalConfirmacao, setModalConfirmacao] = useState(null); // {tipo: 'sucesso'/'erro', mensagem: ''}
+  const [modalConfirmacao, setModalConfirmacao] = useState(null);
   const [ativando, setAtivando] = useState(false);
 
   useEffect(() => {
@@ -45,7 +141,7 @@ export default function AvatarsPage() {
   };
 
   const ativarAvatar = async (avatarId, avatarNome) => {
-    if (ativando) return; // Previne cliques múltiplos
+    if (ativando) return;
     
     setAtivando(true);
     
@@ -60,18 +156,14 @@ export default function AvatarsPage() {
 
       if (response.ok) {
         console.log('Avatar ativado com sucesso:', data.avatar);
-        
-        // IMPORTANTE: Recarregar avatares do banco após ativar
         await carregarAvatares(user.id);
         
-        // Mostrar modal de sucesso
         setModalConfirmacao({
           tipo: 'sucesso',
           mensagem: `${avatarNome} foi ativado com sucesso!`,
           avatar: data.avatar
         });
       } else {
-        // Mostrar modal de erro
         setModalConfirmacao({
           tipo: 'erro',
           mensagem: data.message || 'Erro ao ativar avatar'
@@ -140,7 +232,6 @@ export default function AvatarsPage() {
     return emojis[elemento] || '⭐';
   };
 
-  // Separar avatar ativo dos outros
   const avatarAtivo = avatares.find(av => av.ativo && av.vivo);
   const avataresInativos = avatares.filter(av => !av.ativo || !av.vivo);
 
@@ -251,7 +342,7 @@ export default function AvatarsPage() {
                   </div>
                 </div>
                 
-                {/* Badge Marca da Morte (se tiver) */}
+                {/* Badge Marca da Morte */}
                 {avatarAtivo.marca_morte && (
                   <div className="absolute top-28 right-4 z-10">
                     <div className="relative">
@@ -311,20 +402,52 @@ export default function AvatarsPage() {
                       </div>
                     </div>
 
-                    {/* Progresso */}
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="bg-slate-900/50 rounded p-3">
-                        <div className="text-xs text-slate-500 mb-2">NÍVEL</div>
-                        <div className="text-xl font-bold text-cyan-400">{avatarAtivo.nivel}</div>
-                        <div className="w-full bg-slate-700 rounded-full h-1.5 mt-2">
-                          <div className="bg-cyan-400 h-1.5 rounded-full" style={{width: `${(avatarAtivo.experiencia % 100)}%`}}></div>
+                    {/* Progresso e Status */}
+                    <div className="space-y-3">
+                      {/* Nível e XP */}
+                      <div className="bg-slate-900/50 rounded-lg p-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xs text-slate-500 uppercase">Nível</span>
+                          <span className="text-xl font-bold text-cyan-400">{avatarAtivo.nivel}</span>
+                        </div>
+                        <div className="w-full bg-slate-700 rounded-full h-2 mb-1">
+                          <div 
+                            className="bg-cyan-400 h-2 rounded-full transition-all" 
+                            style={{width: `${((avatarAtivo.experiencia || 0) / calcularXPNecessario(avatarAtivo.nivel)) * 100}%`}}
+                          ></div>
+                        </div>
+                        <div className="flex justify-between text-[10px] text-slate-500">
+                          <span>{avatarAtivo.experiencia || 0} XP</span>
+                          <span>{calcularXPNecessario(avatarAtivo.nivel)} XP</span>
                         </div>
                       </div>
-                      <div className="bg-slate-900/50 rounded p-3">
-                        <div className="text-xs text-slate-500 mb-2">VÍNCULO</div>
-                        <div className="text-xl font-bold text-purple-400">{avatarAtivo.vinculo}%</div>
-                        <div className="w-full bg-slate-700 rounded-full h-1.5 mt-2">
-                          <div className="bg-purple-400 h-1.5 rounded-full" style={{width: `${avatarAtivo.vinculo}%`}}></div>
+
+                      {/* Vínculo */}
+                      <div className="bg-slate-900/50 rounded-lg p-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xs text-slate-500 uppercase">Vínculo</span>
+                          <span className="text-xl font-bold text-purple-400">{avatarAtivo.vinculo}%</span>
+                        </div>
+                        <div className="w-full bg-slate-700 rounded-full h-2">
+                          <div 
+                            className="bg-purple-400 h-2 rounded-full transition-all" 
+                            style={{width: `${avatarAtivo.vinculo || 0}%`}}
+                          ></div>
+                        </div>
+                      </div>
+
+                      {/* Exaustão */}
+                      <div className="bg-slate-900/50 rounded-lg p-3">
+                        <BarraExaustao exaustao={avatarAtivo.exaustao} />
+                      </div>
+
+                      {/* Total de Stats */}
+                      <div className="bg-gradient-to-r from-slate-900/50 to-slate-800/50 rounded-lg p-3 border border-cyan-500/20">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-slate-500 uppercase">Total de Poder</span>
+                          <span className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
+                            {(avatarAtivo.forca || 0) + (avatarAtivo.agilidade || 0) + (avatarAtivo.resistencia || 0) + (avatarAtivo.foco || 0)}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -376,7 +499,8 @@ export default function AvatarsPage() {
                         ☠️ MORTO
                       </div>
                     )}
-                    {/* Badge Marca da Morte (ADICIONAR ESTE BLOCO) */}
+                    
+                    {/* Badge Marca da Morte */}
                     {avatar.vivo && avatar.marca_morte && (
                       <div className="absolute top-12 left-2 bg-red-900/90 text-white text-xs font-bold px-2 py-1 rounded z-10 border border-red-500/50 flex items-center gap-1">
                         <span>💀</span>
@@ -404,30 +528,26 @@ export default function AvatarsPage() {
                       {/* Stats resumidos */}
                       <div className="grid grid-cols-4 gap-1 mb-3">
                         <div className="text-center">
-                          <div className={`font-bold text-sm ${avatar.marca_morte ? 'text-red-400' : 'text-red-400'}`}>
+                          <div className="font-bold text-sm text-red-400">
                             {avatar.forca}
-                            {avatar.marca_morte && <span className="text-[8px] ml-0.5">💀</span>}
                           </div>
                           <div className="text-[10px] text-slate-500">FOR</div>
                         </div>
                         <div className="text-center">
-                          <div className={`font-bold text-sm ${avatar.marca_morte ? 'text-green-400/70' : 'text-green-400'}`}>
+                          <div className="font-bold text-sm text-green-400">
                             {avatar.agilidade}
-                            {avatar.marca_morte && <span className="text-[8px] ml-0.5">💀</span>}
                           </div>
                           <div className="text-[10px] text-slate-500">AGI</div>
                         </div>
                         <div className="text-center">
-                          <div className={`font-bold text-sm ${avatar.marca_morte ? 'text-blue-400/70' : 'text-blue-400'}`}>
+                          <div className="font-bold text-sm text-blue-400">
                             {avatar.resistencia}
-                            {avatar.marca_morte && <span className="text-[8px] ml-0.5">💀</span>}
                           </div>
                           <div className="text-[10px] text-slate-500">RES</div>
                         </div>
                         <div className="text-center">
-                          <div className={`font-bold text-sm ${avatar.marca_morte ? 'text-purple-400/70' : 'text-purple-400'}`}>
+                          <div className="font-bold text-sm text-purple-400">
                             {avatar.foco}
-                            {avatar.marca_morte && <span className="text-[8px] ml-0.5">💀</span>}
                           </div>
                           <div className="text-[10px] text-slate-500">FOC</div>
                         </div>
@@ -439,18 +559,59 @@ export default function AvatarsPage() {
                         <span>Vínculo: {avatar.vinculo}%</span>
                       </div>
 
+                      {/* Badge de Exaustão */}
+                      <div className="mb-3 flex justify-center">
+                        <BadgeExaustao exaustao={avatar.exaustao} tamanho="small" />
+                      </div>
+
+                      {/* Total de Stats */}
+                      <div className="bg-slate-900/30 rounded p-2 mb-3 border border-cyan-500/10">
+                        <div className="text-center">
+                          <div className="text-[9px] text-slate-500 uppercase">Poder Total</div>
+                          <div className="text-lg font-bold text-cyan-400">
+                            {(avatar.forca || 0) + (avatar.agilidade || 0) + (avatar.resistencia || 0) + (avatar.foco || 0)}
+                          </div>
+                        </div>
+                      </div>
+
                       {/* Botão ativar */}
                       {!avatar.ativo && avatar.vivo && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            ativarAvatar(avatar.id, avatar.nome);
-                          }}
-                          disabled={ativando}
-                          className="w-full py-2 bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          {ativando ? 'Ativando...' : 'Ativar'}
-                        </button>
+                        <>
+                          {/* Aviso se exausto */}
+                          {(avatar.exaustao || 0) >= 60 && (
+                            <div className="mb-2 bg-red-900/30 border border-red-500/50 rounded p-2">
+                              <p className="text-[10px] text-red-400 text-center font-mono">
+                                ⚠️ Avatar exausto! Considere descansar.
+                              </p>
+                            </div>
+                          )}
+                          
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if ((avatar.exaustao || 0) >= 80) {
+                                alert('Avatar está colapsado e não pode lutar! Deixe-o descansar.');
+                                return;
+                              }
+                              ativarAvatar(avatar.id, avatar.nome);
+                            }}
+                            disabled={ativando || (avatar.exaustao || 0) >= 100}
+                            className={`w-full py-2 text-white text-xs font-bold rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                              (avatar.exaustao || 0) >= 60 
+                                ? 'bg-orange-600 hover:bg-orange-500' 
+                                : 'bg-cyan-600 hover:bg-cyan-500'
+                            }`}
+                          >
+                            {(avatar.exaustao || 0) >= 100 
+                              ? '💀 Colapsado' 
+                              : ativando 
+                                ? 'Ativando...' 
+                                : (avatar.exaustao || 0) >= 60
+                                  ? '⚠️ Ativar (Exausto)'
+                                  : 'Ativar'
+                            }
+                          </button>
+                        </>
                       )}
                     </div>
                   </div>
@@ -536,7 +697,7 @@ export default function AvatarsPage() {
           onClick={() => setAvatarSelecionado(null)}
         >
           <div 
-            className="max-w-4xl w-full"
+            className="max-w-4xl w-full max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="relative group">
@@ -563,7 +724,6 @@ export default function AvatarsPage() {
                     <div className="space-y-4">
                       {/* Avatar em destaque */}
                       <div className={`bg-slate-900/70 rounded-lg p-6 aspect-square border-2 ${getCorBorda(avatarSelecionado.raridade)} flex items-center justify-center relative overflow-hidden`}>
-                        {/* Efeito de brilho de fundo */}
                         <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-purple-500/5"></div>
                         <div className="relative">
                           <AvatarSVG avatar={avatarSelecionado} tamanho={280} />
@@ -626,20 +786,58 @@ export default function AvatarsPage() {
                       {/* Progresso */}
                       <div>
                         <h4 className="text-cyan-400 font-bold text-xs uppercase tracking-wider mb-3">Progresso</h4>
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-3">
+                          {/* Nível */}
                           <div className="bg-slate-900/50 rounded-lg p-3">
-                            <div className="text-xs text-slate-500 mb-2 uppercase">Nível</div>
-                            <div className="text-xl font-bold text-cyan-400 mb-2">{avatarSelecionado.nivel}</div>
-                            <div className="w-full bg-slate-700 rounded-full h-1.5">
-                              <div className="bg-cyan-400 h-1.5 rounded-full transition-all" style={{width: `${(avatarSelecionado.experiencia % 100)}%`}}></div>
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-xs text-slate-500 uppercase">Nível</span>
+                              <span className="text-xl font-bold text-cyan-400">{avatarSelecionado.nivel}</span>
+                            </div>
+                            <div className="w-full bg-slate-700 rounded-full h-2 mb-1">
+                              <div 
+                                className="bg-cyan-400 h-2 rounded-full transition-all" 
+                                style={{width: `${((avatarSelecionado.experiencia || 0) / calcularXPNecessario(avatarSelecionado.nivel)) * 100}%`}}
+                              ></div>
+                            </div>
+                            <div className="flex justify-between text-[10px] text-slate-500">
+                              <span>{avatarSelecionado.experiencia || 0} XP</span>
+                              <span>{calcularXPNecessario(avatarSelecionado.nivel)} XP</span>
                             </div>
                           </div>
+
+                          {/* Vínculo */}
                           <div className="bg-slate-900/50 rounded-lg p-3">
-                            <div className="text-xs text-slate-500 mb-2 uppercase">Vínculo</div>
-                            <div className="text-xl font-bold text-purple-400 mb-2">{avatarSelecionado.vinculo}%</div>
-                            <div className="w-full bg-slate-700 rounded-full h-1.5">
-                              <div className="bg-purple-400 h-1.5 rounded-full transition-all" style={{width: `${avatarSelecionado.vinculo}%`}}></div>
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-xs text-slate-500 uppercase">Vínculo</span>
+                              <span className="text-xl font-bold text-purple-400">{avatarSelecionado.vinculo}%</span>
                             </div>
+                            <div className="w-full bg-slate-700 rounded-full h-2">
+                              <div 
+                                className="bg-purple-400 h-2 rounded-full transition-all" 
+                                style={{width: `${avatarSelecionado.vinculo || 0}%`}}
+                              ></div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Exaustão */}
+                      <div>
+                        <h4 className="text-cyan-400 font-bold text-xs uppercase tracking-wider mb-3">Condição Física</h4>
+                        <div className="bg-slate-900/50 rounded-lg p-4">
+                          <BarraExaustao exaustao={avatarSelecionado.exaustao} />
+                        </div>
+                      </div>
+
+                      {/* Total de Poder */}
+                      <div className="bg-gradient-to-r from-slate-900/50 to-slate-800/50 rounded-lg p-4 border border-cyan-500/30">
+                        <div className="text-center">
+                          <div className="text-xs text-slate-500 uppercase mb-2">Poder Total</div>
+                          <div className="text-4xl font-black bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                            {(avatarSelecionado.forca || 0) + (avatarSelecionado.agilidade || 0) + (avatarSelecionado.resistencia || 0) + (avatarSelecionado.foco || 0)}
+                          </div>
+                          <div className="text-xs text-slate-500 mt-1">
+                            Raridade: {avatarSelecionado.raridade}
                           </div>
                         </div>
                       </div>
@@ -691,7 +889,6 @@ export default function AvatarsPage() {
       )}
       
       <style jsx>{`
-        /* Scrollbar customizada para habilidades */
         .custom-scrollbar::-webkit-scrollbar {
           width: 6px;
         }
