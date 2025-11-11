@@ -862,6 +862,8 @@ export default function AvatarsPage() {
           </div>
         </div>
       )}
+      
+      <style jsx>{`
                     {/* Coluna Esquerda - Imagem + Lore */}
                     <div className="space-y-4">
                       {/* Avatar em destaque */}
