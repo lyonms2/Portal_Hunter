@@ -693,11 +693,11 @@ export default function AvatarsPage() {
       {/* Modal de Detalhes do Avatar */}
       {avatarSelecionado && (
         <div 
-          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-aut"
           onClick={() => setAvatarSelecionado(null)}
         >
           <div 
-            className="max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+            className="max-w-4xl w-full my-8"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="relative group">
