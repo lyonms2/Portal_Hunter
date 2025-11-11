@@ -70,7 +70,7 @@ export default function AvatarCard({
 
         <div className="p-4">
           {/* Visual do avatar */}
-          <div className={`bg-slate-900/50 rounded p-4 aspect-square border ${getCorBorda(avatar.raridade)} flex items-center justify-center mb-3`}>
+          <div className={`bg-slate-900/50 rounded p-2 aspect-square border ${getCorBorda(avatar.raridade)} flex items-center justify-center mb-3`}>
             <AvatarSVG avatar={avatar} tamanho={120} />
           </div>
 
