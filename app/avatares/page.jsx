@@ -693,7 +693,7 @@ export default function AvatarsPage() {
       {/* Modal de Detalhes do Avatar */}
       {avatarSelecionado && (
         <div 
-          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-aut"
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto"
           onClick={() => setAvatarSelecionado(null)}
         >
           <div 
@@ -720,19 +720,19 @@ export default function AvatarsPage() {
       
                 <div className="p-6">
                   <div className="grid md:grid-cols-2 gap-6">
-                    {/* Coluna Esquerda - Imagem do Avatar */}
+                    {/* Coluna Esquerda - Imagem + Lore */}
                     <div className="space-y-4">
                       {/* Avatar em destaque */}
                       <div className={`bg-slate-900/70 rounded-lg p-6 aspect-square border-2 ${getCorBorda(avatarSelecionado.raridade)} flex items-center justify-center relative overflow-hidden`}>
                         <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-purple-500/5"></div>
                         <div className="relative">
-                          <AvatarSVG avatar={avatarSelecionado} tamanho={280} />
+                          <AvatarSVG avatar={avatarSelecionado} tamanho={240} />
                         </div>
                       </div>
       
                       {/* Nome e Elemento */}
                       <div className="text-center">
-                        <h3 className="text-3xl font-black mb-2 bg-gradient-to-r from-cyan-300 to-purple-300 bg-clip-text text-transparent">
+                        <h3 className="text-2xl font-black mb-2 bg-gradient-to-r from-cyan-300 to-purple-300 bg-clip-text text-transparent">
                           {avatarSelecionado.nome}
                         </h3>
                         
@@ -741,24 +741,62 @@ export default function AvatarsPage() {
                             {getEmojiElemento(avatarSelecionado.elemento)} {avatarSelecionado.elemento}
                           </span>
                           
-                          {/* Badge Marca da Morte */}
                           {avatarSelecionado.marca_morte && (
-                            <span className="inline-block px-3 py-1 bg-red-900/80 border border-red-500/50 rounded-full text-xs font-bold text-white">
-                              💀 MARCA DA MORTE
+                            <span className="inline-block px-2 py-1 bg-red-900/80 border border-red-500/50 rounded-full text-xs font-bold text-white">
+                              💀
                             </span>
                           )}
                         </div>
                       </div>
       
-                      {/* Descrição */}
+                      {/* Descrição/Lore */}
                       <div className="bg-slate-900/50 rounded-lg p-4 border border-slate-700/30">
-                        <p className="text-slate-300 text-sm leading-relaxed italic text-center">
+                        <div className="text-xs text-cyan-400 font-bold uppercase mb-2 tracking-wider">Lore</div>
+                        <p className="text-slate-300 text-sm leading-relaxed italic">
                           "{avatarSelecionado.descricao}"
                         </p>
                       </div>
+
+                      {/* Habilidades */}
+                      <div className="bg-slate-900/50 rounded-lg p-4 border border-slate-700/30">
+                        <div className="text-xs text-cyan-400 font-bold uppercase mb-3 tracking-wider">Habilidades</div>
+                        <div className="space-y-2 max-h-[180px] overflow-y-auto pr-2 custom-scrollbar">
+                          {avatarSelecionado.habilidades.map((hab, index) => (
+                            <div key={index} className="bg-slate-800/50 rounded p-2 border border-slate-700/20">
+                              <div className="font-bold text-purple-400 text-xs mb-1">{hab.nome}</div>
+                              <div className="text-slate-400 text-[11px] leading-relaxed">{hab.descricao}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Status (Nível, Vínculo, Status) */}
+                      <div className="grid grid-cols-3 gap-3">
+                        <div className="bg-slate-900/50 rounded-lg p-3 text-center border border-cyan-500/20">
+                          <div className="text-xs text-slate-500 mb-1">Nível</div>
+                          <div className="text-xl font-bold text-cyan-400">{avatarSelecionado.nivel}</div>
+                        </div>
+                        <div className="bg-slate-900/50 rounded-lg p-3 text-center border border-purple-500/20">
+                          <div className="text-xs text-slate-500 mb-1">Vínculo</div>
+                          <div className="text-xl font-bold text-purple-400">{avatarSelecionado.vinculo}%</div>
+                        </div>
+                        <div className="bg-slate-900/50 rounded-lg p-3 text-center border border-green-500/20">
+                          <div className="text-xs text-slate-500 mb-1">Status</div>
+                          <div className={`text-sm font-bold flex items-center justify-center gap-1 ${avatarSelecionado.vivo ? 'text-green-400' : 'text-red-400'}`}>
+                            {avatarSelecionado.vivo ? (
+                              <>
+                                <span className="text-base">✓</span>
+                                {avatarSelecionado.marca_morte && <span className="text-xs">💀</span>}
+                              </>
+                            ) : (
+                              <span className="text-base">☠️</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
                     </div>
       
-                    {/* Coluna Direita - Informações */}
+                    {/* Coluna Direita - Stats e Progresso */}
                     <div className="space-y-4">
                       {/* Stats Principais */}
                       <div>
@@ -783,7 +821,7 @@ export default function AvatarsPage() {
                         </div>
                       </div>
       
-                      {/* Progresso */}
+                      {/* Progresso Compacto */}
                       <div>
                         <h4 className="text-cyan-400 font-bold text-xs uppercase tracking-wider mb-3">Progresso</h4>
                         <div className="space-y-3">
@@ -791,15 +829,15 @@ export default function AvatarsPage() {
                           <div className="bg-slate-900/50 rounded-lg p-3">
                             <div className="flex items-center justify-between mb-2">
                               <span className="text-xs text-slate-500 uppercase">Nível</span>
-                              <span className="text-xl font-bold text-cyan-400">{avatarSelecionado.nivel}</span>
+                              <span className="text-lg font-bold text-cyan-400">{avatarSelecionado.nivel}</span>
                             </div>
-                            <div className="w-full bg-slate-700 rounded-full h-2 mb-1">
+                            <div className="w-full bg-slate-700 rounded-full h-1.5 mb-1">
                               <div 
-                                className="bg-cyan-400 h-2 rounded-full transition-all" 
+                                className="bg-cyan-400 h-1.5 rounded-full transition-all" 
                                 style={{width: `${((avatarSelecionado.experiencia || 0) / calcularXPNecessario(avatarSelecionado.nivel)) * 100}%`}}
                               ></div>
                             </div>
-                            <div className="flex justify-between text-[10px] text-slate-500">
+                            <div className="flex justify-between text-[9px] text-slate-500">
                               <span>{avatarSelecionado.experiencia || 0} XP</span>
                               <span>{calcularXPNecessario(avatarSelecionado.nivel)} XP</span>
                             </div>
@@ -809,11 +847,11 @@ export default function AvatarsPage() {
                           <div className="bg-slate-900/50 rounded-lg p-3">
                             <div className="flex items-center justify-between mb-2">
                               <span className="text-xs text-slate-500 uppercase">Vínculo</span>
-                              <span className="text-xl font-bold text-purple-400">{avatarSelecionado.vinculo}%</span>
+                              <span className="text-lg font-bold text-purple-400">{avatarSelecionado.vinculo}%</span>
                             </div>
-                            <div className="w-full bg-slate-700 rounded-full h-2">
+                            <div className="w-full bg-slate-700 rounded-full h-1.5">
                               <div 
-                                className="bg-purple-400 h-2 rounded-full transition-all" 
+                                className="bg-purple-400 h-1.5 rounded-full transition-all" 
                                 style={{width: `${avatarSelecionado.vinculo || 0}%`}}
                               ></div>
                             </div>
@@ -824,7 +862,7 @@ export default function AvatarsPage() {
                       {/* Exaustão */}
                       <div>
                         <h4 className="text-cyan-400 font-bold text-xs uppercase tracking-wider mb-3">Condição Física</h4>
-                        <div className="bg-slate-900/50 rounded-lg p-4">
+                        <div className="bg-slate-900/50 rounded-lg p-3">
                           <BarraExaustao exaustao={avatarSelecionado.exaustao} />
                         </div>
                       </div>
@@ -832,50 +870,12 @@ export default function AvatarsPage() {
                       {/* Total de Poder */}
                       <div className="bg-gradient-to-r from-slate-900/50 to-slate-800/50 rounded-lg p-4 border border-cyan-500/30">
                         <div className="text-center">
-                          <div className="text-xs text-slate-500 uppercase mb-2">Poder Total</div>
-                          <div className="text-4xl font-black bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                          <div className="text-xs text-slate-500 uppercase mb-1">Poder Total</div>
+                          <div className="text-3xl font-black bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
                             {(avatarSelecionado.forca || 0) + (avatarSelecionado.agilidade || 0) + (avatarSelecionado.resistencia || 0) + (avatarSelecionado.foco || 0)}
                           </div>
-                          <div className="text-xs text-slate-500 mt-1">
-                            Raridade: {avatarSelecionado.raridade}
-                          </div>
-                        </div>
-                      </div>
-      
-                      {/* Habilidades */}
-                      <div>
-                        <h4 className="text-cyan-400 font-bold text-xs uppercase tracking-wider mb-3">Habilidades</h4>
-                        <div className="space-y-2 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
-                          {avatarSelecionado.habilidades.map((hab, index) => (
-                            <div key={index} className="bg-slate-900/50 rounded-lg p-3 border border-slate-700/30">
-                              <div className="font-bold text-purple-400 text-sm mb-1">{hab.nome}</div>
-                              <div className="text-slate-400 text-xs leading-relaxed">{hab.descricao}</div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-      
-                      {/* Status */}
-                      <div className="grid grid-cols-3 gap-3 pt-2 border-t border-slate-800/50">
-                        <div className="text-center">
-                          <div className="text-xs text-slate-500 mb-1">Nível</div>
-                          <div className="text-cyan-400 font-bold text-sm">{avatarSelecionado.nivel}</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-xs text-slate-500 mb-1">Vínculo</div>
-                          <div className="text-purple-400 font-bold text-sm">{avatarSelecionado.vinculo}%</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-xs text-slate-500 mb-1">Status</div>
-                          <div className={`font-bold text-sm flex items-center justify-center gap-1 ${avatarSelecionado.vivo ? 'text-green-400' : 'text-red-400'}`}>
-                            {avatarSelecionado.vivo ? (
-                              <>
-                                <span>Vivo</span>
-                                {avatarSelecionado.marca_morte && <span className="text-xs">💀</span>}
-                              </>
-                            ) : (
-                              <>☠️ Morto</>
-                            )}
+                          <div className="text-[10px] text-slate-500 mt-1">
+                            {avatarSelecionado.raridade}
                           </div>
                         </div>
                       </div>
