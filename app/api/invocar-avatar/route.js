@@ -101,10 +101,10 @@ function gerarAvatarCompleto(primeiraInvocacao = false) {
     // Status
     vivo: true,
     ativo: false,
+    marca_morte: false // Garantir que seja boolean
     
-    // Metadados
-    primeira_invocacao: primeiraInvocacao,
-    data_invocacao: new Date().toISOString()
+    // ❌ REMOVIDO: primeira_invocacao (metadado não vai pro banco)
+    // ❌ REMOVIDO: data_invocacao (usando created_at do banco)
   };
   
   console.log("Avatar completo gerado!");
@@ -177,6 +177,7 @@ export async function POST(request) {
     // GERAR AVATAR COM TODOS OS SISTEMAS
     const avatarGerado = gerarAvatarCompleto(ehPrimeiraInvocacao);
     avatarGerado.user_id = userId;
+    // ❌ REMOVIDO: avatarGerado.data_invocacao (coluna não existe no banco)
 
     console.log("Avatar gerado:", {
       nome: avatarGerado.nome,
@@ -242,7 +243,8 @@ export async function POST(request) {
           elemento: avatar.elemento
         }]);
     } catch (error) {
-      console.log("Erro ao registrar histórico:", error);
+      console.log("Erro ao registrar histórico (ignorado):", error.message);
+      // Não bloqueia a invocação se histórico falhar
     }
 
     // Mensagem especial baseada na raridade
