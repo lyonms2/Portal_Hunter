@@ -127,6 +127,9 @@ export default function AvatarsPage() {
 
   const avatarAtivo = avatares.find(av => av.ativo && av.vivo);
   const avataresInativos = avatares.filter(av => !av.ativo || !av.vivo);
+  
+  // Contar avatares caídos (mortos com marca da morte)
+  const avataresCaidos = avatares.filter(av => !av.vivo && av.marca_morte).length;
 
   if (loading) {
     return (
@@ -163,6 +166,30 @@ export default function AvatarsPage() {
           </div>
           
           <div className="flex gap-4">
+            {/* Botão Memorial */}
+            {avataresCaidos > 0 && (
+              <button
+                onClick={() => router.push("/memorial")}
+                className="group relative"
+              >
+                <div className="absolute -inset-1 bg-gradient-to-r from-gray-700 via-gray-600 to-gray-700 rounded-lg blur opacity-30 group-hover:opacity-60 transition-all duration-300"></div>
+                
+                <div className="relative px-5 py-2.5 bg-gradient-to-b from-gray-900 to-black rounded-lg border border-gray-700/50 group-hover:border-gray-600 transition-all flex items-center gap-3">
+                  <div className="relative">
+                    <span className="text-2xl opacity-40 group-hover:opacity-60 transition-opacity animate-flicker-slow">🕯️</span>
+                  </div>
+                  <div className="text-left">
+                    <div className="text-gray-400 group-hover:text-gray-300 font-bold text-sm tracking-wide transition-colors">
+                      MEMORIAL
+                    </div>
+                    <div className="text-gray-600 text-xs font-mono">
+                      {avataresCaidos} {avataresCaidos === 1 ? 'herói caído' : 'heróis caídos'}
+                    </div>
+                  </div>
+                </div>
+              </button>
+            )}
+            
             <button
               onClick={() => router.push("/ocultista")}
               className="text-purple-400 hover:text-purple-300 transition-colors flex items-center gap-2 font-mono text-sm group"
@@ -325,9 +352,22 @@ export default function AvatarsPage() {
             transform: scale(1);
           }
         }
+
+        @keyframes flicker-slow {
+          0%, 100% {
+            opacity: 0.4;
+          }
+          50% {
+            opacity: 0.6;
+          }
+        }
       
         .animate-fade-in {
           animation: fade-in 0.3s ease-out;
+        }
+
+        .animate-flicker-slow {
+          animation: flicker-slow 3s ease-in-out infinite;
         }
       `}</style>
     </div>
