@@ -185,10 +185,7 @@ export async function POST(request) {
         exaustao: novaExaustao,
         
         // Marca permanente
-        marca_morte: true,
-        
-        // Timestamp
-        ressuscitado_em: new Date().toISOString()
+        marca_morte: true
       })
       .eq('id', avatarId);
 
