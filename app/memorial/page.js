@@ -149,7 +149,7 @@ export default function MemorialPage() {
                     <div className="p-6">
                       {/* Avatar (dessaturado e sombrio) */}
                       <div className="mb-6 opacity-30 grayscale hover:opacity-40 hover:grayscale-[70%] transition-all duration-500">
-                        <AvatarSVG avatar={avatar} tamanho={180} />
+                        <AvatarSVG avatar={avatar} tamanho={100} />
                       </div>
 
                       {/* Informações */}
