@@ -232,35 +232,7 @@ export default function AvatarDetalhes({
                           {avatar.raridade}
                         </div>
                       </div>
-                    </div>
-
-                    {/* Status Resumido */}
-                    <div>
-                      <h4 className="text-cyan-400 font-bold text-xs uppercase tracking-wider mb-3">Status</h4>
-                      <div className="grid grid-cols-3 gap-3">
-                        <div className="bg-slate-900/50 rounded-lg p-3 text-center border border-cyan-500/20">
-                          <div className="text-xs text-slate-500 mb-1">Nível</div>
-                          <div className="text-xl font-bold text-cyan-400">{avatar.nivel}</div>
-                        </div>
-                        <div className="bg-slate-900/50 rounded-lg p-3 text-center border border-purple-500/20">
-                          <div className="text-xs text-slate-500 mb-1">Vínculo</div>
-                          <div className="text-xl font-bold text-purple-400">{avatar.vinculo}%</div>
-                        </div>
-                        <div className="bg-slate-900/50 rounded-lg p-3 text-center border border-green-500/20">
-                          <div className="text-xs text-slate-500 mb-1">Condição</div>
-                          <div className={`text-sm font-bold flex items-center justify-center gap-1 ${avatar.vivo ? 'text-green-400' : 'text-red-400'}`}>
-                            {avatar.vivo ? (
-                              <>
-                                <span className="text-base">✓</span>
-                                {avatar.marca_morte && <span className="text-xs">💀</span>}
-                              </>
-                            ) : (
-                              <span className="text-base">☠️</span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                    </div>                    
                   </div>
                 </div>
               </div>
