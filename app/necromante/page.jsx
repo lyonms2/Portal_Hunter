@@ -10,12 +10,12 @@ export default function NecromantePage() {
   const [stats, setStats] = useState(null);
   const [avataresMortos, setAvataresMortos] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [etapa, setEtapa] = useState('introducao'); // introducao, selecionando, ritual, revelacao
+  const [etapa, setEtapa] = useState('introducao');
   const [avatarSelecionado, setAvatarSelecionado] = useState(null);
   const [processando, setProcessando] = useState(false);
   const [mensagem, setMensagem] = useState(null);
+  const [resultadoRitual, setResultadoRitual] = useState(null);
 
-  // Custos por raridade
   const custos = {
     'Comum': { moedas: 500, fragmentos: 50 },
     'Raro': { moedas: 1000, fragmentos: 100 },
@@ -34,7 +34,6 @@ export default function NecromantePage() {
       setUser(parsedUser);
 
       try {
-        // Buscar stats do jogador
         const statsResponse = await fetch("/api/inicializar-jogador", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -43,12 +42,12 @@ export default function NecromantePage() {
         const statsData = await statsResponse.json();
         setStats(statsData.stats);
 
-        // Buscar avatares mortos
         const avatarResponse = await fetch(`/api/meus-avatares?userId=${parsedUser.id}`);
         const avatarData = await avatarResponse.json();
         
         if (avatarResponse.ok) {
-          const mortos = (avatarData.avatares || []).filter(av => !av.vivo);
+          // Filtrar apenas avatares mortos SEM marca da morte
+          const mortos = (avatarData.avatares || []).filter(av => !av.vivo && !av.marca_morte);
           setAvataresMortos(mortos);
         }
       } catch (error) {
@@ -71,7 +70,6 @@ export default function NecromantePage() {
     setProcessando(true);
     setMensagem(null);
 
-    // Simular ritual (3 segundos)
     setTimeout(() => {
       realizarRessurreicao();
     }, 3000);
@@ -93,6 +91,7 @@ export default function NecromantePage() {
       if (response.ok) {
         setStats(data.stats);
         setAvatarSelecionado(data.avatar);
+        setResultadoRitual(data); // Guardar resultado completo
         setEtapa('revelacao');
       } else {
         setMensagem({
@@ -131,7 +130,7 @@ export default function NecromantePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 text-gray-100 relative overflow-hidden">
-      {/* Partículas de fundo (mais sombrias) */}
+      {/* Partículas de fundo */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute w-96 h-96 bg-purple-900/10 rounded-full blur-3xl top-20 -left-48 animate-pulse"></div>
         <div className="absolute w-96 h-96 bg-red-900/10 rounded-full blur-3xl bottom-20 -right-48 animate-pulse" style={{animationDelay: '2s'}}></div>
@@ -141,7 +140,7 @@ export default function NecromantePage() {
       {/* Grid hexagonal */}
       <div className="absolute inset-0 opacity-[0.02] bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTYiIGhlaWdodD0iMTAwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxwYXRoIGQ9Ik0yOCAwTDAgMTVWMzVMMjggNTBMNTYgMzVWMTVaTTI4IDUwTDAgNjVWODVMMjggMTAwTDU2IDg1VjY1WiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjcHVycGxlIiBzdHJva2Utd2lkdGg9IjAuNSIvPjwvc3ZnPg==')] pointer-events-none"></div>
 
-      {/* Vinheta mais escura */}
+      {/* Vinheta */}
       <div className="absolute inset-0 shadow-[inset_0_0_150px_rgba(0,0,0,0.95)] pointer-events-none"></div>
 
       <div className="relative z-10 min-h-screen flex items-center justify-center px-4 py-8">
@@ -200,7 +199,7 @@ export default function NecromantePage() {
                           Mas saiba: eles retornarão... <span className="text-red-400">diferentes</span>. Mais fracos. Marcados pela morte."
                         </p>
                         <p className="font-mono text-sm">
-                          "O preço é alto, e as cicatrizes são eternas. Mas o vínculo entre caçador e avatar pode transcender até mesmo a morte."
+                          "O preço é alto, e as cicatrizes são eternas. <span className="text-purple-400">Cada avatar só pode ser ressuscitado uma vez.</span>"
                         </p>
                       </div>
                     </div>
@@ -238,8 +237,10 @@ export default function NecromantePage() {
               {avataresMortos.length === 0 ? (
                 <div className="text-center py-16">
                   <div className="text-6xl mb-4 opacity-30">☠️</div>
-                  <h3 className="text-xl font-bold text-slate-400 mb-2">Nenhuma Alma Perdida</h3>
-                  <p className="text-slate-500 text-sm mb-6">Todos os seus avatares ainda caminham entre os vivos...</p>
+                  <h3 className="text-xl font-bold text-slate-400 mb-2">Nenhuma Alma Disponível</h3>
+                  <p className="text-slate-500 text-sm mb-6">
+                    Todos os seus avatares estão vivos ou já carregam a Marca da Morte...
+                  </p>
                   <button
                     onClick={voltarAoDashboard}
                     className="text-purple-400 hover:text-purple-300 transition-colors font-mono text-sm"
@@ -273,7 +274,7 @@ export default function NecromantePage() {
                             </div>
 
                             <div className="p-4">
-                              {/* Avatar (cinza/dessaturado) */}
+                              {/* Avatar */}
                               <div className="mb-4 opacity-40 grayscale-[80%] hover:grayscale-[50%] transition-all">
                                 <AvatarSVG avatar={avatar} tamanho={150} />
                               </div>
@@ -358,25 +359,29 @@ export default function NecromantePage() {
                       {avatarSelecionado.nome}
                     </h3>
 
-                    {/* Avisos */}
+                    {/* Avisos CORRIGIDOS */}
                     <div className="bg-red-950/30 border border-red-500/30 rounded p-4 mb-6">
                       <h4 className="text-red-400 font-bold mb-3 text-sm text-center">⚠️ CONSEQUÊNCIAS DO RITUAL:</h4>
                       <ul className="text-xs text-slate-300 space-y-2">
                         <li className="flex items-start gap-2">
                           <span className="text-red-400">•</span>
-                          <span>Stats reduzidos em <span className="text-red-400 font-bold">50%</span></span>
+                          <span>Stats reduzidos em <span className="text-red-400 font-bold">30%</span></span>
                         </li>
                         <li className="flex items-start gap-2">
                           <span className="text-red-400">•</span>
-                          <span>Vínculo resetado para <span className="text-red-400 font-bold">0%</span></span>
+                          <span>Vínculo reduzido em <span className="text-red-400 font-bold">50%</span></span>
                         </li>
                         <li className="flex items-start gap-2">
                           <span className="text-red-400">•</span>
-                          <span><span className="text-purple-400 font-bold">Marca da Morte</span> (penalidade temporária)</span>
+                          <span>XP reduzida em <span className="text-red-400 font-bold">30%</span></span>
                         </li>
                         <li className="flex items-start gap-2">
                           <span className="text-red-400">•</span>
-                          <span>Avatar volta "diferente"</span>
+                          <span>Exaustão elevada para <span className="text-red-400 font-bold">60</span> (EXAUSTO)</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-purple-400">•</span>
+                          <span><span className="text-purple-400 font-bold">💀 Marca da Morte</span> (não pode ser ressuscitado novamente)</span>
                         </li>
                       </ul>
                     </div>
@@ -460,8 +465,8 @@ export default function NecromantePage() {
             </div>
           )}
 
-          {/* ETAPA 4: REVELAÇÃO */}
-          {etapa === 'revelacao' && avatarSelecionado && (
+          {/* ETAPA 4: REVELAÇÃO CORRIGIDA */}
+          {etapa === 'revelacao' && avatarSelecionado && resultadoRitual && (
             <div className="space-y-8 animate-fade-in">
               <div className="text-center mb-8">
                 <div className="text-6xl mb-4 animate-bounce-slow">✨</div>
@@ -490,18 +495,50 @@ export default function NecromantePage() {
 
                     {/* Marca da Morte */}
                     <div className="bg-red-950/30 border border-red-500/30 rounded p-4 mb-6">
-                      <div className="flex items-center gap-3 justify-center">
+                      <div className="flex items-center gap-3 justify-center mb-3">
                         <span className="text-2xl">💀</span>
                         <div className="text-center">
                           <div className="text-red-400 font-bold text-sm">MARCA DA MORTE</div>
-                          <div className="text-xs text-slate-400">Stats reduzidos • Vínculo 0%</div>
+                          <div className="text-xs text-slate-400">Não pode ser ressuscitado novamente</div>
                         </div>
                       </div>
+                      
+                      {/* Penalidades aplicadas */}
+                      {resultadoRitual.penalidades && (
+                        <div className="space-y-1 text-xs text-slate-300">
+                          {resultadoRitual.penalidades.avisos.map((aviso, idx) => (
+                            <div key={idx} className="flex items-start gap-2">
+                              <span className="text-red-400 flex-shrink-0">•</span>
+                              <span>{aviso}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
                     <div className="h-px bg-gradient-to-r from-transparent via-purple-500/50 to-transparent mb-6"></div>
 
-                    {/* Stats (reduzidos) */}
+                    {/* Stats atualizados */}
+                    <div className="grid grid-cols-4 gap-3 mb-6 text-center text-sm">
+                      <div className="bg-slate-900/50 rounded p-3">
+                        <div className="text-slate-500 text-xs mb-1">Força</div>
+                        <div className="text-red-400 font-bold">{avatarSelecionado.forca}</div>
+                      </div>
+                      <div className="bg-slate-900/50 rounded p-3">
+                        <div className="text-slate-500 text-xs mb-1">Agilidade</div>
+                        <div className="text-cyan-400 font-bold">{avatarSelecionado.agilidade}</div>
+                      </div>
+                      <div className="bg-slate-900/50 rounded p-3">
+                        <div className="text-slate-500 text-xs mb-1">Resistência</div>
+                        <div className="text-green-400 font-bold">{avatarSelecionado.resistencia}</div>
+                      </div>
+                      <div className="bg-slate-900/50 rounded p-3">
+                        <div className="text-slate-500 text-xs mb-1">Foco</div>
+                        <div className="text-purple-400 font-bold">{avatarSelecionado.foco}</div>
+                      </div>
+                    </div>
+
+                    {/* Status geral */}
                     <div className="grid grid-cols-3 gap-4 mb-6 text-center">
                       <div>
                         <div className="text-slate-500 text-xs mb-1">Nível</div>
@@ -509,22 +546,19 @@ export default function NecromantePage() {
                       </div>
                       <div>
                         <div className="text-slate-500 text-xs mb-1">Vínculo</div>
-                        <div className="text-red-400 font-bold">0%</div>
+                        <div className="text-red-400 font-bold">{avatarSelecionado.vinculo}%</div>
                       </div>
                       <div>
-                        <div className="text-slate-500 text-xs mb-1">Status</div>
-                        <div className="text-green-400 font-bold flex items-center justify-center gap-1">
-                          <span>Vivo</span>
-                          <span className="text-red-400 text-xs">💀</span>
-                        </div>
+                        <div className="text-slate-500 text-xs mb-1">Exaustão</div>
+                        <div className="text-orange-400 font-bold">{avatarSelecionado.exaustao}/100</div>
                       </div>
                     </div>
 
                     {/* Mensagem do Necromante */}
                     <div className="bg-slate-900/50 rounded p-4 mb-6 border border-purple-500/20">
                       <p className="text-slate-300 text-sm font-mono italic text-center">
-                        "Está feito. Seu avatar retornou, mas carrega as cicatrizes da morte. 
-                        Cuide bem dele desta vez, caçador..."
+                        {resultadoRitual.lore?.depois || 
+                         "Está feito. Seu avatar retornou, mas carrega as cicatrizes da morte. Cuide bem dele desta vez, caçador..."}
                       </p>
                     </div>
 
@@ -556,7 +590,7 @@ export default function NecromantePage() {
         </div>
       </div>
 
-      {/* Efeito de scan (mais lento e sombrio) */}
+      {/* Efeito de scan */}
       <div className="absolute inset-0 pointer-events-none opacity-[0.01]">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-500/50 to-transparent animate-scan-slow"></div>
       </div>
