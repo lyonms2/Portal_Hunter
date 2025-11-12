@@ -27,7 +27,8 @@ export default function MemorialPage() {
         const data = await response.json();
         
         if (response.ok) {
-          const marcados = (data.avatares || []).filter(av => av.marca_morte);
+          // Filtrar apenas avatares mortos E com marca da morte
+          const marcados = (data.avatares || []).filter(av => !av.vivo && av.marca_morte);
           setAvataresMarcados(marcados);
         }
       } catch (error) {
@@ -104,7 +105,7 @@ export default function MemorialPage() {
               </div>
             </div>
             
-            <h1 className="text-7xl font-black text-gray-500 mb-6 tracking-widest drop-shadow-2xl">
+            <h1 className="text-5xl font-black text-gray-500 mb-6 tracking-widest drop-shadow-2xl">
               MEMORIAL DOS CAÍDOS
             </h1>
             
@@ -115,16 +116,16 @@ export default function MemorialPage() {
             </div>
             
             <p className="text-gray-600 font-mono text-base max-w-3xl mx-auto leading-relaxed mb-6">
-              "Aqui repousam aqueles que desafiaram a morte e retornaram das trevas.<br/>
-              Suas almas carregam a Marca Eterna, um testemunho do preço pago.<br/>
-              Eles não podem mais ressurgir, mas jamais serão esquecidos."
+              "Aqui repousam os guerreiros que tombaram em combate honrado.<br/>
+              Heróis que lutaram até o último suspiro, defendendo o que era certo.<br/>
+              Não poderão mais ressurgir, mas jamais serão esquecidos."
             </p>
 
             {avataresMarcados.length > 0 && (
               <div className="inline-flex items-center gap-3 px-6 py-3 bg-gray-950/50 border border-gray-800/50 rounded-full">
-                <span className="text-red-900/50">💀</span>
+                <span className="text-amber-900/50">⚔️</span>
                 <span className="text-gray-600 font-mono text-sm">
-                  {avataresMarcados.length} {avataresMarcados.length === 1 ? 'alma marcada' : 'almas marcadas'} pela morte
+                  {avataresMarcados.length} {avataresMarcados.length === 1 ? 'herói caído' : 'heróis caídos'} em batalha
                 </span>
               </div>
             )}
@@ -139,8 +140,8 @@ export default function MemorialPage() {
               </div>
               <h3 className="text-3xl font-bold text-gray-700 mb-4">Memorial Vazio</h3>
               <p className="text-gray-700 text-base mb-10 max-w-md mx-auto leading-relaxed">
-                Nenhum de seus avatares carrega a Marca da Morte ainda.<br/>
-                Que assim permaneça por muito tempo...
+                Nenhum avatar tombou em combate ainda.<br/>
+                Que suas vitórias sejam muitas e suas perdas, nenhuma.
               </p>
               <button
                 onClick={voltarParaAvatares}
@@ -154,8 +155,7 @@ export default function MemorialPage() {
               {avataresMarcados.map((avatar) => (
                 <div 
                   key={avatar.id} 
-                  className="relative group cursor-pointer transform hover:scale-105 transition-all duration-500"
-                  onClick={() => setAvatarSelecionado(avatar)}
+                  className="relative group transform hover:scale-105 transition-all duration-500"
                 >
                   {/* Efeito de névoa ao redor */}
                   <div className="absolute -inset-4 bg-gradient-to-b from-gray-900/0 via-gray-900/5 to-gray-900/20 rounded-xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-700"></div>
@@ -185,7 +185,7 @@ export default function MemorialPage() {
                         <div className="relative">
                           <div className="absolute -inset-2 bg-gradient-to-b from-gray-800/20 to-transparent rounded-full blur"></div>
                           <div className="relative p-4 bg-gray-950/50 rounded-full border border-gray-800/30 opacity-40 grayscale hover:opacity-50 hover:grayscale-[60%] transition-all duration-700">
-                            <AvatarSVG avatar={avatar} tamanho={120} />
+                            <AvatarSVG avatar={avatar} tamanho={180} />
                           </div>
                         </div>
                       </div>
@@ -204,18 +204,17 @@ export default function MemorialPage() {
                         <div className="h-px w-full bg-gradient-to-r from-transparent via-gray-800 to-transparent mt-4"></div>
                       </div>
 
-                      {/* Marca da Morte */}
+                      {/* Descanse em Paz */}
                       <div className="flex justify-center mb-6">
-                        <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-red-950/30 border border-red-900/30 rounded-full">
-                          <span className="text-red-900/60 text-lg">💀</span>
-                          <span className="text-red-900/60 text-xs font-black tracking-wider">MARCA DA MORTE</span>
+                        <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-900/50 border border-gray-700/40 rounded-full">
+                          <span className="text-gray-500 text-xs font-black tracking-widest">⚰️ DESCANSE EM PAZ</span>
                         </div>
                       </div>
 
                       {/* Epitáfio */}
                       <div className="text-center">
                         <p className="text-gray-700 text-xs font-mono italic leading-relaxed">
-                          "Retornou das sombras,<br/>mas o preço foi alto..."
+                          "Tombou em combate honrado,<br/>um verdadeiro guerreiro até o fim."
                         </p>
                       </div>
                     </div>
@@ -230,109 +229,7 @@ export default function MemorialPage() {
 
           {/* Modal de Detalhes */}
           {avatarSelecionado && (
-            <div 
-              className="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in"
-              onClick={() => setAvatarSelecionado(null)}
-            >
-              <div 
-                className="relative max-w-2xl w-full"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="absolute -inset-1 bg-gradient-to-b from-gray-800/30 to-transparent rounded-2xl blur"></div>
-                
-                <div className="relative bg-gradient-to-b from-gray-900 to-black border-2 border-gray-800 rounded-2xl overflow-hidden shadow-2xl">
-                  {/* Header */}
-                  <div className="bg-gradient-to-b from-gray-800/50 to-gray-900/50 px-6 py-5 border-b-2 border-gray-800 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <span className="text-4xl opacity-40 animate-flicker-slow">🪦</span>
-                      <div>
-                        <h2 className="text-3xl font-black text-gray-400">{avatarSelecionado.nome}</h2>
-                        <p className="text-xs text-gray-700 font-mono">Memorial Eterno</p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => setAvatarSelecionado(null)}
-                      className="text-gray-600 hover:text-gray-500 transition-colors text-3xl w-10 h-10 flex items-center justify-center"
-                    >
-                      ×
-                    </button>
-                  </div>
-
-                  <div className="p-8">
-                    {/* Avatar Grande Centralizado */}
-                    <div className="flex justify-center mb-8">
-                      <div className="relative">
-                        <div className="absolute -inset-4 bg-gradient-to-b from-gray-800/20 to-transparent rounded-full blur-xl"></div>
-                        <div className="relative p-6 bg-gray-950/50 rounded-full border-2 border-gray-800/40 opacity-50 grayscale">
-                          <AvatarSVG avatar={avatarSelecionado} tamanho={250} />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Marca da Morte Destaque */}
-                    <div className="bg-gradient-to-b from-red-950/30 to-red-950/20 border-2 border-red-900/40 rounded-xl p-6 mb-8">
-                      <div className="flex items-center justify-center gap-4 mb-4">
-                        <span className="text-5xl animate-pulse-slow">💀</span>
-                        <div className="text-center">
-                          <div className="text-red-900/80 font-black text-xl tracking-wider">MARCA DA MORTE</div>
-                          <div className="text-red-950/60 text-xs font-mono">Cicatriz Eterna da Ressurreição</div>
-                        </div>
-                      </div>
-                      <p className="text-center text-gray-600 text-sm font-mono italic leading-relaxed">
-                        "Este avatar desafiou a morte e retornou do vazio. Agora carrega uma marca que não pode ser apagada. 
-                        A próxima morte será permanente."
-                      </p>
-                    </div>
-
-                    {/* Stats */}
-                    <div className="grid grid-cols-4 gap-4 mb-6">
-                      <div className="bg-gray-950/50 rounded-lg p-4 text-center border border-gray-800/50">
-                        <div className="text-gray-700 text-xs mb-2 font-mono">Força</div>
-                        <div className="text-red-900 font-black text-xl">{avatarSelecionado.forca}</div>
-                      </div>
-                      <div className="bg-gray-950/50 rounded-lg p-4 text-center border border-gray-800/50">
-                        <div className="text-gray-700 text-xs mb-2 font-mono">Agilidade</div>
-                        <div className="text-cyan-900 font-black text-xl">{avatarSelecionado.agilidade}</div>
-                      </div>
-                      <div className="bg-gray-950/50 rounded-lg p-4 text-center border border-gray-800/50">
-                        <div className="text-gray-700 text-xs mb-2 font-mono">Resistência</div>
-                        <div className="text-green-900 font-black text-xl">{avatarSelecionado.resistencia}</div>
-                      </div>
-                      <div className="bg-gray-950/50 rounded-lg p-4 text-center border border-gray-800/50">
-                        <div className="text-gray-700 text-xs mb-2 font-mono">Foco</div>
-                        <div className="text-purple-900 font-black text-xl">{avatarSelecionado.foco}</div>
-                      </div>
-                    </div>
-
-                    {/* Informações Adicionais */}
-                    <div className="grid grid-cols-3 gap-4 mb-6">
-                      <div className="text-center p-4 bg-gray-950/30 rounded-lg border border-gray-800/30">
-                        <div className="text-gray-700 text-xs mb-2 font-mono">Nível</div>
-                        <div className="text-gray-500 font-black text-lg">{avatarSelecionado.nivel}</div>
-                      </div>
-                      <div className="text-center p-4 bg-gray-950/30 rounded-lg border border-gray-800/30">
-                        <div className="text-gray-700 text-xs mb-2 font-mono">Vínculo</div>
-                        <div className="text-gray-500 font-black text-lg">{avatarSelecionado.vinculo || 0}%</div>
-                      </div>
-                      <div className="text-center p-4 bg-gray-950/30 rounded-lg border border-gray-800/30">
-                        <div className="text-gray-700 text-xs mb-2 font-mono">Status</div>
-                        <div className={`font-black text-sm ${avatarSelecionado.vivo ? 'text-green-800' : 'text-red-900'}`}>
-                          {avatarSelecionado.vivo ? 'Vivo' : 'Morto'}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Mensagem Final */}
-                    <div className="bg-gray-950/70 border-2 border-gray-800/70 rounded-xl p-6 text-center">
-                      <p className="text-gray-600 text-base font-mono italic leading-relaxed">
-                        "Que sua jornada além do véu não tenha sido em vão.<br/>
-                        Você será lembrado, {avatarSelecionado.nome}."
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <div></div>
           )}
         </div>
       </div>
