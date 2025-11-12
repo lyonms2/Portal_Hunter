@@ -1,12 +1,24 @@
 import { createClient } from '@supabase/supabase-js';
+import { validarStats } from '../../avatares/sistemas/statsSystem';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 );
 
+/**
+ * Sistema de Ressurreição Balanceado
+ * 
+ * Penalidades:
+ * - Stats reduzidos em 30% (não 50%)
+ * - Vínculo reduzido em 50% (não zerado)
+ * - XP reduzida em 30%
+ * - Exaustão aumentada para 60 (Exausto)
+ * - Marca da Morte permanente
+ */
+
 export async function POST(request) {
-  console.log("=== INICIANDO RESSURREIÇÃO ===");
+  console.log("=== INICIANDO RITUAL DE RESSURREIÇÃO ===");
   
   try {
     const { userId, avatarId } = await request.json();
@@ -48,6 +60,18 @@ export async function POST(request) {
 
     console.log("✅ Avatar encontrado:", avatar.nome);
 
+    // Verificar se já tem marca da morte
+    if (avatar.marca_morte) {
+      console.log("⚠️ Avatar já possui Marca da Morte");
+      return Response.json(
+        { 
+          message: "Este avatar já foi ressuscitado uma vez e carrega a Marca da Morte. Não pode ser ressuscitado novamente.",
+          aviso: "A morte é permanente para aqueles marcados pelo Necromante."
+        },
+        { status: 400 }
+      );
+    }
+
     // 2. Calcular custo baseado na raridade
     const custos = {
       'Comum': { moedas: 500, fragmentos: 50 },
@@ -88,7 +112,7 @@ export async function POST(request) {
       console.log("❌ Recursos insuficientes");
       return Response.json(
         { 
-          message: "Recursos insuficientes",
+          message: "Recursos insuficientes para o ritual de ressurreição",
           necessario: custo,
           atual: { moedas: stats.moedas, fragmentos: stats.fragmentos }
         },
@@ -96,27 +120,75 @@ export async function POST(request) {
       );
     }
 
-    // 4. Ressuscitar avatar (reduz stats em 50%, reseta vínculo)
-    console.log("Calculando novos stats (50% redução)...");
+    // 4. CALCULAR PENALIDADES BALANCEADAS
+    console.log("Calculando penalidades do ritual...");
+    
+    // Stats: -30% (mais justo que -50%)
     const statsReduzidos = {
-      forca: Math.floor(avatar.forca * 0.5),
-      agilidade: Math.floor(avatar.agilidade * 0.5),
-      resistencia: Math.floor(avatar.resistencia * 0.5),
-      foco: Math.floor(avatar.foco * 0.5)
+      forca: Math.floor(avatar.forca * 0.7),
+      agilidade: Math.floor(avatar.agilidade * 0.7),
+      resistencia: Math.floor(avatar.resistencia * 0.7),
+      foco: Math.floor(avatar.foco * 0.7)
     };
-    console.log("Stats reduzidos:", statsReduzidos);
 
-    console.log("Atualizando avatar no banco...");
+    // Validar se stats ainda estão dentro dos limites da raridade
+    const validacao = validarStats(statsReduzidos, avatar.raridade);
+    if (!validacao.valido) {
+      console.log("⚠️ Stats fora dos limites, ajustando...");
+      // Se ficaram abaixo do mínimo, ajustar para o mínimo da raridade
+      const RANGES = {
+        'Comum': { min: 5 },
+        'Raro': { min: 10 },
+        'Lendário': { min: 16 }
+      };
+      const minimo = RANGES[avatar.raridade].min;
+      
+      Object.keys(statsReduzidos).forEach(stat => {
+        if (statsReduzidos[stat] < minimo) {
+          statsReduzidos[stat] = minimo;
+        }
+      });
+    }
+
+    console.log("Stats após ressurreição:", statsReduzidos);
+
+    // Vínculo: -50% (não zera completamente)
+    const novoVinculo = Math.floor((avatar.vinculo || 0) * 0.5);
+    console.log(`Vínculo: ${avatar.vinculo}% → ${novoVinculo}%`);
+
+    // XP: -30% (perde parte da experiência)
+    const novaXP = Math.floor((avatar.experiencia || 0) * 0.7);
+    console.log(`XP: ${avatar.experiencia} → ${novaXP}`);
+
+    // Exaustão: Sobe para 60 (estado Exausto)
+    const novaExaustao = 60;
+    console.log(`Exaustão: ${avatar.exaustao || 0} → ${novaExaustao} (EXAUSTO)`);
+
+    // 5. Aplicar ressurreição
+    console.log("Aplicando ritual de ressurreição...");
     const { error: updateAvatarError } = await supabase
       .from('avatares')
       .update({
+        // Status
         vivo: true,
+        ativo: false, // Não ativa automaticamente
+        
+        // Stats reduzidos
         forca: statsReduzidos.forca,
         agilidade: statsReduzidos.agilidade,
         resistencia: statsReduzidos.resistencia,
         foco: statsReduzidos.foco,
-        vinculo: 0,
-        marca_morte: true
+        
+        // Penalidades
+        vinculo: novoVinculo,
+        experiencia: novaXP,
+        exaustao: novaExaustao,
+        
+        // Marca permanente
+        marca_morte: true,
+        
+        // Timestamp
+        ressuscitado_em: new Date().toISOString()
       })
       .eq('id', avatarId);
 
@@ -130,8 +202,8 @@ export async function POST(request) {
 
     console.log("✅ Avatar ressuscitado!");
 
-    // 5. Deduzir recursos do jogador
-    console.log("Deduzindo recursos...");
+    // 6. Deduzir recursos do jogador
+    console.log("Deduzindo recursos do jogador...");
     const { error: updateStatsError } = await supabase
       .from('player_stats')
       .update({
@@ -150,7 +222,33 @@ export async function POST(request) {
 
     console.log("✅ Recursos deduzidos!");
 
-    // 6. Buscar stats atualizados
+    // 7. Registrar no histórico (se a tabela existir)
+    try {
+      await supabase
+        .from('ressurreicoes_historico')
+        .insert([{
+          user_id: userId,
+          avatar_id: avatarId,
+          custo_moedas: custo.moedas,
+          custo_fragmentos: custo.fragmentos,
+          stats_antes: {
+            forca: avatar.forca,
+            agilidade: avatar.agilidade,
+            resistencia: avatar.resistencia,
+            foco: avatar.foco
+          },
+          stats_depois: statsReduzidos,
+          vinculo_antes: avatar.vinculo,
+          vinculo_depois: novoVinculo,
+          xp_antes: avatar.experiencia,
+          xp_depois: novaXP
+        }]);
+      console.log("✅ Histórico registrado");
+    } catch (error) {
+      console.log("⚠️ Histórico não registrado (tabela pode não existir)");
+    }
+
+    // 8. Buscar dados atualizados
     console.log("Buscando dados atualizados...");
     const { data: statsAtualizados } = await supabase
       .from('player_stats')
@@ -164,21 +262,53 @@ export async function POST(request) {
       .eq('id', avatarId)
       .single();
 
-    console.log("✅ RESSURREIÇÃO COMPLETA!");
+    console.log("✅ RITUAL DE RESSURREIÇÃO COMPLETO!");
+
+    // Calcular perdas para mostrar ao jogador
+    const perdas = {
+      stats_perdidos: {
+        forca: avatar.forca - statsReduzidos.forca,
+        agilidade: avatar.agilidade - statsReduzidos.agilidade,
+        resistencia: avatar.resistencia - statsReduzidos.resistencia,
+        foco: avatar.foco - statsReduzidos.foco
+      },
+      vinculo_perdido: (avatar.vinculo || 0) - novoVinculo,
+      xp_perdida: (avatar.experiencia || 0) - novaXP,
+      porcentagem_reducao: 30
+    };
 
     return Response.json({
       success: true,
-      message: "Avatar ressuscitado com sucesso!",
+      message: "O ritual foi concluído. Seu avatar retornou do além, mas carrega cicatrizes profundas.",
       avatar: avatarRessuscitado,
       stats: statsAtualizados,
-      custoUtilizado: custo
+      custoUtilizado: custo,
+      penalidades: {
+        descricao: "O Necromante arrancou sua alma do vazio, mas o preço foi alto:",
+        perdas: perdas,
+        avisos: [
+          "💀 Marca da Morte: Este avatar não pode ser ressuscitado novamente",
+          `📉 Stats reduzidos em 30%`,
+          `💔 Vínculo reduzido em 50% (${avatar.vinculo}% → ${novoVinculo}%)`,
+          `📖 XP reduzida em 30% (${avatar.experiencia} → ${novaXP})`,
+          `😰 Estado: EXAUSTO (60/100 exaustão)`,
+          "⏳ Necessita descanso antes de combater"
+        ]
+      },
+      lore: {
+        antes: "A morte havia levado sua essência para o vazio...",
+        depois: "Agora retorna, enfraquecido, mas vivo. A Marca da Morte queimará eternamente em sua alma."
+      }
     });
 
   } catch (error) {
-    console.error("❌ ERRO CRÍTICO:", error);
+    console.error("❌ ERRO CRÍTICO NO RITUAL:", error);
     console.error("Stack:", error.stack);
     return Response.json(
-      { message: "Erro interno: " + error.message },
+      { 
+        message: "O ritual falhou catastroficamente. Energias sombrias escaparam do controle.",
+        erro_tecnico: error.message 
+      },
       { status: 500 }
     );
   }
