@@ -550,32 +550,49 @@ export default function DashboardPage() {
             {/* Divisor */}
             <div className="h-px bg-gradient-to-r from-transparent via-slate-700/50 to-transparent my-2"></div>
           
-            {/* Botão Missões (em breve) */}
+            {/* Botão Missões - ATIVADO */}
             <button
-              disabled
-              className="w-full group relative opacity-60 cursor-not-allowed"
+              onClick={() => router.push("/missoes")}
+              className="w-full group relative"
             >
-              <div className="absolute -inset-1 bg-gradient-to-r from-green-500/10 via-emerald-500/10 to-green-500/10 rounded-lg blur opacity-30"></div>
+              <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500/20 via-blue-500/20 to-purple-500/20 rounded-lg blur opacity-50 group-hover:opacity-75 transition-all duration-300"></div>
               
-              <div className="relative bg-slate-950/80 backdrop-blur-xl border border-slate-800/30 rounded-lg p-5">
+              <div className="relative bg-slate-950/80 backdrop-blur-xl border border-cyan-900/30 rounded-lg p-5 group-hover:border-cyan-500/50 transition-all">
                 <div className="flex items-center gap-4">
-                  <div className="flex-shrink-0 w-12 h-12 bg-slate-900/50 rounded-lg flex items-center justify-center border border-slate-700/30">
-                    <span className="text-2xl opacity-50">🌀</span>
+                  <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-lg flex items-center justify-center border border-cyan-500/30 group-hover:border-cyan-400/50 transition-all relative">
+                    <span className="text-2xl animate-spin-slow">🌀</span>
+                    {/* Indicador de disponibilidade */}
+                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-slate-950 animate-pulse"></div>
                   </div>
                   <div className="flex-1 text-left">
-                    <div className="font-bold text-slate-500 text-base mb-0.5">
-                      MISSÕES
+                    <div className="font-bold text-cyan-300 text-base mb-0.5 group-hover:text-cyan-200 transition-colors">
+                      HUB DE PORTAIS
                     </div>
-                    <div className="text-xs text-slate-600 font-mono">
-                      Em desenvolvimento...
+                    <div className="text-xs text-slate-400 font-mono">
+                      Explorar dimensões e ganhar recompensas
                     </div>
                   </div>
-                  <div className="text-slate-600 text-xl">
-                    🔒
+                  <div className="text-cyan-400 group-hover:translate-x-1 group-hover:text-cyan-300 transition-all text-xl">
+                    →
                   </div>
                 </div>
               </div>
             </button>
+            
+            <style jsx>{`
+              @keyframes spin-slow {
+                from {
+                  transform: rotate(0deg);
+                }
+                to {
+                  transform: rotate(360deg);
+                }
+              }
+            
+              .animate-spin-slow {
+                animation: spin-slow 8s linear infinite;
+              }
+            `}</style>
 
             {/* Botão Arena (habilitado) */}
             <button
@@ -735,5 +752,6 @@ export default function DashboardPage() {
     </div>
   );
 }
+
 
 
