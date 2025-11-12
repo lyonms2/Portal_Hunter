@@ -116,7 +116,7 @@ export default function AvatarAtivo({
           <div className="grid md:grid-cols-2 gap-6 p-8">
             {/* Coluna Esquerda - Visual do Avatar */}
             <div>
-              <div className={`bg-slate-900/70 rounded-lg p-6 aspect-square border-2 ${getCorBorda(avatar.raridade)} flex items-center justify-center`}>
+              <div className={`bg-slate-900/70 rounded-lg p-3 aspect-square border-2 ${getCorBorda(avatar.raridade)} flex items-center justify-center`}>
                 <AvatarSVG avatar={avatar} tamanho={200} />
               </div>
             </div>
