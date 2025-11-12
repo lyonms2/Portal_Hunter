@@ -98,14 +98,14 @@ export default function MemorialPage() {
               <div className="flex justify-center items-end gap-4 mb-6">
                 <div className="w-2 h-32 bg-gradient-to-b from-gray-700 to-gray-900 rounded-t"></div>
                 <div className="relative">
-                  <div className="text-9xl opacity-30 blur-sm absolute inset-0 flex items-center justify-center">🕯️</div>
-                  <div className="text-9xl relative animate-flicker">🕯️</div>
+                  <div className="text-7xl opacity-30 blur-sm absolute inset-0 flex items-center justify-center">🕯️</div>
+                  <div className="text-7xl relative animate-flicker">🕯️</div>
                 </div>
                 <div className="w-2 h-32 bg-gradient-to-b from-gray-700 to-gray-900 rounded-t"></div>
               </div>
             </div>
             
-            <h1 className="text-5xl font-black text-gray-500 mb-6 tracking-widest drop-shadow-2xl">
+            <h3 className="text-5xl font-black text-gray-500 mb-6 tracking-widest drop-shadow-2xl">
               MEMORIAL DOS CAÍDOS
             </h1>
             
