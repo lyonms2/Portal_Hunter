@@ -107,11 +107,11 @@ export default function MemorialPage() {
             
             <h3 className="text-5xl font-black text-gray-500 mb-6 tracking-widest drop-shadow-2xl">
               MEMORIAL DOS CAÍDOS
-            </h1>
+            </h3>
             
             <div className="flex items-center justify-center gap-4 mb-8">
               <div className="h-px w-48 bg-gradient-to-r from-transparent via-gray-700 to-gray-700"></div>
-              <span className="text-4xl opacity-20">⚰️</span>
+              
               <div className="h-px w-48 bg-gradient-to-l from-transparent via-gray-700 to-gray-700"></div>
             </div>
             
