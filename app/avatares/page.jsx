@@ -126,9 +126,16 @@ export default function AvatarsPage() {
   };
 
   const avatarAtivo = avatares.find(av => av.ativo && av.vivo);
-  const avataresInativos = avatares.filter(av => !av.ativo || !av.vivo);
   
-  // Contar avatares caídos (mortos com marca da morte)
+  // Filtrar avatares inativos, EXCLUINDO os que estão no memorial (mortos + marca da morte)
+  const avataresInativos = avatares.filter(av => {
+    // Não mostrar avatares que estão no memorial
+    if (!av.vivo && av.marca_morte) return false;
+    // Mostrar os demais inativos
+    return !av.ativo || !av.vivo;
+  });
+  
+  // Contar avatares caídos (mortos com marca da morte) - para o botão do memorial
   const avataresCaidos = avatares.filter(av => !av.vivo && av.marca_morte).length;
 
   if (loading) {
