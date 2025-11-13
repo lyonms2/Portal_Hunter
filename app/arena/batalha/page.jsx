@@ -176,14 +176,15 @@ export default function BatalhaPage() {
           })
         });
 
-        // Atualizar avatar (XP e exaustão)
+        // Atualizar avatar (XP, exaustão e vínculo)
         await fetch('/api/atualizar-avatar', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             avatarId: estado.jogador.id,
             experiencia: resultado.recompensas.xp,
-            exaustao: resultado.recompensas.exaustao
+            exaustao: resultado.recompensas.exaustao,
+            vinculo: resultado.recompensas.vinculo || 0
           })
         });
       } catch (error) {
@@ -258,10 +259,25 @@ export default function BatalhaPage() {
                 </div>
               )}
 
-              <div className="text-center p-3 bg-orange-900/30 rounded border border-orange-500/50">
-                <span className="text-orange-400 text-sm">
-                  😰 +{resultado.recompensas.exaustao} Exaustão
-                </span>
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <div className="text-center p-3 bg-orange-900/30 rounded border border-orange-500/50">
+                  <span className="text-orange-400 text-sm">
+                    😰 +{resultado.recompensas.exaustao} Exaustão
+                  </span>
+                </div>
+                {resultado.recompensas.vinculo !== undefined && (
+                  <div className={`text-center p-3 rounded border ${
+                    resultado.recompensas.vinculo > 0
+                      ? 'bg-green-900/30 border-green-500/50'
+                      : 'bg-red-900/30 border-red-500/50'
+                  }`}>
+                    <span className={`text-sm font-bold ${
+                      resultado.recompensas.vinculo > 0 ? 'text-green-400' : 'text-red-400'
+                    }`}>
+                      {resultado.recompensas.vinculo > 0 ? '💚' : '💔'} {resultado.recompensas.vinculo > 0 ? '+' : ''}{resultado.recompensas.vinculo} Vínculo
+                    </span>
+                  </div>
+                )}
               </div>
 
               {resultado.recompensas.mensagens && resultado.recompensas.mensagens.length > 0 && (
