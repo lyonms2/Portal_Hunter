@@ -1,9 +1,6 @@
-import { createClient } from "@supabase/supabase-js";
+import { getSupabaseAnonClient } from "@/lib/supabase/serverClient";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
+const supabase = getSupabaseAnonClient();
 
 export async function POST(request) {
   try {

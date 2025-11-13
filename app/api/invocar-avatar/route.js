@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+import { getSupabaseClientSafe } from "@/lib/supabase/serverClient";
 
 // Importar sistemas
 import { ELEMENTOS, aplicarBonusElemental } from '../../avatares/sistemas/elementalSystem';
@@ -6,14 +6,7 @@ import { gerarStatsBalanceados } from '../../avatares/sistemas/statsSystem';
 import { selecionarHabilidadesIniciais } from '../../avatares/sistemas/abilitiesSystem';
 import { gerarNomeCompleto, gerarDescricaoNarrativa } from '../../avatares/sistemas/loreSystem';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-let supabase = null;
-
-if (supabaseUrl && supabaseKey) {
-  supabase = createClient(supabaseUrl, supabaseKey);
-}
+const supabase = getSupabaseClientSafe();
 
 // ==================== FUNÇÕES DE GERAÇÃO ====================
 
