@@ -211,21 +211,21 @@ export default function ArenaPvPPage() {
           </button>
         </div>
 
-        {/* Aviso de Desenvolvimento */}
+        {/* Info PvP */}
         <div className="mb-8 bg-gradient-to-r from-cyan-900/30 to-blue-900/30 border-2 border-cyan-500/50 rounded-xl p-6">
           <div className="flex items-start gap-4">
-            <div className="text-4xl">⚡</div>
+            <div className="text-4xl">⚔️</div>
             <div className="flex-1">
-              <h3 className="text-xl font-black text-cyan-400 mb-2">SISTEMA PvP (BETA)</h3>
+              <h3 className="text-xl font-black text-cyan-400 mb-2">ARENA PvP COMPETITIVA</h3>
               <p className="text-slate-300 text-sm leading-relaxed mb-3">
-                Sistema de ranking competitivo ativo! Suba de tier (Bronze → Mestre) e ganhe recompensas multiplicadas.
+                Enfrente outros jogadores em batalhas táticas em tempo real. Suba de tier e ganhe recompensas multiplicadas!
               </p>
               <div className="text-xs text-slate-400 space-y-1">
-                <div>✅ Seleção de avatares</div>
-                <div>✅ Sistema de matchmaking (simulado)</div>
+                <div>✅ Batalhas em tempo real (30s por turno)</div>
                 <div>✅ Sistema de ranking com 6 tiers</div>
-                <div>✅ Recompensas escalonadas por tier</div>
-                <div>⏳ Batalhas em tempo real (em breve)</div>
+                <div>✅ Recompensas escalonadas (1.0x → 3.0x)</div>
+                <div>✅ Pontos ELO balanceados</div>
+                <div>✅ Upsets rendem bônus de pontos</div>
               </div>
             </div>
           </div>
