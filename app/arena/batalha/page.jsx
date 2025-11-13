@@ -384,11 +384,11 @@ function BatalhaContent() {
           });
 
           localStorage.removeItem('batalha_atual');
-          router.push('/arena');
+          router.push('/arena/treinamento');
         } else {
           // Derrota no treino
           localStorage.removeItem('batalha_atual');
-          router.push('/arena');
+          router.push('/arena/treinamento');
         }
       } catch (error) {
         console.error('Erro ao aplicar recompensas:', error);
@@ -397,7 +397,7 @@ function BatalhaContent() {
           router.push('/arena/pvp');
         } else {
           localStorage.removeItem('batalha_atual');
-          router.push('/arena');
+          router.push('/arena/treinamento');
         }
       }
     }
@@ -533,7 +533,7 @@ function BatalhaContent() {
               onClick={voltarAoLobby}
               className="w-full px-8 py-4 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-lg transition-colors"
             >
-              {resultado.pvp ? '← Voltar ao PvP' : '← Voltar ao Lobby'}
+              {resultado.pvp ? '← Voltar ao PvP' : '← Voltar ao Treinamento'}
             </button>
           </div>
         </div>
