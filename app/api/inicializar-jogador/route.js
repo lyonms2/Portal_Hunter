@@ -5,7 +5,7 @@ import { getSupabaseClientSafe } from "@/lib/supabase/serverClient";
 export async function POST(request) {
   try {
     // Inicializar Supabase dentro da função
-    const supabase = getSupabaseServiceClient();
+    const supabase = getSupabaseClientSafe(true);
     if (!supabase) {
       return Response.json(
         { message: "Serviço temporariamente indisponível" },

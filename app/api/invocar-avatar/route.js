@@ -123,8 +123,10 @@ function gerarAvatarCompleto(primeiraInvocacao = false) {
 
 export async function POST(request) {
   console.log("=== INICIANDO INVOCAÇÃO COM SISTEMAS INTEGRADOS ===");
-  
+
   try {
+    // Inicializar Supabase dentro da função
+    const supabase = getSupabaseClientSafe(true);
     if (!supabase) {
       return Response.json(
         { message: "Serviço temporariamente indisponível" },

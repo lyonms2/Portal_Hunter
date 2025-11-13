@@ -5,7 +5,7 @@ import { getSupabaseAnonClient } from "@/lib/supabase/serverClient";
 export async function POST(request) {
   try {
     // Inicializar Supabase dentro da função
-    const supabase = getSupabaseServiceClient();
+    const supabase = getSupabaseAnonClient();
     const { email, senha } = await request.json();
 
     // Validação básica

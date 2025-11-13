@@ -16,8 +16,11 @@ import { validarStats } from '../../avatares/sistemas/statsSystem';
 
 export async function POST(request) {
   console.log("=== INICIANDO RITUAL DE RESSURREIÇÃO ===");
-  
+
   try {
+    // Inicializar Supabase dentro da função
+    const supabase = getSupabaseAnonClient();
+
     const { userId, avatarId } = await request.json();
     console.log("Dados recebidos:", { userId, avatarId });
 
