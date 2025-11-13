@@ -41,20 +41,20 @@ export default function ArenaLobby() {
       nome: 'Arena PvP',
       emoji: '⚔️',
       descricao: 'Enfrente outros jogadores em batalhas 1v1',
-      detalhes: 'Teste suas estratégias contra jogadores reais. Sistema de turnos com tempo limite. Suba no ranking e prove sua habilidade.',
+      detalhes: 'Sistema de matchmaking em desenvolvimento. Teste a interface de seleção de avatares e busca de oponentes.',
       recursos: [
-        'Matchmaking equilibrado',
-        'Sistema de ranking',
-        'Turnos com tempo limite (30s)',
-        'Recompensas competitivas'
+        'Interface de matchmaking ativa',
+        'Seleção de avatares',
+        'Sistema de busca (simulado)',
+        'Em desenvolvimento: batalhas reais'
       ],
       cor: 'from-red-600 to-red-800',
       corBorda: 'border-red-500',
       corBg: 'bg-red-900/10',
       corHover: 'hover:border-red-400',
-      disponivel: false, // EM DESENVOLVIMENTO
+      disponivel: true, // INTERFACE DISPONÍVEL
       rota: '/arena/pvp',
-      emBreve: true
+      beta: true // Badge BETA ao invés de "Em Breve"
     },
     {
       id: 'sobrevivencia',
@@ -127,11 +127,18 @@ export default function ArenaLobby() {
                 <div className={`absolute inset-0 bg-gradient-to-br ${modo.cor} opacity-0 group-hover:opacity-20 transition-opacity duration-300`}></div>
               )}
 
-              {/* Badge "Em Breve" */}
+              {/* Badge "Em Breve" ou "BETA" */}
               {modo.emBreve && (
                 <div className="absolute top-4 right-4 z-10">
                   <div className="bg-yellow-500 text-slate-900 text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider">
                     Em Breve
+                  </div>
+                </div>
+              )}
+              {modo.beta && (
+                <div className="absolute top-4 right-4 z-10">
+                  <div className="bg-orange-500 text-white text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider animate-pulse">
+                    BETA
                   </div>
                 </div>
               )}
