@@ -612,28 +612,28 @@ function BatalhaContent() {
           {/* Arena de Combate */}
           <div className="lg:col-span-2 space-y-2">
             {/* Inimigo */}
-            <div className="bg-gradient-to-br from-slate-900/90 via-red-950/30 to-slate-900/90 rounded-lg p-3 border-2 border-red-500/50">
+            <div className="bg-gradient-to-br from-slate-900/90 via-red-950/30 to-slate-900/90 rounded-lg p-4 border-2 border-red-500/50">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex-1">
-                  <div className="flex items-center gap-1.5 mb-0.5">
-                    <h3 className="text-lg font-bold text-red-400">{estado.inimigo.nome}</h3>
-                    <span className="px-1.5 py-0.5 bg-red-900/50 border border-red-500/50 rounded text-[10px] text-red-300">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="text-xl font-bold text-red-400">{estado.inimigo.nome}</h3>
+                    <span className="px-2 py-0.5 bg-red-900/50 border border-red-500/50 rounded text-xs text-red-300">
                       Lv.{estado.inimigo.nivel}
                     </span>
                   </div>
-                  <div className="flex items-center gap-1.5 text-xs">
-                    <span className="px-1.5 py-0.5 bg-slate-800/50 rounded text-slate-400 text-[10px]">
+                  <div className="flex items-center gap-2 text-xs">
+                    <span className="px-2 py-0.5 bg-slate-800/50 rounded text-slate-400">
                       {estado.inimigo.elemento}
                     </span>
-                    <span className="text-slate-500 text-[10px]">•</span>
-                    <span className="text-slate-400 text-[10px]">{estado.inimigo.raridade}</span>
+                    <span className="text-slate-500">•</span>
+                    <span className="text-slate-400">{estado.inimigo.raridade}</span>
                   </div>
 
                   {/* Debuffs do Inimigo */}
                   {estado.inimigo.debuffs && estado.inimigo.debuffs.length > 0 && (
-                    <div className="flex gap-0.5 mt-1 flex-wrap">
+                    <div className="flex gap-1 mt-1 flex-wrap">
                       {estado.inimigo.debuffs.map((debuff, idx) => (
-                        <span key={idx} className="text-sm" title={`${debuff.nome} (${debuff.turnos} turnos)`}>
+                        <span key={idx} className="text-base" title={`${debuff.nome} (${debuff.turnos} turnos)`}>
                           {debuff.icone}
                         </span>
                       ))}
@@ -641,8 +641,8 @@ function BatalhaContent() {
                   )}
                 </div>
 
-                <div className="w-20 h-20 flex-shrink-0 relative">
-                  <AvatarSVG avatar={estado.inimigo} tamanho={80} isEnemy={true} />
+                <div className="w-28 h-28 flex-shrink-0 relative">
+                  <AvatarSVG avatar={estado.inimigo} tamanho={112} isEnemy={true} />
 
                   {/* Animação de dano no inimigo */}
                   {animacaoDano && animacaoDano.tipo === 'inimigo' && (
@@ -665,19 +665,19 @@ function BatalhaContent() {
               </div>
 
               {/* HP do Inimigo */}
-              <div className="space-y-0.5">
-                <div className="flex justify-between text-xs">
+              <div className="space-y-1">
+                <div className="flex justify-between text-sm">
                   <span className="text-slate-400 font-semibold">HP</span>
-                  <span className="text-red-400 font-mono font-bold text-[10px]">{estado.inimigo.hp_atual} / {estado.inimigo.hp_maximo}</span>
+                  <span className="text-red-400 font-mono font-bold text-xs">{estado.inimigo.hp_atual} / {estado.inimigo.hp_maximo}</span>
                 </div>
-                <div className="relative w-full bg-slate-800 rounded-full h-3 overflow-hidden border border-slate-700">
+                <div className="relative w-full bg-slate-800 rounded-full h-4 overflow-hidden border border-slate-700">
                   <div
-                    className="bg-gradient-to-r from-red-600 via-red-500 to-red-600 h-3 transition-all duration-500 relative"
+                    className="bg-gradient-to-r from-red-600 via-red-500 to-red-600 h-4 transition-all duration-500 relative"
                     style={{width: `${hpInimigoPercent}%`}}
                   >
                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-white/10"></div>
                   </div>
-                  <div className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                  <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
                     {Math.round(hpInimigoPercent)}%
                   </div>
                 </div>
@@ -685,17 +685,17 @@ function BatalhaContent() {
             </div>
 
             {/* VS */}
-            <div className="text-center">
-              <div className="inline-block bg-gradient-to-r from-red-900/50 via-orange-900/80 to-cyan-900/50 px-4 py-1 rounded-full border border-orange-500 text-orange-400 font-black text-sm animate-pulse">
+            <div className="text-center py-1">
+              <div className="inline-block bg-gradient-to-r from-red-900/50 via-orange-900/80 to-cyan-900/50 px-6 py-1.5 rounded-full border-2 border-orange-500 text-orange-400 font-black text-lg animate-pulse shadow-lg shadow-orange-500/30">
                 ⚔️ VS ⚔️
               </div>
             </div>
 
             {/* Jogador */}
-            <div className="bg-gradient-to-br from-slate-900/90 via-cyan-950/30 to-slate-900/90 rounded-lg p-3 border-2 border-cyan-500/50">
+            <div className="bg-gradient-to-br from-slate-900/90 via-cyan-950/30 to-slate-900/90 rounded-lg p-4 border-2 border-cyan-500/50">
               <div className="flex items-center justify-between mb-2">
-                <div className="w-20 h-20 flex-shrink-0 relative">
-                  <AvatarSVG avatar={estado.jogador} tamanho={80} isEnemy={false} />
+                <div className="w-28 h-28 flex-shrink-0 relative">
+                  <AvatarSVG avatar={estado.jogador} tamanho={112} isEnemy={false} />
 
                   {/* Animação de dano no jogador */}
                   {animacaoDano && animacaoDano.tipo === 'jogador' && (
@@ -716,26 +716,26 @@ function BatalhaContent() {
                   )}
                 </div>
 
-                <div className="text-right flex-1 ml-2">
-                  <div className="flex items-center justify-end gap-1.5 mb-0.5">
-                    <span className="px-1.5 py-0.5 bg-cyan-900/50 border border-cyan-500/50 rounded text-[10px] text-cyan-300">
+                <div className="text-right flex-1 ml-3">
+                  <div className="flex items-center justify-end gap-2 mb-1">
+                    <span className="px-2 py-0.5 bg-cyan-900/50 border border-cyan-500/50 rounded text-xs text-cyan-300">
                       Lv.{estado.jogador.nivel}
                     </span>
-                    <h3 className="text-lg font-bold text-cyan-400">{estado.jogador.nome}</h3>
+                    <h3 className="text-xl font-bold text-cyan-400">{estado.jogador.nome}</h3>
                   </div>
-                  <div className="flex items-center justify-end gap-1.5 text-xs">
-                    <span className="text-slate-400 text-[10px]">{estado.jogador.raridade}</span>
-                    <span className="text-slate-500 text-[10px]">•</span>
-                    <span className="px-1.5 py-0.5 bg-slate-800/50 rounded text-slate-400 text-[10px]">
+                  <div className="flex items-center justify-end gap-2 text-xs">
+                    <span className="text-slate-400">{estado.jogador.raridade}</span>
+                    <span className="text-slate-500">•</span>
+                    <span className="px-2 py-0.5 bg-slate-800/50 rounded text-slate-400">
                       {estado.jogador.elemento}
                     </span>
                   </div>
 
                   {/* Buffs do Jogador */}
                   {estado.jogador.buffs && estado.jogador.buffs.length > 0 && (
-                    <div className="flex gap-0.5 mt-1 flex-wrap justify-end">
+                    <div className="flex gap-1 mt-1 flex-wrap justify-end">
                       {estado.jogador.buffs.map((buff, idx) => (
-                        <span key={idx} className="text-sm" title={`${buff.nome} (${buff.turnos} turnos)`}>
+                        <span key={idx} className="text-base" title={`${buff.nome} (${buff.turnos} turnos)`}>
                           {buff.icone}
                         </span>
                       ))}
@@ -745,38 +745,38 @@ function BatalhaContent() {
               </div>
 
               {/* HP do Jogador */}
-              <div className="mb-1.5 space-y-0.5">
-                <div className="flex justify-between text-xs">
+              <div className="mb-2 space-y-1">
+                <div className="flex justify-between text-sm">
                   <span className="text-slate-400 font-semibold">HP</span>
-                  <span className="text-green-400 font-mono font-bold text-[10px]">{estado.jogador.hp_atual} / {estado.jogador.hp_maximo}</span>
+                  <span className="text-green-400 font-mono font-bold text-xs">{estado.jogador.hp_atual} / {estado.jogador.hp_maximo}</span>
                 </div>
-                <div className="relative w-full bg-slate-800 rounded-full h-3 overflow-hidden border border-slate-700">
+                <div className="relative w-full bg-slate-800 rounded-full h-4 overflow-hidden border border-slate-700">
                   <div
-                    className="bg-gradient-to-r from-green-600 via-green-500 to-green-600 h-3 transition-all duration-500 relative"
+                    className="bg-gradient-to-r from-green-600 via-green-500 to-green-600 h-4 transition-all duration-500 relative"
                     style={{width: `${hpJogadorPercent}%`}}
                   >
                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-white/10"></div>
                   </div>
-                  <div className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                  <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
                     {Math.round(hpJogadorPercent)}%
                   </div>
                 </div>
               </div>
 
               {/* Energia do Jogador */}
-              <div className="space-y-0.5">
-                <div className="flex justify-between text-xs">
+              <div className="space-y-1">
+                <div className="flex justify-between text-sm">
                   <span className="text-slate-400 font-semibold">Energia</span>
-                  <span className="text-blue-400 font-mono font-bold text-[10px]">{estado.jogador.energia_atual} / {estado.jogador.energia_maxima || 100}</span>
+                  <span className="text-blue-400 font-mono font-bold text-xs">{estado.jogador.energia_atual} / {estado.jogador.energia_maxima || 100}</span>
                 </div>
-                <div className="relative w-full bg-slate-800 rounded-full h-2.5 overflow-hidden border border-slate-700">
+                <div className="relative w-full bg-slate-800 rounded-full h-3 overflow-hidden border border-slate-700">
                   <div
-                    className="bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-600 h-2.5 transition-all duration-500 relative"
+                    className="bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-600 h-3 transition-all duration-500 relative"
                     style={{width: `${energiaJogadorPercent}%`}}
                   >
                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-white/10"></div>
                   </div>
-                  <div className="absolute inset-0 flex items-center justify-center text-[9px] font-bold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                  <div className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
                     {estado.jogador.energia_atual}
                   </div>
                 </div>
@@ -784,8 +784,8 @@ function BatalhaContent() {
 
               {/* Indicador de Exaustão */}
               {estado.jogador.exaustao > 0 && (
-                <div className="mt-1.5 pt-1.5 border-t border-slate-700">
-                  <div className="flex items-center justify-between text-[10px] mb-0.5">
+                <div className="mt-2 pt-2 border-t border-slate-700">
+                  <div className="flex items-center justify-between text-xs mb-1">
                     <span className="text-slate-400">Exaustão</span>
                     <span className={`font-bold ${
                       estado.jogador.exaustao >= 80 ? 'text-red-500' :
@@ -801,9 +801,9 @@ function BatalhaContent() {
                        '💚'} {estado.jogador.exaustao}/100
                     </span>
                   </div>
-                  <div className="relative w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                  <div className="relative w-full bg-slate-800 rounded-full h-2 overflow-hidden">
                     <div
-                      className={`h-1.5 transition-all duration-500 ${
+                      className={`h-2 transition-all duration-500 ${
                         estado.jogador.exaustao >= 80 ? 'bg-red-600' :
                         estado.jogador.exaustao >= 60 ? 'bg-red-500' :
                         estado.jogador.exaustao >= 40 ? 'bg-orange-500' :
@@ -814,7 +814,7 @@ function BatalhaContent() {
                     ></div>
                   </div>
                   {estado.jogador.exaustao >= 60 && (
-                    <div className="text-[9px] text-red-400 mt-0.5 flex items-center gap-0.5">
+                    <div className="text-[10px] text-red-400 mt-1 flex items-center gap-1">
                       <span>⚠️</span>
                       <span>Stats reduzidos!</span>
                     </div>
@@ -822,108 +822,102 @@ function BatalhaContent() {
                 </div>
               )}
             </div>
-
-            {/* Ações */}
-            <div className="bg-slate-900/80 rounded-lg p-2.5 border border-slate-700">
-              <h3 className="text-cyan-400 font-bold mb-2 text-xs">⚡ AÇÕES</h3>
-
-              {/* Habilidades */}
-              <div className="grid grid-cols-2 gap-1.5 mb-2">
-                {estado.jogador.habilidades && estado.jogador.habilidades.length > 0 ? estado.jogador.habilidades.map((hab, index) => {
-                  const custoEnergia = hab.custo_energia || hab.custoEnergia || 20;
-                  const podeUsar = estado.jogador.energia_atual >= custoEnergia && !turnoIA && !processando;
-                  const energiaInsuficiente = estado.jogador.energia_atual < custoEnergia;
-
-                  return (
-                    <button
-                      key={index}
-                      onClick={() => podeUsar && executarAcao('habilidade', index)}
-                      disabled={!podeUsar}
-                      className={`p-2 rounded border transition-all text-left relative overflow-hidden ${
-                        podeUsar
-                          ? 'border-purple-500 bg-gradient-to-br from-purple-900/40 to-purple-800/30 hover:from-purple-800/50 hover:to-purple-700/40 hover:scale-102 cursor-pointer'
-                          : energiaInsuficiente
-                          ? 'border-slate-700 bg-slate-800/30 opacity-40 cursor-not-allowed'
-                          : 'border-slate-600 bg-slate-800/20 opacity-50 cursor-wait'
-                      }`}
-                    >
-                      {podeUsar && (
-                        <div className="absolute inset-0 bg-gradient-to-r from-purple-500/0 via-purple-500/10 to-purple-500/0 animate-pulse"></div>
-                      )}
-                      <div className="relative z-10">
-                        <div className="font-bold text-purple-300 text-xs mb-0.5 flex items-center justify-between">
-                          <span className="truncate">{hab.nome}</span>
-                          {hab.tipo && (
-                            <span className="text-[9px] px-1 py-0.5 rounded bg-purple-500/20 text-purple-200 ml-1">
-                              {hab.tipo}
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-[10px] text-slate-400 mb-1 line-clamp-1">{hab.descricao}</div>
-                        <div className={`text-[10px] flex items-center justify-between ${
-                          energiaInsuficiente ? 'text-red-400' : 'text-blue-400'
-                        }`}>
-                          <span>⚡ {custoEnergia}</span>
-                          {energiaInsuficiente && (
-                            <span className="text-[9px] text-red-400">❌ Sem energia</span>
-                          )}
-                        </div>
-                      </div>
-                    </button>
-                  );
-                }) : (
-                  <div className="col-span-2 text-center text-slate-400 py-2 text-xs">
-                    Sem habilidades
-                  </div>
-                )}
-              </div>
-
-              {/* Ações Especiais */}
-              <div className="grid grid-cols-3 gap-1.5">
-                <button
-                  onClick={() => !turnoIA && !processando && executarAcao('ataque_basico')}
-                  disabled={turnoIA || processando}
-                  className="px-2 py-2 bg-gradient-to-br from-red-900/60 to-red-800/40 hover:from-red-800/70 hover:to-red-700/50 rounded border border-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-[10px] font-semibold hover:scale-102 flex flex-col items-center gap-0.5"
-                >
-                  <span>⚔️</span>
-                  <span>Ataque</span>
-                  <span className="text-[8px] text-red-300">(0⚡)</span>
-                </button>
-
-                <button
-                  onClick={() => !turnoIA && !processando && executarAcao('defender')}
-                  disabled={turnoIA || processando}
-                  className="px-2 py-2 bg-gradient-to-br from-blue-900/60 to-blue-800/40 hover:from-blue-800/70 hover:to-blue-700/50 rounded border border-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-[10px] font-semibold hover:scale-102 flex flex-col items-center gap-0.5"
-                >
-                  <span>🛡️</span>
-                  <span>Defender</span>
-                  <span className="text-[8px] text-blue-300">(+15⚡)</span>
-                </button>
-
-                <button
-                  onClick={() => !turnoIA && !processando && executarAcao('esperar')}
-                  disabled={turnoIA || processando}
-                  className="px-2 py-2 bg-gradient-to-br from-green-900/60 to-green-800/40 hover:from-green-800/70 hover:to-green-700/50 rounded border border-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-[10px] font-semibold hover:scale-102 flex flex-col items-center gap-0.5"
-                >
-                  <span>⏸️</span>
-                  <span>Esperar</span>
-                  <span className="text-[8px] text-green-300">(+30⚡)</span>
-                </button>
-              </div>
-            </div>
           </div>
 
-          {/* Log de Combate */}
-          <div className="bg-slate-900/80 rounded-lg p-2 border border-slate-700 max-h-[calc(100vh-6rem)] overflow-hidden flex flex-col">
-            <h3 className="text-cyan-400 font-bold mb-1.5 text-xs">📜 LOG</h3>
+          {/* Ações - Lateral Direita */}
+          <div className="bg-slate-900/80 rounded-lg p-3 border border-slate-700 h-fit">
+            <h3 className="text-cyan-400 font-bold mb-3 text-sm">⚡ AÇÕES</h3>
 
-            <div className="flex-1 overflow-y-auto space-y-0.5 text-[10px] font-mono">
-              {log.map((entry, i) => (
-                <div key={i} className="text-slate-300 leading-snug">
-                  {entry.texto}
+            {/* Habilidades */}
+            <div className="space-y-2 mb-3">
+              {estado.jogador.habilidades && estado.jogador.habilidades.length > 0 ? estado.jogador.habilidades.map((hab, index) => {
+                const custoEnergia = hab.custo_energia || hab.custoEnergia || 20;
+                const podeUsar = estado.jogador.energia_atual >= custoEnergia && !turnoIA && !processando;
+                const energiaInsuficiente = estado.jogador.energia_atual < custoEnergia;
+
+                return (
+                  <button
+                    key={index}
+                    onClick={() => podeUsar && executarAcao('habilidade', index)}
+                    disabled={!podeUsar}
+                    className={`w-full p-3 rounded border transition-all text-left relative overflow-hidden ${
+                      podeUsar
+                        ? 'border-purple-500 bg-gradient-to-br from-purple-900/40 to-purple-800/30 hover:from-purple-800/50 hover:to-purple-700/40 hover:scale-105 cursor-pointer'
+                        : energiaInsuficiente
+                        ? 'border-slate-700 bg-slate-800/30 opacity-40 cursor-not-allowed'
+                        : 'border-slate-600 bg-slate-800/20 opacity-50 cursor-wait'
+                    }`}
+                  >
+                    {podeUsar && (
+                      <div className="absolute inset-0 bg-gradient-to-r from-purple-500/0 via-purple-500/10 to-purple-500/0 animate-pulse"></div>
+                    )}
+                    <div className="relative z-10">
+                      <div className="font-bold text-purple-300 text-sm mb-1 flex items-center justify-between">
+                        <span>{hab.nome}</span>
+                        {hab.tipo && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-200">
+                            {hab.tipo}
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-xs text-slate-400 mb-2 line-clamp-2">{hab.descricao}</div>
+                      <div className={`text-xs flex items-center justify-between ${
+                        energiaInsuficiente ? 'text-red-400' : 'text-blue-400'
+                      }`}>
+                        <span>⚡ {custoEnergia} energia</span>
+                        {energiaInsuficiente && (
+                          <span className="text-[10px] text-red-400">❌ Sem energia</span>
+                        )}
+                      </div>
+                    </div>
+                  </button>
+                );
+              }) : (
+                <div className="text-center text-slate-400 py-4 text-xs">
+                  Sem habilidades
                 </div>
-              ))}
+              )}
             </div>
+
+            {/* Ações Especiais */}
+            <div className="space-y-2">
+              <button
+                onClick={() => !turnoIA && !processando && executarAcao('ataque_basico')}
+                disabled={turnoIA || processando}
+                className="w-full px-4 py-3 bg-gradient-to-br from-red-900/60 to-red-800/40 hover:from-red-800/70 hover:to-red-700/50 rounded border border-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm font-semibold hover:scale-105"
+              >
+                ⚔️ Ataque Básico <span className="text-xs text-red-300">(0 energia)</span>
+              </button>
+
+              <button
+                onClick={() => !turnoIA && !processando && executarAcao('defender')}
+                disabled={turnoIA || processando}
+                className="w-full px-4 py-3 bg-gradient-to-br from-blue-900/60 to-blue-800/40 hover:from-blue-800/70 hover:to-blue-700/50 rounded border border-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm font-semibold hover:scale-105"
+              >
+                🛡️ Defender <span className="text-xs text-blue-300">(+15 energia)</span>
+              </button>
+
+              <button
+                onClick={() => !turnoIA && !processando && executarAcao('esperar')}
+                disabled={turnoIA || processando}
+                className="w-full px-4 py-3 bg-gradient-to-br from-green-900/60 to-green-800/40 hover:from-green-800/70 hover:to-green-700/50 rounded border border-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm font-semibold hover:scale-105"
+              >
+                ⏸️ Esperar <span className="text-xs text-green-300">(+30 energia)</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Log de Combate - Embaixo */}
+        <div className="mt-2 bg-slate-900/80 rounded-lg p-3 border border-slate-700">
+          <h3 className="text-cyan-400 font-bold mb-2 text-sm">📜 LOG DE COMBATE</h3>
+
+          <div className="max-h-32 overflow-y-auto space-y-1 text-xs font-mono">
+            {log.map((entry, i) => (
+              <div key={i} className="text-slate-300 leading-relaxed">
+                {entry.texto}
+              </div>
+            ))}
           </div>
         </div>
       </div>
