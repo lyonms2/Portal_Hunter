@@ -14,6 +14,20 @@ export default function BatalhaPage() {
   const [resultado, setResultado] = useState(null);
   const [processando, setProcessando] = useState(false);
 
+  // Função para obter emoji do avatar
+  const getAvatarEmoji = (elemento, isInimigo = false) => {
+    const avatares = {
+      'Fogo': isInimigo ? '😈' : '🧙‍♂️',
+      'Água': isInimigo ? '🧛‍♂️' : '🧜‍♂️',
+      'Terra': isInimigo ? '👹' : '🥷',
+      'Vento': isInimigo ? '👺' : '🧚‍♂️',
+      'Eletricidade': isInimigo ? '⚡😡' : '🧙‍♀️',
+      'Sombra': isInimigo ? '💀' : '🦹‍♂️',
+      'Luz': isInimigo ? '👿' : '🧙‍♂️✨'
+    };
+    return avatares[elemento] || (isInimigo ? '😈' : '🧙');
+  };
+
   useEffect(() => {
     // Carregar estado da batalha
     const batalhaJSON = localStorage.getItem('batalha_atual');
@@ -300,7 +314,7 @@ export default function BatalhaPage() {
           {/* Arena de Combate */}
           <div className="lg:col-span-2 space-y-4">
             {/* Inimigo */}
-            <div className="bg-slate-900/80 rounded-lg p-6 border-2 border-red-500/50">
+            <div className="bg-slate-900/80 rounded-lg p-6 border-2 border-red-500/50 shadow-lg shadow-red-900/50">
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h3 className="text-2xl font-bold text-red-400">{estado.inimigo.nome}</h3>
@@ -308,14 +322,15 @@ export default function BatalhaPage() {
                     Nv.{estado.inimigo.nivel} • {estado.inimigo.elemento}
                   </div>
                 </div>
-                <div className="text-6xl">
-                  {estado.inimigo.elemento === 'Fogo' && '🔥'}
-                  {estado.inimigo.elemento === 'Água' && '💧'}
-                  {estado.inimigo.elemento === 'Terra' && '🪨'}
-                  {estado.inimigo.elemento === 'Vento' && '💨'}
-                  {estado.inimigo.elemento === 'Eletricidade' && '⚡'}
-                  {estado.inimigo.elemento === 'Sombra' && '🌑'}
-                  {estado.inimigo.elemento === 'Luz' && '✨'}
+                <div className="text-8xl drop-shadow-[0_0_15px_rgba(220,38,38,0.6)] hover:scale-110 transition-transform">
+                  <div className="relative inline-block">
+                    <span className="filter brightness-75 contrast-125 saturate-150">
+                      {getAvatarEmoji(estado.inimigo.elemento, true)}
+                    </span>
+                    <div className="absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-xs">
+                      👁️👁️
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -335,23 +350,22 @@ export default function BatalhaPage() {
             </div>
 
             {/* VS */}
-            <div className="text-center">
-              <div className="inline-block bg-slate-900 px-6 py-2 rounded-full border-2 border-orange-500 text-orange-400 font-black text-2xl">
+            <div className="text-center relative">
+              <div className="inline-block bg-gradient-to-r from-red-900/50 via-orange-900/80 to-cyan-900/50 px-8 py-3 rounded-full border-2 border-orange-500 text-orange-400 font-black text-3xl shadow-lg shadow-orange-500/30 animate-pulse">
                 ⚔️ VS ⚔️
+              </div>
+              <div className="absolute left-1/2 transform -translate-x-1/2 -bottom-2 text-xs text-slate-500">
+                Rodada {estado.rodada}
               </div>
             </div>
 
             {/* Jogador */}
-            <div className="bg-slate-900/80 rounded-lg p-6 border-2 border-cyan-500/50">
+            <div className="bg-slate-900/80 rounded-lg p-6 border-2 border-cyan-500/50 shadow-lg shadow-cyan-900/50">
               <div className="flex items-center justify-between mb-4">
-                <div className="text-6xl">
-                  {estado.jogador.elemento === 'Fogo' && '🔥'}
-                  {estado.jogador.elemento === 'Água' && '💧'}
-                  {estado.jogador.elemento === 'Terra' && '🪨'}
-                  {estado.jogador.elemento === 'Vento' && '💨'}
-                  {estado.jogador.elemento === 'Eletricidade' && '⚡'}
-                  {estado.jogador.elemento === 'Sombra' && '🌑'}
-                  {estado.jogador.elemento === 'Luz' && '✨'}
+                <div className="text-8xl drop-shadow-[0_0_15px_rgba(6,182,212,0.6)] hover:scale-110 transition-transform">
+                  <span className="filter brightness-110 saturate-125">
+                    {getAvatarEmoji(estado.jogador.elemento, false)}
+                  </span>
                 </div>
                 <div className="text-right">
                   <h3 className="text-2xl font-bold text-cyan-400">{estado.jogador.nome}</h3>
@@ -398,21 +412,43 @@ export default function BatalhaPage() {
               <div className="grid grid-cols-2 gap-3 mb-4">
                 {estado.jogador.habilidades.map((hab, index) => {
                   const podeUsar = estado.jogador.energia_atual >= hab.custo_energia && !turnoIA && !processando;
-                  
+                  const energiaInsuficiente = estado.jogador.energia_atual < hab.custo_energia;
+
                   return (
                     <button
                       key={index}
                       onClick={() => podeUsar && executarAcao('habilidade', index)}
                       disabled={!podeUsar}
-                      className={`p-3 rounded-lg border-2 transition-all text-left ${
+                      className={`p-3 rounded-lg border-2 transition-all text-left relative overflow-hidden ${
                         podeUsar
-                          ? 'border-purple-500 bg-purple-900/30 hover:bg-purple-900/50'
-                          : 'border-slate-700 bg-slate-800/30 opacity-50 cursor-not-allowed'
+                          ? 'border-purple-500 bg-gradient-to-br from-purple-900/40 to-purple-800/30 hover:from-purple-800/50 hover:to-purple-700/40 hover:scale-105 hover:shadow-lg hover:shadow-purple-500/20 cursor-pointer'
+                          : energiaInsuficiente
+                          ? 'border-slate-700 bg-slate-800/30 opacity-40 cursor-not-allowed'
+                          : 'border-slate-600 bg-slate-800/20 opacity-50 cursor-wait'
                       }`}
                     >
-                      <div className="font-bold text-purple-300 text-sm mb-1">{hab.nome}</div>
-                      <div className="text-xs text-slate-400 mb-2 line-clamp-2">{hab.descricao}</div>
-                      <div className="text-xs text-blue-400">⚡ {hab.custo_energia} energia</div>
+                      {podeUsar && (
+                        <div className="absolute inset-0 bg-gradient-to-r from-purple-500/0 via-purple-500/10 to-purple-500/0 animate-pulse"></div>
+                      )}
+                      <div className="relative z-10">
+                        <div className="font-bold text-purple-300 text-sm mb-1 flex items-center justify-between">
+                          <span>{hab.nome}</span>
+                          {hab.tipo && (
+                            <span className="text-[10px] px-1 py-0.5 rounded bg-purple-500/20 text-purple-200">
+                              {hab.tipo}
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-xs text-slate-400 mb-2 line-clamp-2">{hab.descricao}</div>
+                        <div className={`text-xs flex items-center justify-between ${
+                          energiaInsuficiente ? 'text-red-400' : 'text-blue-400'
+                        }`}>
+                          <span>⚡ {hab.custo_energia} energia</span>
+                          {energiaInsuficiente && (
+                            <span className="text-[10px] text-red-400">❌ Sem energia</span>
+                          )}
+                        </div>
+                      </div>
                     </button>
                   );
                 })}
@@ -423,17 +459,17 @@ export default function BatalhaPage() {
                 <button
                   onClick={() => !turnoIA && !processando && executarAcao('defender')}
                   disabled={turnoIA || processando}
-                  className="px-4 py-3 bg-blue-900/50 hover:bg-blue-900/70 rounded border border-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
+                  className="px-4 py-3 bg-gradient-to-br from-blue-900/60 to-blue-800/40 hover:from-blue-800/70 hover:to-blue-700/50 rounded-lg border-2 border-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm font-semibold hover:scale-105 hover:shadow-lg hover:shadow-blue-500/20"
                 >
-                  🛡️ Defender (+15 energia)
+                  🛡️ Defender <span className="text-xs text-blue-300">(+15 energia)</span>
                 </button>
-                
+
                 <button
                   onClick={() => !turnoIA && !processando && executarAcao('esperar')}
                   disabled={turnoIA || processando}
-                  className="px-4 py-3 bg-green-900/50 hover:bg-green-900/70 rounded border border-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
+                  className="px-4 py-3 bg-gradient-to-br from-green-900/60 to-green-800/40 hover:from-green-800/70 hover:to-green-700/50 rounded-lg border-2 border-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm font-semibold hover:scale-105 hover:shadow-lg hover:shadow-green-500/20"
                 >
-                  ⏸️ Esperar (+30 energia)
+                  ⏸️ Esperar <span className="text-xs text-green-300">(+30 energia)</span>
                 </button>
               </div>
             </div>
