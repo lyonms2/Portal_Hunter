@@ -1,11 +1,13 @@
 import { getSupabaseClientSafe } from "@/lib/supabase/serverClient";
 
-const supabase = getSupabaseClientSafe();
+// MOVIDO PARA DENTRO DA FUNÇÃO: const supabase = getSupabaseClientSafe();
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request) {
   try {
+    // Inicializar Supabase dentro da função
+    const supabase = getSupabaseClientSafe(true);
     if (!supabase) {
       return Response.json(
         { message: "Serviço temporariamente indisponível" },
@@ -52,6 +54,8 @@ export async function GET(request) {
 
 export async function PUT(request) {
   try {
+    // Inicializar Supabase dentro da função
+    const supabase = getSupabaseClientSafe(true);
     if (!supabase) {
       return Response.json(
         { message: "Serviço temporariamente indisponível" },
@@ -146,6 +150,8 @@ export async function PUT(request) {
 
 export async function DELETE(request) {
   try {
+    // Inicializar Supabase dentro da função
+    const supabase = getSupabaseClientSafe(true);
     if (!supabase) {
       return Response.json(
         { message: "Serviço temporariamente indisponível" },

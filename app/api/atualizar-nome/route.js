@@ -1,13 +1,15 @@
 import { getSupabaseClientSafe } from "@/lib/supabase/serverClient";
 
-const supabase = getSupabaseClientSafe();
+// MOVIDO PARA DENTRO DA FUNÇÃO: const supabase = getSupabaseClientSafe();
 
 export const dynamic = 'force-dynamic';
 
 export async function PUT(request) {
   console.log("=== ATUALIZAR NOME DE OPERAÇÃO ===");
-  
+
   try {
+    // Inicializar Supabase dentro da função
+    const supabase = getSupabaseClientSafe(true);
     if (!supabase) {
       return Response.json(
         { message: "Serviço temporariamente indisponível" },

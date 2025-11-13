@@ -1,7 +1,7 @@
 import { getSupabaseAnonClient } from '@/lib/supabase/serverClient';
 import { validarStats } from '../../avatares/sistemas/statsSystem';
 
-const supabase = getSupabaseAnonClient();
+// MOVIDO PARA DENTRO DA FUNÇÃO: const supabase = getSupabaseAnonClient();
 
 /**
  * Sistema de Ressurreição Balanceado
@@ -16,8 +16,11 @@ const supabase = getSupabaseAnonClient();
 
 export async function POST(request) {
   console.log("=== INICIANDO RITUAL DE RESSURREIÇÃO ===");
-  
+
   try {
+    // Inicializar Supabase dentro da função
+    const supabase = getSupabaseAnonClient();
+
     const { userId, avatarId } = await request.json();
     console.log("Dados recebidos:", { userId, avatarId });
 
