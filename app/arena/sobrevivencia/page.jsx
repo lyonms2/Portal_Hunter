@@ -175,31 +175,34 @@ export default function ArenaSobrevivenciaPage() {
       const exaustaoOnda = calcularExaustaoOnda(onda);
       setExaustaoAcumulada(prev => prev + exaustaoOnda);
 
-      // Atualizar stats do avatar e verificar resultado
+      // Calcular novos valores antes de atualizar estado
+      let novoHP = 0;
+      let morreu = false;
+
+      // Atualizar stats do avatar
       setStatsAvatarAtual(prev => {
         if (!prev) return prev;
 
-        const novoHP = Math.max(0, prev.hp_atual - dano);
+        novoHP = Math.max(0, prev.hp_atual - dano);
         const novaEnergia = Math.max(0, prev.energia_atual - energiaGasta);
+        morreu = novoHP <= 0;
 
-        const novoStats = {
+        return {
           ...prev,
           hp_atual: novoHP,
           energia_atual: novaEnergia
         };
-
-        // Agendar verificação de morte/vitória
-        setTimeout(() => {
-          if (novoHP <= 0) {
-            setAutoPlay(false);
-            finalizarSobrevivencia(onda, true);
-          } else {
-            ondaCompleta(onda);
-          }
-        }, 500);
-
-        return novoStats;
       });
+
+      // Verificar resultado FORA do setState
+      setTimeout(() => {
+        if (morreu) {
+          setAutoPlay(false);
+          finalizarSobrevivencia(onda, true);
+        } else {
+          ondaCompleta(onda);
+        }
+      }, 600);
     }, tempoCombate);
   };
 
@@ -220,8 +223,11 @@ export default function ArenaSobrevivenciaPage() {
       fragmentos: prev.fragmentos + recompensas.fragmentos_garantidos + (Math.random() < recompensas.chance_fragmento ? 1 : 0)
     }));
 
-    // Verificar level up
+    // Verificar level up e atualizar XP
+    let houveLevelUp = false;
     setStatsAvatarAtual(prev => {
+      if (!prev) return prev;
+
       const novoXP = prev.xp_atual + recompensas.xp;
       const xpParaProximoNivel = prev.nivel * 100; // Fórmula simples
 
@@ -229,6 +235,7 @@ export default function ArenaSobrevivenciaPage() {
         // Level up!
         const nivelAnterior = prev.nivel;
         const nivelNovo = nivelAnterior + 1;
+        houveLevelUp = true;
 
         // Mostrar animação de level up (mas só no modo normal)
         if (!autoPlay) {
@@ -255,20 +262,23 @@ export default function ArenaSobrevivenciaPage() {
       return { ...prev, xp_atual: novoXP };
     });
 
-    // Se autoPlay está ativo, continuar automaticamente
-    if (autoPlay) {
-      // Continuar para próxima onda
-      const proximaOnda = onda + 1;
-      setOndaAtual(proximaOnda);
-      setTimeout(() => {
-        iniciarOndaAtual(proximaOnda);
-      }, 500); // Delay curto entre ondas no auto-play
-      return;
-    }
+    // Decidir próxima ação após pequeno delay para garantir que state foi atualizado
+    setTimeout(() => {
+      // Se autoPlay está ativo, continuar automaticamente
+      if (autoPlay) {
+        // Continuar para próxima onda
+        const proximaOnda = onda + 1;
+        setOndaAtual(proximaOnda);
+        setTimeout(() => {
+          iniciarOndaAtual(proximaOnda);
+        }, 400); // Delay curto entre ondas no auto-play
+        return;
+      }
 
-    // Modo normal - mostrar modal de onda completa
-    const exaustao = calcularExaustaoOnda(onda);
-    setModalOndaCompleta({ onda, recompensas, exaustao });
+      // Modo normal - mostrar modal de onda completa
+      const exaustao = calcularExaustaoOnda(onda);
+      setModalOndaCompleta({ onda, recompensas, exaustao });
+    }, 100);
   };
 
   const continuarParaProximaOnda = () => {
