@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { aplicarPenalidadesExaustao, getNivelExaustao } from "../../avatares/sistemas/exhaustionSystem";
 import AvatarSVG from "../../components/AvatarSVG";
@@ -15,6 +15,7 @@ export default function ArenaSobrevivenciaPage() {
   const [ondaAtual, setOndaAtual] = useState(0);
   const [recordePessoal, setRecordePessoal] = useState(0);
   const [autoPlay, setAutoPlay] = useState(false); // Modo auto-play
+  const autoPlayRef = useRef(false); // Ref para acesso imediato ao valor de autoPlay
 
   // Estados de combate
   const [statsAvatarAtual, setStatsAvatarAtual] = useState(null); // HP, energia, stats atuais
@@ -145,6 +146,7 @@ export default function ArenaSobrevivenciaPage() {
     setRecompensasAcumuladas({ xp: 0, moedas: 0, fragmentos: 0 });
     setExaustaoAcumulada(0);
     setAutoPlay(comAutoPlay);
+    autoPlayRef.current = comAutoPlay; // Sincronizar ref imediatamente
     setEstadoJogo('preparando');
     setOndaAtual(1);
 
@@ -161,7 +163,7 @@ export default function ArenaSobrevivenciaPage() {
     const danoBase = 15 * multiplicador;
     const gastoEnergiaBase = 20 + (onda * 2);
 
-    const tempoCombate = autoPlay ? 800 : 2500;
+    const tempoCombate = autoPlayRef.current ? 800 : 2500;
 
     setTimeout(() => {
       // Calcular dano recebido na onda (progressivo e balanceado)
@@ -198,11 +200,12 @@ export default function ArenaSobrevivenciaPage() {
       setTimeout(() => {
         if (morreu) {
           setAutoPlay(false);
+          autoPlayRef.current = false;
           finalizarSobrevivencia(onda, true);
         } else {
           ondaCompleta(onda);
         }
-      }, 600);
+      }, 400);
     }, tempoCombate);
   };
 
@@ -238,7 +241,7 @@ export default function ArenaSobrevivenciaPage() {
         houveLevelUp = true;
 
         // Mostrar animação de level up (mas só no modo normal)
-        if (!autoPlay) {
+        if (!autoPlayRef.current) {
           setTimeout(() => {
             setModalLevelUp({ nivelAnterior, nivelNovo });
           }, 1500);
@@ -262,23 +265,19 @@ export default function ArenaSobrevivenciaPage() {
       return { ...prev, xp_atual: novoXP };
     });
 
-    // Decidir próxima ação após pequeno delay para garantir que state foi atualizado
-    setTimeout(() => {
-      // Se autoPlay está ativo, continuar automaticamente
-      if (autoPlay) {
-        // Continuar para próxima onda
-        const proximaOnda = onda + 1;
-        setOndaAtual(proximaOnda);
-        setTimeout(() => {
-          iniciarOndaAtual(proximaOnda);
-        }, 400); // Delay curto entre ondas no auto-play
-        return;
-      }
-
+    // Decidir próxima ação - verificar imediatamente se é autoPlay
+    if (autoPlayRef.current) {
+      // Continuar para próxima onda
+      const proximaOnda = onda + 1;
+      setOndaAtual(proximaOnda);
+      setTimeout(() => {
+        iniciarOndaAtual(proximaOnda);
+      }, 300); // Delay curto entre ondas no auto-play
+    } else {
       // Modo normal - mostrar modal de onda completa
       const exaustao = calcularExaustaoOnda(onda);
       setModalOndaCompleta({ onda, recompensas, exaustao });
-    }, 100);
+    }
   };
 
   const continuarParaProximaOnda = () => {
@@ -1123,6 +1122,7 @@ export default function ArenaSobrevivenciaPage() {
                 <button
                   onClick={() => {
                     setAutoPlay(false);
+                    autoPlayRef.current = false;
                     finalizarSobrevivencia(ondaAtual, false);
                   }}
                   className="px-8 py-3 bg-red-900/50 hover:bg-red-900/70 text-red-300 rounded-lg border border-red-700 transition-colors font-bold"
