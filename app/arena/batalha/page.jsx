@@ -423,7 +423,7 @@ export default function BatalhaPage() {
               <div className="space-y-1">
                 <div className="flex justify-between text-sm">
                   <span className="text-slate-400 font-semibold">Energia</span>
-                  <span className="text-blue-400 font-mono font-bold">{estado.jogador.energia_atual} / 100</span>
+                  <span className="text-blue-400 font-mono font-bold">{estado.jogador.energia_atual} / {estado.jogador.energia_maxima || 100}</span>
                 </div>
                 <div className="relative w-full bg-slate-800 rounded-full h-4 overflow-hidden border border-slate-700">
                   <div
@@ -437,6 +437,46 @@ export default function BatalhaPage() {
                   </div>
                 </div>
               </div>
+
+              {/* Indicador de Exaustão */}
+              {estado.jogador.exaustao > 0 && (
+                <div className="mt-3 pt-3 border-t border-slate-700">
+                  <div className="flex items-center justify-between text-xs mb-1">
+                    <span className="text-slate-400">Exaustão {estado.jogador.nivel_exaustao && `(${estado.jogador.nivel_exaustao})`}</span>
+                    <span className={`font-bold ${
+                      estado.jogador.exaustao >= 80 ? 'text-red-500' :
+                      estado.jogador.exaustao >= 60 ? 'text-red-400' :
+                      estado.jogador.exaustao >= 40 ? 'text-orange-400' :
+                      estado.jogador.exaustao >= 20 ? 'text-yellow-400' :
+                      'text-green-400'
+                    }`}>
+                      {estado.jogador.exaustao >= 80 ? '💀' :
+                       estado.jogador.exaustao >= 60 ? '🔴' :
+                       estado.jogador.exaustao >= 40 ? '🟠' :
+                       estado.jogador.exaustao >= 20 ? '💛' :
+                       '💚'} {estado.jogador.exaustao}/100
+                    </span>
+                  </div>
+                  <div className="relative w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+                    <div
+                      className={`h-2 transition-all duration-500 ${
+                        estado.jogador.exaustao >= 80 ? 'bg-red-600' :
+                        estado.jogador.exaustao >= 60 ? 'bg-red-500' :
+                        estado.jogador.exaustao >= 40 ? 'bg-orange-500' :
+                        estado.jogador.exaustao >= 20 ? 'bg-yellow-500' :
+                        'bg-green-500'
+                      }`}
+                      style={{width: `${estado.jogador.exaustao}%`}}
+                    ></div>
+                  </div>
+                  {estado.jogador.exaustao >= 60 && (
+                    <div className="text-xs text-red-400 mt-1 flex items-center gap-1">
+                      <span>⚠️</span>
+                      <span>Stats reduzidos por exaustão!</span>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Ações */}
