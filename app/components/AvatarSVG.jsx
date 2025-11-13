@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from 'react';
 
-export default function AvatarSVG({ avatar, tamanho = 200, className = "" }) {
+export default function AvatarSVG({ avatar, tamanho = 200, className = "", isEnemy = false }) {
   const [svg, setSvg] = useState('');
   const [loading, setLoading] = useState(true);
 
@@ -88,13 +88,25 @@ export default function AvatarSVG({ avatar, tamanho = 200, className = "" }) {
     const gerarSVG = () => {
       const random = createSeededRandom(seed);
       const escolher = (array) => array[random(0, array.length - 1)];
-      
+
       const config = elementosConfig[avatar.elemento];
-      const cor1 = escolher(config.cores);
-      const cor2 = escolher(config.cores);
-      const corSec = escolher(config.coresSecundarias);
-      const corBrilho = config.corBrilho;
-      const corOlho = config.corOlho;
+
+      // Aplicar cores mais escuras para inimigos
+      const ajustarCorParaInimigo = (cor) => {
+        if (!isEnemy) return cor;
+        // Escurecer a cor (reduzir brilho em ~50%)
+        const hex = cor.replace('#', '');
+        const r = Math.max(0, parseInt(hex.substr(0, 2), 16) * 0.5);
+        const g = Math.max(0, parseInt(hex.substr(2, 2), 16) * 0.5);
+        const b = Math.max(0, parseInt(hex.substr(4, 2), 16) * 0.5);
+        return `#${Math.round(r).toString(16).padStart(2, '0')}${Math.round(g).toString(16).padStart(2, '0')}${Math.round(b).toString(16).padStart(2, '0')}`;
+      };
+
+      const cor1 = ajustarCorParaInimigo(escolher(config.cores));
+      const cor2 = ajustarCorParaInimigo(escolher(config.cores));
+      const corSec = ajustarCorParaInimigo(escolher(config.coresSecundarias));
+      const corBrilho = isEnemy ? '#8b0000' : config.corBrilho; // Vermelho escuro para inimigos
+      const corOlho = isEnemy ? '#ff0000' : config.corOlho; // Olhos vermelhos para inimigos
       
       // Características baseadas em raridade
       const mult = avatar.raridade === 'Lendário' ? 2 : avatar.raridade === 'Raro' ? 1.5 : 1;
@@ -137,7 +149,17 @@ export default function AvatarSVG({ avatar, tamanho = 200, className = "" }) {
             <stop offset="0%" style="stop-color:${cor1};stop-opacity:1" />
             <stop offset="100%" style="stop-color:${cor2};stop-opacity:1" />
           </linearGradient>
-        </defs>`;
+          ${isEnemy ? `
+          <filter id="enemy${seed}">
+            <feColorMatrix type="matrix" values="
+              0.7 0 0 0 0.1
+              0 0.3 0 0 0
+              0 0 0.3 0 0
+              0 0 0 1 0" />
+          </filter>` : ''}
+        </defs>
+        ${isEnemy ? `<rect width="200" height="200" fill="none" stroke="#8b0000" stroke-width="4" opacity="0.5"/>` : ''}
+        <g${isEnemy ? ` filter="url(#enemy${seed})"` : ''}>`;
 
       // Aura para lendários
       if (avatar.raridade === 'Lendário') {
@@ -570,7 +592,7 @@ export default function AvatarSVG({ avatar, tamanho = 200, className = "" }) {
         }
       }
 
-      svgContent += `</svg>`;
+      svgContent += `</g></svg>`;
       
       setSvg(svgContent);
       setLoading(false);

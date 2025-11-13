@@ -330,20 +330,8 @@ export default function BatalhaPage() {
                   )}
                 </div>
 
-                <div className="relative drop-shadow-[0_0_25px_rgba(220,38,38,0.9)] hover:scale-110 transition-transform">
-                  {/* Avatar inimigo com filtros malignos */}
-                  <div className="filter brightness-[0.4] contrast-150 saturate-150 hue-rotate-15">
-                    <AvatarSVG avatar={estado.inimigo} tamanho={140} />
-                  </div>
-                  {/* Olhos vermelhos brilhantes - ajustados */}
-                  <div className="absolute top-[47%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex gap-4 pointer-events-none">
-                    <div className="w-4 h-4 rounded-full bg-red-500 shadow-[0_0_15px_rgba(239,68,68,1)] animate-pulse"
-                         style={{animationDuration: '1.5s'}}></div>
-                    <div className="w-4 h-4 rounded-full bg-red-500 shadow-[0_0_15px_rgba(239,68,68,1)] animate-pulse"
-                         style={{animationDuration: '1.5s', animationDelay: '0.1s'}}></div>
-                  </div>
-                  {/* Aura maligna */}
-                  <div className="absolute inset-0 rounded-full bg-red-900/20 blur-xl -z-10"></div>
+                <div className="w-36 h-36 flex-shrink-0">
+                  <AvatarSVG avatar={estado.inimigo} tamanho={144} isEnemy={true} />
                 </div>
               </div>
 
@@ -380,13 +368,8 @@ export default function BatalhaPage() {
             {/* Jogador */}
             <div className="bg-gradient-to-br from-slate-900/90 via-cyan-950/30 to-slate-900/90 rounded-xl p-6 border-2 border-cyan-500/50 shadow-2xl shadow-cyan-900/50 backdrop-blur-sm">
               <div className="flex items-center justify-between mb-4">
-                <div className="relative drop-shadow-[0_0_25px_rgba(6,182,212,0.9)] hover:scale-110 transition-transform">
-                  {/* Avatar jogador com filtros heróicos */}
-                  <div className="filter brightness-110 saturate-125">
-                    <AvatarSVG avatar={estado.jogador} tamanho={140} />
-                  </div>
-                  {/* Aura heróica */}
-                  <div className="absolute inset-0 rounded-full bg-cyan-500/20 blur-xl -z-10"></div>
+                <div className="w-36 h-36 flex-shrink-0">
+                  <AvatarSVG avatar={estado.jogador} tamanho={144} isEnemy={false} />
                 </div>
 
                 <div className="text-right flex-1 ml-4">
@@ -462,9 +445,10 @@ export default function BatalhaPage() {
               
               {/* Habilidades */}
               <div className="grid grid-cols-2 gap-3 mb-4">
-                {estado.jogador.habilidades.map((hab, index) => {
-                  const podeUsar = estado.jogador.energia_atual >= hab.custo_energia && !turnoIA && !processando;
-                  const energiaInsuficiente = estado.jogador.energia_atual < hab.custo_energia;
+                {estado.jogador.habilidades && estado.jogador.habilidades.length > 0 ? estado.jogador.habilidades.map((hab, index) => {
+                  const custoEnergia = hab.custo_energia || hab.custoEnergia || 20;
+                  const podeUsar = estado.jogador.energia_atual >= custoEnergia && !turnoIA && !processando;
+                  const energiaInsuficiente = estado.jogador.energia_atual < custoEnergia;
 
                   return (
                     <button
@@ -495,7 +479,7 @@ export default function BatalhaPage() {
                         <div className={`text-xs flex items-center justify-between ${
                           energiaInsuficiente ? 'text-red-400' : 'text-blue-400'
                         }`}>
-                          <span>⚡ {hab.custo_energia} energia</span>
+                          <span>⚡ {custoEnergia} energia</span>
                           {energiaInsuficiente && (
                             <span className="text-[10px] text-red-400">❌ Sem energia</span>
                           )}
@@ -503,7 +487,11 @@ export default function BatalhaPage() {
                       </div>
                     </button>
                   );
-                })}
+                }) : (
+                  <div className="col-span-2 text-center text-slate-400 py-4">
+                    Nenhuma habilidade disponível
+                  </div>
+                )}
               </div>
 
               {/* Ações Especiais */}
