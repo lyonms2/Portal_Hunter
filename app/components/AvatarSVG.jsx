@@ -88,13 +88,13 @@ export default function AvatarSVG({ avatar, tamanho = 200, className = "", isEne
     const gerarSVG = () => {
       const random = createSeededRandom(seed);
       const escolher = (array) => array[random(0, array.length - 1)];
-      
+
       const config = elementosConfig[avatar.elemento];
 
       // Aplicar cores mais escuras para inimigos
       const ajustarCorParaInimigo = (cor) => {
         if (!isEnemy) return cor;
-        // Escurecer a cor (reduzir brilho em ~30%)
+        // Escurecer a cor (reduzir brilho em ~50%)
         const hex = cor.replace('#', '');
         const r = Math.max(0, parseInt(hex.substr(0, 2), 16) * 0.5);
         const g = Math.max(0, parseInt(hex.substr(2, 2), 16) * 0.5);
@@ -158,8 +158,17 @@ export default function AvatarSVG({ avatar, tamanho = 200, className = "", isEne
             <stop offset="0%" style="stop-color:${cor1};stop-opacity:1" />
             <stop offset="100%" style="stop-color:${cor2};stop-opacity:1" />
           </linearGradient>
+          ${isEnemy ? `
+          <filter id="enemy${seed}">
+            <feColorMatrix type="matrix" values="
+              0.7 0 0 0 0.1
+              0 0.3 0 0 0
+              0 0 0.3 0 0
+              0 0 0 1 0" />
+          </filter>` : ''}
         </defs>
-        ${isEnemy ? `<circle cx="100" cy="100" r="99" fill="none" stroke="#8b0000" stroke-width="2" opacity="0.8"/>` : ''}`;
+        ${isEnemy ? `<rect width="200" height="200" fill="none" stroke="#8b0000" stroke-width="4" opacity="0.5"/>` : ''}
+        <g${isEnemy ? ` filter="url(#enemy${seed})"` : ''}>`;
 
       // Aura para lendários
       if (avatar.raridade === 'Lendário') {
@@ -592,7 +601,7 @@ export default function AvatarSVG({ avatar, tamanho = 200, className = "", isEne
         }
       }
 
-      svgContent += `</svg>`;
+      svgContent += `</g></svg>`;
       
       setSvg(svgContent);
       setLoading(false);
