@@ -82,13 +82,28 @@ function gerarAvatarCompleto(primeiraInvocacao = false) {
     resistencia: stats.resistencia,
     foco: stats.foco,
     
-    // Habilidades (converter para formato do banco)
+    // Habilidades (salvar objeto completo para funcionar em batalha)
     habilidades: habilidades.map(hab => ({
       nome: hab.nome,
       descricao: hab.descricao,
       tipo: hab.tipo,
       raridade: hab.raridade,
-      elemento: hab.elemento
+      elemento: hab.elemento,
+      // Campos críticos para batalha
+      custo_energia: hab.custo_energia,
+      cooldown: hab.cooldown,
+      dano_base: hab.dano_base,
+      multiplicador_stat: hab.multiplicador_stat,
+      stat_primario: hab.stat_primario,
+      efeitos_status: hab.efeitos_status || [],
+      alvo: hab.alvo,
+      area: hab.area,
+      num_alvos: hab.num_alvos,
+      chance_acerto: hab.chance_acerto,
+      chance_efeito: hab.chance_efeito,
+      duracao_efeito: hab.duracao_efeito,
+      nivel_minimo: hab.nivel_minimo,
+      vinculo_minimo: hab.vinculo_minimo
     })),
     
     // Status

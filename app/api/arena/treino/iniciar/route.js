@@ -96,9 +96,46 @@ export async function POST(request) {
       );
     }
 
-    // Garantir que o avatar do jogador tenha habilidades
-    if (!avatar.habilidades || avatar.habilidades.length === 0) {
+    // Garantir que o avatar do jogador tenha habilidades COMPLETAS
+    // Verificar se habilidades estão incompletas (sem efeitos_status ou custo_energia)
+    const habilidadesIncompletas = !avatar.habilidades ||
+      avatar.habilidades.length === 0 ||
+      !avatar.habilidades[0].custo_energia ||
+      !avatar.habilidades[0].efeitos_status;
+
+    if (habilidadesIncompletas) {
+      console.log('⚠️ Habilidades incompletas detectadas. Regenerando...');
       avatar.habilidades = selecionarHabilidadesIniciais(avatar.elemento, avatar.raridade);
+
+      // Atualizar no banco para corrigir permanentemente
+      await supabase
+        .from('avatares')
+        .update({
+          habilidades: avatar.habilidades.map(hab => ({
+            nome: hab.nome,
+            descricao: hab.descricao,
+            tipo: hab.tipo,
+            raridade: hab.raridade,
+            elemento: hab.elemento,
+            custo_energia: hab.custo_energia,
+            cooldown: hab.cooldown,
+            dano_base: hab.dano_base,
+            multiplicador_stat: hab.multiplicador_stat,
+            stat_primario: hab.stat_primario,
+            efeitos_status: hab.efeitos_status || [],
+            alvo: hab.alvo,
+            area: hab.area,
+            num_alvos: hab.num_alvos,
+            chance_acerto: hab.chance_acerto,
+            chance_efeito: hab.chance_efeito,
+            duracao_efeito: hab.duracao_efeito,
+            nivel_minimo: hab.nivel_minimo,
+            vinculo_minimo: hab.vinculo_minimo
+          }))
+        })
+        .eq('id', avatar.id);
+
+      console.log('✅ Habilidades atualizadas no banco:', avatar.habilidades.map(h => h.nome));
     }
 
     // Gerar inimigo
