@@ -60,9 +60,11 @@ export default function AvatarSVG({ avatar, tamanho = 200, className = "", isEne
   };
 
   // Gerar seed único e consistente baseado no avatar
+  // A imagem só muda quando o avatar é ressuscitado (marca_morte muda de false para true)
   const seed = useMemo(() => {
     if (!avatar) return 0;
-    const str = avatar.id + avatar.elemento + avatar.raridade + avatar.forca + avatar.agilidade;
+    const marcaMorte = avatar.marca_morte ? '1' : '0';
+    const str = avatar.id + avatar.elemento + avatar.raridade + marcaMorte;
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i);

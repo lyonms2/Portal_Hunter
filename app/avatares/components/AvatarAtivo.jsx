@@ -1,4 +1,5 @@
 import AvatarSVG from '../../components/AvatarSVG';
+import { aplicarPenalidadesExaustao, getNivelExaustao } from '../sistemas/exhaustionSystem';
 
 const calcularXPNecessario = (nivel) => {
   const XP_BASE = 100;
@@ -59,8 +60,8 @@ const BarraExaustao = ({ exaustao }) => {
   );
 };
 
-export default function AvatarAtivo({ 
-  avatar, 
+export default function AvatarAtivo({
+  avatar,
   onClickDetalhes,
   getCorRaridade,
   getCorBorda,
@@ -68,6 +69,18 @@ export default function AvatarAtivo({
   getEmojiElemento
 }) {
   if (!avatar) return null;
+
+  // Calcular stats com penalidades de exaustão
+  const statsBase = {
+    forca: avatar.forca || 0,
+    agilidade: avatar.agilidade || 0,
+    resistencia: avatar.resistencia || 0,
+    foco: avatar.foco || 0
+  };
+
+  const statsAtuais = aplicarPenalidadesExaustao(statsBase, avatar.exaustao || 0);
+  const nivelExaustao = getNivelExaustao(avatar.exaustao || 0);
+  const temPenalidade = nivelExaustao.penalidades.stats !== undefined;
 
   return (
     <div className="mb-12">
@@ -142,21 +155,49 @@ export default function AvatarAtivo({
 
               {/* Stats */}
               <div className="grid grid-cols-4 gap-3">
-                <div className="bg-slate-900/50 rounded p-3 text-center border border-red-500/20">
+                <div className={`bg-slate-900/50 rounded p-3 text-center border ${temPenalidade ? 'border-red-500/50' : 'border-red-500/20'}`}>
                   <div className="text-xs text-slate-500 uppercase mb-1">FOR</div>
-                  <div className="text-2xl font-bold text-red-400">{avatar.forca}</div>
+                  {temPenalidade ? (
+                    <div>
+                      <div className="text-sm text-slate-600 line-through">{statsBase.forca}</div>
+                      <div className="text-2xl font-bold text-red-400">{statsAtuais.forca}</div>
+                    </div>
+                  ) : (
+                    <div className="text-2xl font-bold text-red-400">{statsBase.forca}</div>
+                  )}
                 </div>
-                <div className="bg-slate-900/50 rounded p-3 text-center border border-green-500/20">
+                <div className={`bg-slate-900/50 rounded p-3 text-center border ${temPenalidade ? 'border-green-500/50' : 'border-green-500/20'}`}>
                   <div className="text-xs text-slate-500 uppercase mb-1">AGI</div>
-                  <div className="text-2xl font-bold text-green-400">{avatar.agilidade}</div>
+                  {temPenalidade ? (
+                    <div>
+                      <div className="text-sm text-slate-600 line-through">{statsBase.agilidade}</div>
+                      <div className="text-2xl font-bold text-green-400">{statsAtuais.agilidade}</div>
+                    </div>
+                  ) : (
+                    <div className="text-2xl font-bold text-green-400">{statsBase.agilidade}</div>
+                  )}
                 </div>
-                <div className="bg-slate-900/50 rounded p-3 text-center border border-blue-500/20">
+                <div className={`bg-slate-900/50 rounded p-3 text-center border ${temPenalidade ? 'border-blue-500/50' : 'border-blue-500/20'}`}>
                   <div className="text-xs text-slate-500 uppercase mb-1">RES</div>
-                  <div className="text-2xl font-bold text-blue-400">{avatar.resistencia}</div>
+                  {temPenalidade ? (
+                    <div>
+                      <div className="text-sm text-slate-600 line-through">{statsBase.resistencia}</div>
+                      <div className="text-2xl font-bold text-blue-400">{statsAtuais.resistencia}</div>
+                    </div>
+                  ) : (
+                    <div className="text-2xl font-bold text-blue-400">{statsBase.resistencia}</div>
+                  )}
                 </div>
-                <div className="bg-slate-900/50 rounded p-3 text-center border border-purple-500/20">
+                <div className={`bg-slate-900/50 rounded p-3 text-center border ${temPenalidade ? 'border-purple-500/50' : 'border-purple-500/20'}`}>
                   <div className="text-xs text-slate-500 uppercase mb-1">FOC</div>
-                  <div className="text-2xl font-bold text-purple-400">{avatar.foco}</div>
+                  {temPenalidade ? (
+                    <div>
+                      <div className="text-sm text-slate-600 line-through">{statsBase.foco}</div>
+                      <div className="text-2xl font-bold text-purple-400">{statsAtuais.foco}</div>
+                    </div>
+                  ) : (
+                    <div className="text-2xl font-bold text-purple-400">{statsBase.foco}</div>
+                  )}
                 </div>
               </div>
 
@@ -200,12 +241,23 @@ export default function AvatarAtivo({
                 </div>
 
                 {/* Total de Stats */}
-                <div className="bg-gradient-to-r from-slate-900/50 to-slate-800/50 rounded-lg p-3 border border-cyan-500/20">
+                <div className={`bg-gradient-to-r from-slate-900/50 to-slate-800/50 rounded-lg p-3 border ${temPenalidade ? 'border-red-500/50' : 'border-cyan-500/20'}`}>
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-slate-500 uppercase">Total de Poder</span>
-                    <span className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
-                      {(avatar.forca || 0) + (avatar.agilidade || 0) + (avatar.resistencia || 0) + (avatar.foco || 0)}
-                    </span>
+                    {temPenalidade ? (
+                      <div className="text-right">
+                        <div className="text-sm text-slate-600 line-through">
+                          {statsBase.forca + statsBase.agilidade + statsBase.resistencia + statsBase.foco}
+                        </div>
+                        <div className="text-2xl font-bold text-red-400">
+                          {statsAtuais.forca + statsAtuais.agilidade + statsAtuais.resistencia + statsAtuais.foco}
+                        </div>
+                      </div>
+                    ) : (
+                      <span className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
+                        {statsBase.forca + statsBase.agilidade + statsBase.resistencia + statsBase.foco}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
