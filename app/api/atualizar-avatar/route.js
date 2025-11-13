@@ -106,6 +106,14 @@ export async function POST(request) {
       updated_at: new Date().toISOString()
     };
 
+    console.log('🔄 Atualizando avatar no banco:', {
+      avatarId,
+      updates,
+      vinculoAnterior: avatarAtual.vinculo,
+      vinculoNovo: novoVinculo,
+      ganhoVinculo: vinculo
+    });
+
     const { data: avatarAtualizado, error: updateError } = await supabase
       .from('avatares')
       .update(updates)
@@ -114,12 +122,26 @@ export async function POST(request) {
       .single();
 
     if (updateError) {
-      console.error('Erro ao atualizar avatar:', updateError);
+      console.error('❌ Erro ao atualizar avatar:', updateError);
+      console.error('Detalhes do erro:', {
+        message: updateError.message,
+        details: updateError.details,
+        hint: updateError.hint,
+        code: updateError.code
+      });
       return NextResponse.json(
-        { message: 'Erro ao atualizar avatar' },
+        { message: 'Erro ao atualizar avatar', erro: updateError.message },
         { status: 500 }
       );
     }
+
+    console.log('✅ Avatar atualizado com sucesso:', {
+      id: avatarAtualizado.id,
+      nivel: avatarAtualizado.nivel,
+      experiencia: avatarAtualizado.experiencia,
+      vinculo: avatarAtualizado.vinculo,
+      exaustao: avatarAtualizado.exaustao
+    });
 
     // === RESPOSTA ===
     return NextResponse.json({
