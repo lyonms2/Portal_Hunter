@@ -7,6 +7,28 @@ import { processarTurnoIA, getMensagemIA } from "@/lib/arena/iaEngine";
 import { calcularRecompensasTreino } from "@/lib/arena/recompensasCalc";
 import AvatarSVG from "@/app/components/AvatarSVG";
 
+// CSS personalizado para animações
+const styles = `
+  @keyframes bounce-up {
+    0% {
+      transform: translateY(0) translateX(-50%);
+      opacity: 1;
+    }
+    50% {
+      transform: translateY(-40px) translateX(-50%);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(-80px) translateX(-50%);
+      opacity: 0;
+    }
+  }
+
+  .animate-bounce-up {
+    animation: bounce-up 1.5s ease-out forwards;
+  }
+`;
+
 export default function BatalhaPage() {
   const router = useRouter();
   const [estado, setEstado] = useState(null);
@@ -15,10 +37,18 @@ export default function BatalhaPage() {
   const [resultado, setResultado] = useState(null);
   const [processando, setProcessando] = useState(false);
 
+  // Sistema de Timer
+  const [tempoRestante, setTempoRestante] = useState(30); // 30 segundos por turno
+  const [timerAtivo, setTimerAtivo] = useState(false);
+
+  // Animações visuais
+  const [animacaoDano, setAnimacaoDano] = useState(null); // { tipo: 'jogador'|'inimigo', valor: number, critico: bool }
+  const [animacaoAcao, setAnimacaoAcao] = useState(null); // { tipo: 'ataque'|'defesa'|'habilidade', alvo: string }
+
   useEffect(() => {
     // Carregar estado da batalha
     const batalhaJSON = localStorage.getItem('batalha_atual');
-    
+
     if (!batalhaJSON) {
       router.push('/arena');
       return;
@@ -26,14 +56,39 @@ export default function BatalhaPage() {
 
     const batalha = JSON.parse(batalhaJSON);
     setEstado(batalha);
-    
+
     adicionarLog('🎮 Batalha iniciada!');
     adicionarLog(`Você: ${batalha.jogador.nome} (${batalha.jogador.elemento})`);
     adicionarLog(`VS`);
     adicionarLog(`Oponente: ${batalha.inimigo.nome} (${batalha.inimigo.elemento})`);
     adicionarLog(`Dificuldade: ${batalha.dificuldade.toUpperCase()}`);
     adicionarLog('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+    // Iniciar timer no primeiro turno
+    setTimerAtivo(true);
+    setTempoRestante(30);
   }, [router]);
+
+  // Timer para turnos (especialmente útil para PvP)
+  useEffect(() => {
+    if (!timerAtivo || turnoIA || processando || resultado) {
+      return;
+    }
+
+    const interval = setInterval(() => {
+      setTempoRestante((prev) => {
+        if (prev <= 1) {
+          // Tempo esgotado - executar ação automática (esperar)
+          adicionarLog('⏱️ Tempo esgotado! Passando a vez...');
+          executarAcao('esperar');
+          return 30;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [timerAtivo, turnoIA, processando, resultado]);
 
   const adicionarLog = (mensagem) => {
     setLog(prev => [...prev, { texto: mensagem, timestamp: Date.now() }]);
@@ -43,17 +98,32 @@ export default function BatalhaPage() {
     if (!estado || turnoIA || processando) return;
 
     setProcessando(true);
+    setTempoRestante(30); // Reset timer
+
+    // Animação da ação
+    setAnimacaoAcao({ tipo, alvo: 'inimigo' });
+    setTimeout(() => setAnimacaoAcao(null), 800);
 
     try {
       const novoEstado = { ...estado };
 
       // === TURNO DO JOGADOR ===
       const resultado = processarAcaoJogador(novoEstado, { tipo, habilidadeIndex });
-      
+
       adicionarLog(`🎯 ${resultado.mensagem}`);
 
       if (resultado.energiaGasta > 0) {
         adicionarLog(`⚡ -${resultado.energiaGasta} energia`);
+      }
+
+      // Animação de dano se houver
+      if (resultado.dano > 0) {
+        setAnimacaoDano({
+          tipo: 'inimigo',
+          valor: resultado.dano,
+          critico: resultado.critico || false
+        });
+        setTimeout(() => setAnimacaoDano(null), 1500);
       }
 
       // Verificar vitória
@@ -84,6 +154,16 @@ export default function BatalhaPage() {
       // Executar ação da IA
       const resultadoIA = processarTurnoIA(novoEstado);
       adicionarLog(`💥 ${resultadoIA.mensagem}`);
+
+      // Animação de dano da IA no jogador
+      if (resultadoIA.dano > 0) {
+        setAnimacaoDano({
+          tipo: 'jogador',
+          valor: resultadoIA.dano,
+          critico: resultadoIA.critico || false
+        });
+        setTimeout(() => setAnimacaoDano(null), 1500);
+      }
 
       // Verificar vitória novamente
       const vitoriaIA = verificarVitoria(novoEstado);
@@ -210,6 +290,9 @@ export default function BatalhaPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-red-950 text-gray-100">
+      {/* CSS personalizado */}
+      <style jsx>{styles}</style>
+
       {/* Modal de Resultado */}
       {resultado && (
         <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -313,6 +396,46 @@ export default function BatalhaPage() {
           </div>
         </div>
 
+        {/* Timer Visual - Mostra quando é turno do jogador */}
+        {!turnoIA && !resultado && (
+          <div className="mb-4 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-lg p-4 border-2 border-cyan-500/30">
+            <div className="flex items-center gap-4">
+              <div className={`text-4xl ${tempoRestante <= 5 ? 'animate-bounce' : ''}`}>
+                {tempoRestante <= 10 ? '⏰' : '⏱️'}
+              </div>
+              <div className="flex-1">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm text-slate-400 font-semibold">Tempo Restante</span>
+                  <span className={`text-2xl font-black font-mono ${
+                    tempoRestante <= 5 ? 'text-red-400 animate-pulse' :
+                    tempoRestante <= 10 ? 'text-orange-400' :
+                    'text-cyan-400'
+                  }`}>
+                    {tempoRestante}s
+                  </span>
+                </div>
+                <div className="relative w-full bg-slate-800 rounded-full h-3 overflow-hidden border border-slate-700">
+                  <div
+                    className={`h-3 transition-all duration-1000 ${
+                      tempoRestante <= 5 ? 'bg-gradient-to-r from-red-600 to-red-500' :
+                      tempoRestante <= 10 ? 'bg-gradient-to-r from-orange-600 to-orange-500' :
+                      'bg-gradient-to-r from-cyan-600 to-cyan-500'
+                    }`}
+                    style={{ width: `${(tempoRestante / 30) * 100}%` }}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-white/10"></div>
+                  </div>
+                </div>
+                {tempoRestante <= 10 && (
+                  <div className="text-xs text-orange-400 mt-1 text-right">
+                    ⚠️ Ação será executada automaticamente ao fim do tempo
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Banner de Última Ação - SEMPRE VISÍVEL */}
         {log.length > 0 && (() => {
           const ultimaAcao = log[log.length - 1].texto;
@@ -414,8 +537,26 @@ export default function BatalhaPage() {
                   )}
                 </div>
 
-                <div className="w-36 h-36 flex-shrink-0">
+                <div className="w-36 h-36 flex-shrink-0 relative">
                   <AvatarSVG avatar={estado.inimigo} tamanho={144} isEnemy={true} />
+
+                  {/* Animação de dano no inimigo */}
+                  {animacaoDano && animacaoDano.tipo === 'inimigo' && (
+                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 animate-bounce-up pointer-events-none">
+                      <div className={`text-4xl font-black ${
+                        animacaoDano.critico ? 'text-purple-400' : 'text-red-400'
+                      } drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]`}>
+                        {animacaoDano.critico && '💀 '}
+                        -{animacaoDano.valor}
+                        {animacaoDano.critico && ' CRÍTICO!'}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Indicador de ação no inimigo */}
+                  {animacaoAcao && animacaoAcao.alvo === 'inimigo' && (
+                    <div className="absolute inset-0 border-4 border-red-500 rounded-full animate-ping"></div>
+                  )}
                 </div>
               </div>
 
@@ -452,8 +593,26 @@ export default function BatalhaPage() {
             {/* Jogador */}
             <div className="bg-gradient-to-br from-slate-900/90 via-cyan-950/30 to-slate-900/90 rounded-xl p-6 border-2 border-cyan-500/50 shadow-2xl shadow-cyan-900/50 backdrop-blur-sm">
               <div className="flex items-center justify-between mb-4">
-                <div className="w-36 h-36 flex-shrink-0">
+                <div className="w-36 h-36 flex-shrink-0 relative">
                   <AvatarSVG avatar={estado.jogador} tamanho={144} isEnemy={false} />
+
+                  {/* Animação de dano no jogador */}
+                  {animacaoDano && animacaoDano.tipo === 'jogador' && (
+                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 animate-bounce-up pointer-events-none">
+                      <div className={`text-4xl font-black ${
+                        animacaoDano.critico ? 'text-purple-400' : 'text-red-400'
+                      } drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]`}>
+                        {animacaoDano.critico && '💀 '}
+                        -{animacaoDano.valor}
+                        {animacaoDano.critico && ' CRÍTICO!'}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Indicador de defesa */}
+                  {animacaoAcao && animacaoAcao.tipo === 'defender' && (
+                    <div className="absolute inset-0 border-4 border-blue-500 rounded-full animate-ping"></div>
+                  )}
                 </div>
 
                 <div className="text-right flex-1 ml-4">
