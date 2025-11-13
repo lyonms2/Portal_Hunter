@@ -140,6 +140,15 @@ export default function AvatarSVG({ avatar, tamanho = 200, className = "", isEne
               <feMergeNode in="SourceGraphic"/>
             </feMerge>
           </filter>
+          ${isEnemy ? `
+          <filter id="enemy${seed}">
+            <feColorMatrix type="matrix" values="
+              0.7 0 0 0 0.1
+              0 0.3 0 0 0
+              0 0 0.3 0 0
+              0 0 0 1 0" />
+            <feGaussianBlur stdDeviation="1" />
+          </filter>` : ''}
           <radialGradient id="grad${seed}">
             <stop offset="0%" style="stop-color:${cor1};stop-opacity:1" />
             <stop offset="50%" style="stop-color:${cor2};stop-opacity:0.9" />
