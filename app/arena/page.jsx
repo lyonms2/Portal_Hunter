@@ -17,34 +17,54 @@ export default function ArenaPage() {
     facil: {
       nome: "Recruta",
       emoji: "🟢",
-      descricao: "Inimigo fraco, ideal para praticar",
+      descricao: "Adversário inexperiente",
+      detalhes: "Ideal para treinar combos e aprender mecânicas. IA comete erros táticos.",
       stats: "70% dos seus stats",
-      recompensas: { xp: 15, moedas: 10 },
-      cor: "from-green-600 to-green-700"
+      iaComportamento: "Joga defensivamente, comete 20% de erros, não usa combos",
+      recompensas: { xp: 25, moedas: 15, chance_fragmento: "5%" },
+      exaustao: 5,
+      cor: "from-green-600 to-green-700",
+      corBorda: "border-green-500",
+      corBg: "bg-green-900/10"
     },
     normal: {
       nome: "Veterano",
       emoji: "🟡",
       descricao: "Desafio equilibrado",
+      detalhes: "Oponente experiente que sabe usar habilidades. IA inteligente mas não perfeita.",
       stats: "100% dos seus stats",
-      recompensas: { xp: 30, moedas: 20 },
-      cor: "from-yellow-600 to-yellow-700"
+      iaComportamento: "Balanceia ataque e defesa, 10% de erros, considera vantagem elemental",
+      recompensas: { xp: 50, moedas: 30, chance_fragmento: "12%" },
+      exaustao: 10,
+      cor: "from-yellow-600 to-yellow-700",
+      corBorda: "border-yellow-500",
+      corBg: "bg-yellow-900/10"
     },
     dificil: {
       nome: "Elite",
       emoji: "🔴",
-      descricao: "Adversário poderoso!",
+      descricao: "Adversário muito poderoso",
+      detalhes: "Combatente de elite com stats superiores. IA usa combos e tática avançada.",
       stats: "130% dos seus stats",
-      recompensas: { xp: 60, moedas: 40 },
-      cor: "from-red-600 to-red-700"
+      iaComportamento: "Agressivo mas inteligente, usa combos, remove buffs, 5% de erros",
+      recompensas: { xp: 100, moedas: 60, chance_fragmento: "25%" },
+      exaustao: 15,
+      cor: "from-red-600 to-red-700",
+      corBorda: "border-red-500",
+      corBg: "bg-red-900/10"
     },
     mestre: {
       nome: "Lendário",
       emoji: "💀",
-      descricao: "IA perfeita. Boa sorte!",
+      descricao: "IA perfeita - Desafio supremo",
+      detalhes: "Adversário lendário com IA perfeita. Não comete erros e prevê suas ações.",
       stats: "150% dos seus stats",
-      recompensas: { xp: 120, moedas: 80, fragmentos: 1 },
-      cor: "from-purple-600 to-purple-800"
+      iaComportamento: "IA PERFEITA: sem erros, antecipa jogadas, usa tática avançada",
+      recompensas: { xp: 200, moedas: 120, fragmentos: 1, chance_extra: "40%" },
+      exaustao: 20,
+      cor: "from-purple-600 to-purple-800",
+      corBorda: "border-purple-500",
+      corBg: "bg-purple-900/10"
     }
   };
 
@@ -306,44 +326,89 @@ export default function ArenaPage() {
                 🎯 DIFICULDADE
               </h2>
 
-              <div className="space-y-3 mb-6">
-                {Object.entries(dificuldades).map(([key, dif]) => (
-                  <button
-                    key={key}
-                    onClick={() => setDificuldadeSelecionada(key)}
-                    className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
-                      dificuldadeSelecionada === key
-                        ? 'border-orange-500 bg-orange-900/30'
-                        : 'border-slate-700 bg-slate-900/50 hover:border-orange-700'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3 mb-2">
-                      <span className="text-2xl">{dif.emoji}</span>
-                      <div>
-                        <div className="font-bold text-white">{dif.nome}</div>
-                        <div className="text-xs text-slate-400">{dif.descricao}</div>
+              <div className="space-y-4 mb-6">
+                {Object.entries(dificuldades).map(([key, dif]) => {
+                  const selecionada = dificuldadeSelecionada === key;
+
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => setDificuldadeSelecionada(key)}
+                      className={`w-full text-left p-5 rounded-xl border-2 transition-all duration-300 ${
+                        selecionada
+                          ? `${dif.corBorda} ${dif.corBg} ring-2 ring-offset-2 ring-offset-slate-950 ${dif.corBorda.replace('border-', 'ring-')} scale-105 shadow-2xl`
+                          : 'border-slate-700 bg-slate-900/50 hover:border-slate-600 hover:bg-slate-900/70'
+                      }`}
+                    >
+                      {/* Header */}
+                      <div className="flex items-start gap-4 mb-3">
+                        <div className={`text-4xl ${selecionada ? 'animate-pulse' : ''}`}>
+                          {dif.emoji}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <div className="font-black text-lg text-white">{dif.nome}</div>
+                            {selecionada && (
+                              <div className="bg-cyan-500 text-white text-xs px-2 py-0.5 rounded-full font-bold animate-pulse">
+                                SELECIONADO
+                              </div>
+                            )}
+                          </div>
+                          <div className="text-sm text-slate-300 font-semibold mb-1">{dif.descricao}</div>
+                          <div className="text-xs text-slate-400 leading-relaxed">{dif.detalhes}</div>
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="text-xs text-slate-500 mb-2">
-                      Inimigo: {dif.stats}
-                    </div>
+                      {/* Stats do Inimigo */}
+                      <div className="bg-slate-950/50 rounded-lg p-3 mb-3">
+                        <div className="text-xs font-bold text-cyan-400 mb-2 uppercase">⚔️ Inimigo</div>
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                          <div>
+                            <span className="text-slate-500">Poder:</span>
+                            <span className="ml-1 text-white font-semibold">{dif.stats}</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-500">Exaustão:</span>
+                            <span className="ml-1 text-orange-400 font-semibold">+{dif.exaustao}</span>
+                          </div>
+                        </div>
+                        <div className="mt-2 text-xs text-slate-400 bg-slate-900/50 p-2 rounded">
+                          <span className="text-purple-400 font-semibold">IA:</span> {dif.iaComportamento}
+                        </div>
+                      </div>
 
-                    <div className="flex gap-2 text-xs">
-                      <span className="bg-blue-900/50 px-2 py-1 rounded">
-                        +{dif.recompensas.xp} XP
-                      </span>
-                      <span className="bg-yellow-900/50 px-2 py-1 rounded">
-                        +{dif.recompensas.moedas} 💰
-                      </span>
-                      {dif.recompensas.fragmentos && (
-                        <span className="bg-purple-900/50 px-2 py-1 rounded">
-                          +{dif.recompensas.fragmentos} 💎
-                        </span>
-                      )}
-                    </div>
-                  </button>
-                ))}
+                      {/* Recompensas */}
+                      <div className="bg-slate-950/50 rounded-lg p-3">
+                        <div className="text-xs font-bold text-green-400 mb-2 uppercase">🎁 Recompensas</div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="bg-blue-900/30 px-3 py-2 rounded text-center">
+                            <div className="text-xs text-blue-300 mb-1">XP</div>
+                            <div className="text-lg font-bold text-blue-400">+{dif.recompensas.xp}</div>
+                          </div>
+                          <div className="bg-yellow-900/30 px-3 py-2 rounded text-center">
+                            <div className="text-xs text-yellow-300 mb-1">Moedas</div>
+                            <div className="text-lg font-bold text-yellow-400">+{dif.recompensas.moedas} 💰</div>
+                          </div>
+                        </div>
+                        <div className="mt-2 flex items-center justify-between text-xs">
+                          <span className="text-slate-400">
+                            Fragmento: <span className="text-purple-400 font-semibold">{dif.recompensas.chance_fragmento}</span>
+                          </span>
+                          {dif.recompensas.fragmentos && (
+                            <span className="bg-purple-900/50 px-2 py-1 rounded text-purple-300 font-bold">
+                              +{dif.recompensas.fragmentos} 💎 Garantido!
+                            </span>
+                          )}
+                          {dif.recompensas.chance_extra && (
+                            <span className="bg-purple-900/50 px-2 py-1 rounded text-purple-300 font-bold">
+                              +{dif.recompensas.chance_extra} chance extra
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
 
               {/* Botão Iniciar */}
