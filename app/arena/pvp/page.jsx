@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { aplicarPenalidadesExaustao, getNivelExaustao } from "../../avatares/sistemas/exhaustionSystem";
 import AvatarSVG from "../../components/AvatarSVG";
+import { getTierPorPontos, getProgressoNoTier, getProximoTier, calcularRecompensasPvP } from "../../../lib/pvp/rankingSystem";
 
 export default function ArenaPvPPage() {
   const router = useRouter();
@@ -15,6 +16,15 @@ export default function ArenaPvPPage() {
   const [tempoEspera, setTempoEspera] = useState(0);
   const [oponenteEncontrado, setOponenteEncontrado] = useState(null);
 
+  // Sistema de Ranking
+  const [pontosRanking, setPontosRanking] = useState(1000); // Começa em Bronze (1000 pontos)
+  const [vitorias, setVitorias] = useState(0);
+  const [derrotas, setDerrotas] = useState(0);
+
+  // Modais
+  const [modalAlerta, setModalAlerta] = useState(null);
+  const [modalConfirmacao, setModalConfirmacao] = useState(null);
+
   useEffect(() => {
     const userData = localStorage.getItem("user");
     if (!userData) {
@@ -25,6 +35,15 @@ export default function ArenaPvPPage() {
     const parsedUser = JSON.parse(userData);
     setUser(parsedUser);
     carregarAvatares(parsedUser.id);
+
+    // Carregar dados de ranking do localStorage
+    const rankingData = localStorage.getItem(`pvp_ranking_${parsedUser.id}`);
+    if (rankingData) {
+      const { pontos, vitorias: v, derrotas: d } = JSON.parse(rankingData);
+      setPontosRanking(pontos || 1000);
+      setVitorias(v || 0);
+      setDerrotas(d || 0);
+    }
   }, [router]);
 
   // Timer de espera no matchmaking
@@ -65,14 +84,24 @@ export default function ArenaPvPPage() {
 
   const iniciarMatchmaking = () => {
     if (!avatarSelecionado) {
-      alert('Selecione um avatar primeiro!');
+      setModalAlerta({
+        titulo: '⚠️ Avatar não selecionado',
+        mensagem: 'Selecione um avatar antes de procurar uma partida!'
+      });
       return;
     }
 
     if (avatarSelecionado.exaustao >= 60) {
-      if (!confirm('Seu avatar está exausto! Isso pode prejudicar seu desempenho. Continuar?')) {
-        return;
-      }
+      setModalConfirmacao({
+        titulo: '⚠️ Avatar Exausto',
+        mensagem: 'Seu avatar está exausto! Isso pode prejudicar significativamente seu desempenho em combate. Deseja continuar mesmo assim?',
+        onConfirm: () => {
+          setModalConfirmacao(null);
+          setEstadoMatchmaking('procurando');
+        },
+        onCancel: () => setModalConfirmacao(null)
+      });
+      return;
     }
 
     setEstadoMatchmaking('procurando');
@@ -172,20 +201,20 @@ export default function ArenaPvPPage() {
         </div>
 
         {/* Aviso de Desenvolvimento */}
-        <div className="mb-8 bg-gradient-to-r from-yellow-900/30 to-orange-900/30 border-2 border-yellow-500/50 rounded-xl p-6">
+        <div className="mb-8 bg-gradient-to-r from-cyan-900/30 to-blue-900/30 border-2 border-cyan-500/50 rounded-xl p-6">
           <div className="flex items-start gap-4">
-            <div className="text-4xl">🚧</div>
+            <div className="text-4xl">⚡</div>
             <div className="flex-1">
-              <h3 className="text-xl font-black text-yellow-400 mb-2">MODO EM DESENVOLVIMENTO</h3>
+              <h3 className="text-xl font-black text-cyan-400 mb-2">SISTEMA PvP (BETA)</h3>
               <p className="text-slate-300 text-sm leading-relaxed mb-3">
-                O sistema de PvP está em fase inicial. Atualmente você pode testar a interface de matchmaking e seleção de avatares.
+                Sistema de ranking competitivo ativo! Suba de tier (Bronze → Mestre) e ganhe recompensas multiplicadas.
               </p>
               <div className="text-xs text-slate-400 space-y-1">
                 <div>✅ Seleção de avatares</div>
                 <div>✅ Sistema de matchmaking (simulado)</div>
+                <div>✅ Sistema de ranking com 6 tiers</div>
+                <div>✅ Recompensas escalonadas por tier</div>
                 <div>⏳ Batalhas em tempo real (em breve)</div>
-                <div>⏳ Sistema de ranking (em breve)</div>
-                <div>⏳ Recompensas competitivas (em breve)</div>
               </div>
             </div>
           </div>
@@ -408,24 +437,220 @@ export default function ArenaPvPPage() {
                     <h3 className="text-xl font-bold text-purple-400 mb-4 flex items-center gap-2">
                       <span>🏆</span> Ranking e Recompensas
                     </h3>
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center p-3 bg-slate-950/50 rounded-lg">
-                        <span className="text-slate-400">Seu Ranking</span>
-                        <span className="text-2xl font-bold text-slate-500">-</span>
-                      </div>
-                      <div className="flex justify-between items-center p-3 bg-slate-950/50 rounded-lg">
-                        <span className="text-slate-400">Vitórias / Derrotas</span>
-                        <span className="text-2xl font-bold text-slate-500">- / -</span>
-                      </div>
-                      <div className="flex justify-between items-center p-3 bg-slate-950/50 rounded-lg">
-                        <span className="text-slate-400">Win Rate</span>
-                        <span className="text-2xl font-bold text-slate-500">-%</span>
-                      </div>
-                    </div>
-                    <p className="text-xs text-slate-500 mt-4 text-center">
-                      * Sistema de ranking será implementado em breve
-                    </p>
+
+                    {(() => {
+                      const tierAtual = getTierPorPontos(pontosRanking);
+                      const progresso = getProgressoNoTier(pontosRanking, tierAtual);
+                      const proximoTier = getProximoTier(tierAtual);
+                      const totalPartidas = vitorias + derrotas;
+                      const winRate = totalPartidas > 0 ? Math.floor((vitorias / totalPartidas) * 100) : 0;
+
+                      return (
+                        <div className="space-y-4">
+                          {/* Tier Atual */}
+                          <div className={`${tierAtual.corBg} ${tierAtual.corBorda} border-2 rounded-lg p-4`}>
+                            <div className="flex items-center justify-between mb-3">
+                              <div className="flex items-center gap-3">
+                                <span className="text-4xl">{tierAtual.icone}</span>
+                                <div>
+                                  <div className={`text-2xl font-black ${tierAtual.corTexto}`}>
+                                    {tierAtual.nome}
+                                  </div>
+                                  <div className="text-sm text-slate-400 font-mono">
+                                    {pontosRanking} pontos
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <div className="text-xs text-slate-500">Multiplicador</div>
+                                <div className="text-xl font-black text-yellow-400">
+                                  {tierAtual.multiplicadorRecompensa}x
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Barra de Progresso */}
+                            {proximoTier && (
+                              <div>
+                                <div className="flex justify-between text-xs text-slate-400 mb-2">
+                                  <span>Progresso para {proximoTier.nome}</span>
+                                  <span>{progresso}%</span>
+                                </div>
+                                <div className="w-full bg-slate-950/50 rounded-full h-2 overflow-hidden">
+                                  <div
+                                    className={`h-full bg-gradient-to-r ${tierAtual.corTexto.replace('text-', 'from-')} to-purple-500 transition-all duration-500`}
+                                    style={{ width: `${progresso}%` }}
+                                  ></div>
+                                </div>
+                                <div className="text-xs text-slate-500 mt-1 text-center">
+                                  Faltam {proximoTier.minPontos - pontosRanking} pontos
+                                </div>
+                              </div>
+                            )}
+
+                            {!proximoTier && (
+                              <div className="text-center text-sm text-yellow-400 font-bold">
+                                ⭐ RANK MÁXIMO ALCANÇADO! ⭐
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Estatísticas */}
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="p-3 bg-slate-950/50 rounded-lg">
+                              <div className="text-xs text-slate-500 mb-1">Vitórias</div>
+                              <div className="text-2xl font-bold text-green-400">{vitorias}</div>
+                            </div>
+                            <div className="p-3 bg-slate-950/50 rounded-lg">
+                              <div className="text-xs text-slate-500 mb-1">Derrotas</div>
+                              <div className="text-2xl font-bold text-red-400">{derrotas}</div>
+                            </div>
+                          </div>
+
+                          {/* Win Rate */}
+                          <div className="p-3 bg-slate-950/50 rounded-lg">
+                            <div className="flex justify-between items-center">
+                              <span className="text-slate-400 text-sm">Taxa de Vitória</span>
+                              <span className={`text-2xl font-bold ${
+                                winRate >= 60 ? 'text-green-400' :
+                                winRate >= 40 ? 'text-yellow-400' :
+                                'text-red-400'
+                              }`}>
+                                {winRate}%
+                              </span>
+                            </div>
+                            {totalPartidas === 0 && (
+                              <div className="text-xs text-slate-500 mt-2 text-center">
+                                Jogue sua primeira partida!
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
+                </div>
+
+                {/* Tabela de Recompensas por Tier */}
+                <div className="bg-slate-900/50 rounded-xl p-6 border border-slate-800">
+                  <h3 className="text-xl font-bold text-yellow-400 mb-4 flex items-center gap-2">
+                    <span>💰</span> Recompensas Competitivas
+                  </h3>
+
+                  {(() => {
+                    const tierAtual = getTierPorPontos(pontosRanking);
+                    const recompensasVitoria = calcularRecompensasPvP(true, tierAtual, 0);
+                    const recompensasDerrota = calcularRecompensasPvP(false, tierAtual, 0);
+
+                    return (
+                      <div className="space-y-4">
+                        {/* Recompensas de Vitória */}
+                        <div className="bg-green-950/30 border border-green-700/50 rounded-lg p-4">
+                          <h4 className="text-lg font-black text-green-400 mb-3 flex items-center gap-2">
+                            <span>🏆</span> Por Vitória (Tier {tierAtual.nome})
+                          </h4>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                            <div className="bg-slate-950/50 rounded p-3 text-center">
+                              <div className="text-2xl mb-1">⭐</div>
+                              <div className="text-cyan-400 font-bold text-lg">{recompensasVitoria.xp}</div>
+                              <div className="text-slate-500 text-xs">XP</div>
+                            </div>
+                            <div className="bg-slate-950/50 rounded p-3 text-center">
+                              <div className="text-2xl mb-1">💰</div>
+                              <div className="text-yellow-400 font-bold text-lg">{recompensasVitoria.moedas}</div>
+                              <div className="text-slate-500 text-xs">Moedas</div>
+                            </div>
+                            <div className="bg-slate-950/50 rounded p-3 text-center">
+                              <div className="text-2xl mb-1">💎</div>
+                              <div className="text-purple-400 font-bold text-lg">{recompensasVitoria.vinculo}</div>
+                              <div className="text-slate-500 text-xs">Vínculo</div>
+                            </div>
+                            <div className="bg-slate-950/50 rounded p-3 text-center">
+                              <div className="text-2xl mb-1">✨</div>
+                              <div className="text-pink-400 font-bold text-lg">
+                                {Math.floor(recompensasVitoria.chance_fragmento * 100)}%
+                              </div>
+                              <div className="text-slate-500 text-xs">Fragmento</div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Recompensas de Derrota */}
+                        <div className="bg-red-950/30 border border-red-700/50 rounded-lg p-4">
+                          <h4 className="text-lg font-black text-red-400 mb-3 flex items-center gap-2">
+                            <span>💔</span> Por Derrota (Consolação)
+                          </h4>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                            <div className="bg-slate-950/50 rounded p-3 text-center">
+                              <div className="text-2xl mb-1">⭐</div>
+                              <div className="text-cyan-400 font-bold text-lg">{recompensasDerrota.xp}</div>
+                              <div className="text-slate-500 text-xs">XP</div>
+                            </div>
+                            <div className="bg-slate-950/50 rounded p-3 text-center">
+                              <div className="text-2xl mb-1">💰</div>
+                              <div className="text-yellow-400 font-bold text-lg">{recompensasDerrota.moedas}</div>
+                              <div className="text-slate-500 text-xs">Moedas</div>
+                            </div>
+                            <div className="bg-slate-950/50 rounded p-3 text-center">
+                              <div className="text-2xl mb-1">💎</div>
+                              <div className="text-red-400 font-bold text-lg">{recompensasDerrota.vinculo}</div>
+                              <div className="text-slate-500 text-xs">Vínculo</div>
+                            </div>
+                            <div className="bg-slate-950/50 rounded p-3 text-center">
+                              <div className="text-2xl mb-1">✨</div>
+                              <div className="text-pink-400 font-bold text-lg">
+                                {Math.floor(recompensasDerrota.chance_fragmento * 100)}%
+                              </div>
+                              <div className="text-slate-500 text-xs">Fragmento</div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Informação sobre Tiers */}
+                        <div className="bg-gradient-to-r from-purple-950/50 to-blue-950/50 border border-purple-700/50 rounded-lg p-4">
+                          <h4 className="text-sm font-bold text-purple-400 mb-2 flex items-center gap-2">
+                            <span>📈</span> Multiplicadores por Tier
+                          </h4>
+                          <div className="grid grid-cols-3 md:grid-cols-6 gap-2 text-xs">
+                            <div className="text-center">
+                              <div className="text-lg">🥉</div>
+                              <div className="text-orange-400 font-bold">Bronze</div>
+                              <div className="text-slate-500">1.0x</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="text-lg">🥈</div>
+                              <div className="text-gray-400 font-bold">Prata</div>
+                              <div className="text-slate-500">1.2x</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="text-lg">🥇</div>
+                              <div className="text-yellow-400 font-bold">Ouro</div>
+                              <div className="text-slate-500">1.5x</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="text-lg">💎</div>
+                              <div className="text-cyan-400 font-bold">Platina</div>
+                              <div className="text-slate-500">2.0x</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="text-lg">💠</div>
+                              <div className="text-blue-400 font-bold">Diamante</div>
+                              <div className="text-slate-500">2.5x</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="text-lg">👑</div>
+                              <div className="text-purple-400 font-bold">Mestre</div>
+                              <div className="text-slate-500">3.0x</div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <p className="text-xs text-slate-500 text-center italic">
+                          * Quanto maior seu rank, melhores as recompensas. Suba de tier para multiplicar seus ganhos!
+                        </p>
+                      </div>
+                    );
+                  })()}
                 </div>
               </>
             )}
@@ -540,6 +765,54 @@ export default function ArenaPvPPage() {
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Modal de Alerta */}
+        {modalAlerta && (
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl border-2 border-orange-500/50 p-8 max-w-md w-full shadow-2xl">
+              <h3 className="text-2xl font-black text-orange-400 mb-4 flex items-center gap-3">
+                {modalAlerta.titulo}
+              </h3>
+              <p className="text-slate-300 mb-6 leading-relaxed">
+                {modalAlerta.mensagem}
+              </p>
+              <button
+                onClick={() => setModalAlerta(null)}
+                className="w-full px-6 py-3 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 text-white rounded-lg font-bold transition-all"
+              >
+                OK, Entendi
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Modal de Confirmação */}
+        {modalConfirmacao && (
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl border-2 border-yellow-500/50 p-8 max-w-md w-full shadow-2xl">
+              <h3 className="text-2xl font-black text-yellow-400 mb-4 flex items-center gap-3">
+                {modalConfirmacao.titulo}
+              </h3>
+              <p className="text-slate-300 mb-6 leading-relaxed">
+                {modalConfirmacao.mensagem}
+              </p>
+              <div className="grid grid-cols-2 gap-4">
+                <button
+                  onClick={modalConfirmacao.onCancel}
+                  className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg font-bold transition-all"
+                >
+                  ✕ Cancelar
+                </button>
+                <button
+                  onClick={modalConfirmacao.onConfirm}
+                  className="px-6 py-3 bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-500 hover:to-orange-500 text-white rounded-lg font-bold transition-all"
+                >
+                  ✓ Continuar
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>
