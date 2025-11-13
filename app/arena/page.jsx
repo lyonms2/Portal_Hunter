@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { aplicarPenalidadesExaustao, getNivelExaustao } from "../avatares/sistemas/exhaustionSystem";
 
 export default function ArenaPage() {
   const router = useRouter();
@@ -197,7 +198,18 @@ export default function ArenaPage() {
                   const selecionado = avatarSelecionado?.id === avatar.id;
                   const aviso = getAvisoExaustao(avatar.exaustao);
                   const podeLutar = avatar.exaustao < 100;
-                  
+
+                  // Calcular stats com penalidades
+                  const statsBase = {
+                    forca: avatar.forca || 0,
+                    agilidade: avatar.agilidade || 0,
+                    resistencia: avatar.resistencia || 0,
+                    foco: avatar.foco || 0
+                  };
+                  const statsAtuais = aplicarPenalidadesExaustao(statsBase, avatar.exaustao || 0);
+                  const nivelExaustao = getNivelExaustao(avatar.exaustao || 0);
+                  const temPenalidade = nivelExaustao.penalidades.stats !== undefined;
+
                   return (
                     <button
                       key={avatar.id}
@@ -234,19 +246,47 @@ export default function ArenaPage() {
 
                       <div className="grid grid-cols-4 gap-2 text-center text-xs mb-2">
                         <div>
-                          <div className="text-red-400 font-bold">{avatar.forca}</div>
+                          {temPenalidade ? (
+                            <div>
+                              <div className="text-[10px] text-slate-700 line-through">{statsBase.forca}</div>
+                              <div className="text-red-400 font-bold">{statsAtuais.forca}</div>
+                            </div>
+                          ) : (
+                            <div className="text-red-400 font-bold">{statsBase.forca}</div>
+                          )}
                           <div className="text-slate-600">FOR</div>
                         </div>
                         <div>
-                          <div className="text-green-400 font-bold">{avatar.agilidade}</div>
+                          {temPenalidade ? (
+                            <div>
+                              <div className="text-[10px] text-slate-700 line-through">{statsBase.agilidade}</div>
+                              <div className="text-green-400 font-bold">{statsAtuais.agilidade}</div>
+                            </div>
+                          ) : (
+                            <div className="text-green-400 font-bold">{statsBase.agilidade}</div>
+                          )}
                           <div className="text-slate-600">AGI</div>
                         </div>
                         <div>
-                          <div className="text-blue-400 font-bold">{avatar.resistencia}</div>
+                          {temPenalidade ? (
+                            <div>
+                              <div className="text-[10px] text-slate-700 line-through">{statsBase.resistencia}</div>
+                              <div className="text-blue-400 font-bold">{statsAtuais.resistencia}</div>
+                            </div>
+                          ) : (
+                            <div className="text-blue-400 font-bold">{statsBase.resistencia}</div>
+                          )}
                           <div className="text-slate-600">RES</div>
                         </div>
                         <div>
-                          <div className="text-purple-400 font-bold">{avatar.foco}</div>
+                          {temPenalidade ? (
+                            <div>
+                              <div className="text-[10px] text-slate-700 line-through">{statsBase.foco}</div>
+                              <div className="text-purple-400 font-bold">{statsAtuais.foco}</div>
+                            </div>
+                          ) : (
+                            <div className="text-purple-400 font-bold">{statsBase.foco}</div>
+                          )}
                           <div className="text-slate-600">FOC</div>
                         </div>
                       </div>

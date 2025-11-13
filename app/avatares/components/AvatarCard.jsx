@@ -1,4 +1,5 @@
 import AvatarSVG from '../../components/AvatarSVG';
+import { aplicarPenalidadesExaustao, getNivelExaustao } from '../sistemas/exhaustionSystem';
 
 const getInfoExaustao = (exaustao) => {
   if (exaustao >= 100) {
@@ -31,8 +32,8 @@ const BadgeExaustao = ({ exaustao }) => {
   );
 };
 
-export default function AvatarCard({ 
-  avatar, 
+export default function AvatarCard({
+  avatar,
   onClickDetalhes,
   onClickAtivar,
   ativando,
@@ -41,6 +42,18 @@ export default function AvatarCard({
   getCorElemento,
   getEmojiElemento
 }) {
+  // Calcular stats com penalidades de exaustão
+  const statsBase = {
+    forca: avatar.forca || 0,
+    agilidade: avatar.agilidade || 0,
+    resistencia: avatar.resistencia || 0,
+    foco: avatar.foco || 0
+  };
+
+  const statsAtuais = aplicarPenalidadesExaustao(statsBase, avatar.exaustao || 0);
+  const nivelExaustao = getNivelExaustao(avatar.exaustao || 0);
+  const temPenalidade = nivelExaustao.penalidades.stats !== undefined;
+
   return (
     <div
       className="relative group cursor-pointer"
@@ -89,27 +102,47 @@ export default function AvatarCard({
           {/* Stats resumidos */}
           <div className="grid grid-cols-4 gap-1 mb-3">
             <div className="text-center">
-              <div className="font-bold text-sm text-red-400">
-                {avatar.forca}
-              </div>
+              {temPenalidade ? (
+                <div className="font-bold text-sm text-red-400">
+                  <div className="text-[10px] text-slate-600 line-through">{statsBase.forca}</div>
+                  <div>{statsAtuais.forca}</div>
+                </div>
+              ) : (
+                <div className="font-bold text-sm text-red-400">{statsBase.forca}</div>
+              )}
               <div className="text-[10px] text-slate-500">FOR</div>
             </div>
             <div className="text-center">
-              <div className="font-bold text-sm text-green-400">
-                {avatar.agilidade}
-              </div>
+              {temPenalidade ? (
+                <div className="font-bold text-sm text-green-400">
+                  <div className="text-[10px] text-slate-600 line-through">{statsBase.agilidade}</div>
+                  <div>{statsAtuais.agilidade}</div>
+                </div>
+              ) : (
+                <div className="font-bold text-sm text-green-400">{statsBase.agilidade}</div>
+              )}
               <div className="text-[10px] text-slate-500">AGI</div>
             </div>
             <div className="text-center">
-              <div className="font-bold text-sm text-blue-400">
-                {avatar.resistencia}
-              </div>
+              {temPenalidade ? (
+                <div className="font-bold text-sm text-blue-400">
+                  <div className="text-[10px] text-slate-600 line-through">{statsBase.resistencia}</div>
+                  <div>{statsAtuais.resistencia}</div>
+                </div>
+              ) : (
+                <div className="font-bold text-sm text-blue-400">{statsBase.resistencia}</div>
+              )}
               <div className="text-[10px] text-slate-500">RES</div>
             </div>
             <div className="text-center">
-              <div className="font-bold text-sm text-purple-400">
-                {avatar.foco}
-              </div>
+              {temPenalidade ? (
+                <div className="font-bold text-sm text-purple-400">
+                  <div className="text-[10px] text-slate-600 line-through">{statsBase.foco}</div>
+                  <div>{statsAtuais.foco}</div>
+                </div>
+              ) : (
+                <div className="font-bold text-sm text-purple-400">{statsBase.foco}</div>
+              )}
               <div className="text-[10px] text-slate-500">FOC</div>
             </div>
           </div>
@@ -126,12 +159,23 @@ export default function AvatarCard({
           </div>
 
           {/* Total de Stats */}
-          <div className="bg-slate-900/30 rounded p-2 mb-3 border border-cyan-500/10">
+          <div className={`bg-slate-900/30 rounded p-2 mb-3 border ${temPenalidade ? 'border-red-500/30' : 'border-cyan-500/10'}`}>
             <div className="text-center">
               <div className="text-[9px] text-slate-500 uppercase">Poder Total</div>
-              <div className="text-lg font-bold text-cyan-400">
-                {(avatar.forca || 0) + (avatar.agilidade || 0) + (avatar.resistencia || 0) + (avatar.foco || 0)}
-              </div>
+              {temPenalidade ? (
+                <div>
+                  <div className="text-xs text-slate-600 line-through">
+                    {statsBase.forca + statsBase.agilidade + statsBase.resistencia + statsBase.foco}
+                  </div>
+                  <div className="text-lg font-bold text-red-400">
+                    {statsAtuais.forca + statsAtuais.agilidade + statsAtuais.resistencia + statsAtuais.foco}
+                  </div>
+                </div>
+              ) : (
+                <div className="text-lg font-bold text-cyan-400">
+                  {statsBase.forca + statsBase.agilidade + statsBase.resistencia + statsBase.foco}
+                </div>
+              )}
             </div>
           </div>
 
