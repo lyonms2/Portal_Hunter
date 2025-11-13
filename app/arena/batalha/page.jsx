@@ -313,6 +313,74 @@ export default function BatalhaPage() {
           </div>
         </div>
 
+        {/* Banner de Última Ação - SEMPRE VISÍVEL */}
+        {log.length > 0 && (() => {
+          const ultimaAcao = log[log.length - 1].texto;
+
+          // Detectar tipo de ação para cor dinâmica
+          const isVitoria = ultimaAcao.includes('VITÓRIA') || ultimaAcao.includes('🎉');
+          const isDerrota = ultimaAcao.includes('DERROTA') || ultimaAcao.includes('☠️');
+          const isDano = ultimaAcao.includes('causou') || ultimaAcao.includes('dano') || ultimaAcao.includes('💥');
+          const isCura = ultimaAcao.includes('recuperou') || ultimaAcao.includes('HP') || ultimaAcao.includes('💚');
+          const isDefesa = ultimaAcao.includes('defendeu') || ultimaAcao.includes('🛡️');
+          const isCritico = ultimaAcao.includes('CRÍTICO') || ultimaAcao.includes('💀');
+
+          let corGradiente = 'from-slate-900/95 via-cyan-900/50 to-slate-900/95';
+          let corBorda = 'border-cyan-500/50';
+          let corSombra = 'shadow-cyan-500/30';
+          let icone = '⚡';
+
+          if (isVitoria) {
+            corGradiente = 'from-green-900/95 via-emerald-900/50 to-green-900/95';
+            corBorda = 'border-green-500/50';
+            corSombra = 'shadow-green-500/30';
+            icone = '🎉';
+          } else if (isDerrota) {
+            corGradiente = 'from-red-900/95 via-red-900/50 to-red-900/95';
+            corBorda = 'border-red-500/50';
+            corSombra = 'shadow-red-500/30';
+            icone = '☠️';
+          } else if (isCritico) {
+            corGradiente = 'from-purple-900/95 via-fuchsia-900/50 to-purple-900/95';
+            corBorda = 'border-purple-500/50';
+            corSombra = 'shadow-purple-500/30';
+            icone = '💀';
+          } else if (isDano) {
+            corGradiente = 'from-orange-900/95 via-red-900/50 to-orange-900/95';
+            corBorda = 'border-orange-500/50';
+            corSombra = 'shadow-orange-500/30';
+            icone = '💥';
+          } else if (isCura) {
+            corGradiente = 'from-green-900/95 via-emerald-900/50 to-green-900/95';
+            corBorda = 'border-green-500/50';
+            corSombra = 'shadow-green-500/30';
+            icone = '💚';
+          } else if (isDefesa) {
+            corGradiente = 'from-blue-900/95 via-cyan-900/50 to-blue-900/95';
+            corBorda = 'border-blue-500/50';
+            corSombra = 'shadow-blue-500/30';
+            icone = '🛡️';
+          }
+
+          return (
+            <div className={`mb-4 bg-gradient-to-r ${corGradiente} rounded-lg p-4 border-2 ${corBorda} shadow-2xl ${corSombra} backdrop-blur-sm transition-all duration-300`}>
+              <div className="flex items-center gap-3">
+                <div className={`flex-shrink-0 w-10 h-10 ${corBorda.replace('border-', 'bg-').replace('/50', '/20')} rounded-full flex items-center justify-center border-2 ${corBorda} animate-pulse`}>
+                  <span className="text-xl">{icone}</span>
+                </div>
+                <div className="flex-1">
+                  <div className="text-xs text-cyan-300 font-bold uppercase tracking-wider mb-1">
+                    Última Ação
+                  </div>
+                  <div className="text-base font-mono text-white font-semibold leading-relaxed">
+                    {ultimaAcao}
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+
         <div className="grid lg:grid-cols-3 gap-4">
           {/* Arena de Combate */}
           <div className="lg:col-span-2 space-y-4">
