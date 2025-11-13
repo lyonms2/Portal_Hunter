@@ -20,6 +20,7 @@ export default function ArenaSobrevivenciaPage() {
   const [statsAvatarAtual, setStatsAvatarAtual] = useState(null); // HP, energia, stats atuais
   const [recompensasAcumuladas, setRecompensasAcumuladas] = useState({ xp: 0, moedas: 0, fragmentos: 0 });
   const [modalLevelUp, setModalLevelUp] = useState(null); // { nivelAnterior, nivelNovo }
+  const [exaustaoAcumulada, setExaustaoAcumulada] = useState(0); // Exaustão total acumulada
 
   // Estados para modais
   const [modalOndaCompleta, setModalOndaCompleta] = useState(null); // { onda, recompensas, exaustao }
@@ -142,15 +143,16 @@ export default function ArenaSobrevivenciaPage() {
 
     setStatsAvatarAtual(statsIniciais);
     setRecompensasAcumuladas({ xp: 0, moedas: 0, fragmentos: 0 });
+    setExaustaoAcumulada(0);
     setAutoPlay(comAutoPlay);
     setEstadoJogo('preparando');
     setOndaAtual(1);
 
-    // Simular preparação (2 segundos de animação)
+    // Simular preparação (1.5 segundos de animação)
     setTimeout(() => {
       setEstadoJogo('sobrevivendo');
       iniciarOndaAtual(1);
-    }, 2000);
+    }, 1500);
   };
 
   const iniciarOndaAtual = (onda) => {
@@ -158,6 +160,8 @@ export default function ArenaSobrevivenciaPage() {
     const multiplicador = calcularMultiplicadorOnda(onda);
     const danoBase = 15 * multiplicador;
     const gastoEnergiaBase = 20 + (onda * 2);
+
+    const tempoCombate = autoPlay ? 800 : 2500;
 
     setTimeout(() => {
       // Calcular dano recebido na onda (progressivo e balanceado)
@@ -167,31 +171,36 @@ export default function ArenaSobrevivenciaPage() {
       // Calcular gasto de energia
       const energiaGasta = Math.min(gastoEnergiaBase + Math.random() * 10, 80);
 
-      // Atualizar stats do avatar
+      // Atualizar exaustão acumulada
+      const exaustaoOnda = calcularExaustaoOnda(onda);
+      setExaustaoAcumulada(prev => prev + exaustaoOnda);
+
+      // Atualizar stats do avatar e verificar resultado
       setStatsAvatarAtual(prev => {
+        if (!prev) return prev;
+
         const novoHP = Math.max(0, prev.hp_atual - dano);
         const novaEnergia = Math.max(0, prev.energia_atual - energiaGasta);
 
-        // Verificar se morreu
-        if (novoHP <= 0) {
-          setTimeout(() => {
-            setAutoPlay(false);
-            finalizarSobrevivencia(onda, true);
-          }, 1000);
-        } else {
-          // Se sobreviveu, completar onda
-          setTimeout(() => {
-            ondaCompleta(onda);
-          }, 1000);
-        }
-
-        return {
+        const novoStats = {
           ...prev,
           hp_atual: novoHP,
           energia_atual: novaEnergia
         };
+
+        // Agendar verificação de morte/vitória
+        setTimeout(() => {
+          if (novoHP <= 0) {
+            setAutoPlay(false);
+            finalizarSobrevivencia(onda, true);
+          } else {
+            ondaCompleta(onda);
+          }
+        }, 500);
+
+        return novoStats;
       });
-    }, autoPlay ? 1000 : 3000); // Mais rápido no auto-play
+    }, tempoCombate);
   };
 
   const ondaCompleta = (onda) => {
@@ -282,7 +291,6 @@ export default function ArenaSobrevivenciaPage() {
 
   const finalizarSobrevivencia = async (ondaFinal, derrota = true) => {
     const novoRecorde = ondaFinal > recordePessoal;
-    const exaustaoTotal = calcularExaustaoOnda(ondaFinal);
 
     // Usar recompensas acumuladas
     const recompensasTotais = recompensasAcumuladas;
@@ -307,7 +315,7 @@ export default function ArenaSobrevivenciaPage() {
         body: JSON.stringify({
           avatarId: avatarSelecionado.id,
           experiencia: recompensasTotais.xp,
-          exaustao: exaustaoTotal,
+          exaustao: Math.floor(exaustaoAcumulada),
           nivel: statsAvatarAtual?.nivel || avatarSelecionado.nivel,
           // Atualizar stats se subiram de nível
           forca: statsAvatarAtual?.forca || avatarSelecionado.forca,
@@ -458,7 +466,7 @@ export default function ArenaSobrevivenciaPage() {
                   </div>
                 </div>
 
-                {/* Barras de HP e Energia */}
+                {/* Barras de HP, Energia e Exaustão */}
                 <div className="space-y-3">
                   <div>
                     <div className="flex justify-between text-xs mb-1">
@@ -486,6 +494,23 @@ export default function ArenaSobrevivenciaPage() {
                       <div
                         className="h-full bg-gradient-to-r from-blue-600 to-cyan-400 transition-all duration-500"
                         style={{ width: `${(statsAvatarAtual.energia_atual / statsAvatarAtual.energia_maxima) * 100}%` }}
+                      ></div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="text-orange-400 font-bold">😰 Exaustão</span>
+                      <span className="text-slate-300 font-mono">{Math.floor(exaustaoAcumulada)}%</span>
+                    </div>
+                    <div className="w-full bg-slate-800 rounded-full h-4 overflow-hidden border border-slate-700">
+                      <div
+                        className={`h-full transition-all duration-500 ${
+                          exaustaoAcumulada < 40 ? 'bg-gradient-to-r from-green-600 to-green-400' :
+                          exaustaoAcumulada < 60 ? 'bg-gradient-to-r from-yellow-600 to-orange-400' :
+                          'bg-gradient-to-r from-orange-600 to-red-600'
+                        }`}
+                        style={{ width: `${Math.min(exaustaoAcumulada, 100)}%` }}
                       ></div>
                     </div>
                   </div>
@@ -1029,16 +1054,20 @@ export default function ArenaSobrevivenciaPage() {
                       </div>
                     </div>
 
-                    {/* Barras de HP e Energia */}
+                    {/* Barras de HP, Energia e Exaustão */}
                     <div className="space-y-2">
                       <div>
                         <div className="flex justify-between text-xs mb-1">
-                          <span className="text-red-400">❤️ HP</span>
-                          <span className="text-slate-400">{Math.floor(statsAvatarAtual.hp_atual)} / {statsAvatarAtual.hp_maximo}</span>
+                          <span className="text-red-400 font-bold">❤️ HP</span>
+                          <span className="text-slate-300 font-mono">{Math.floor(statsAvatarAtual.hp_atual)} / {statsAvatarAtual.hp_maximo}</span>
                         </div>
                         <div className="w-full bg-slate-800 rounded-full h-3 overflow-hidden">
                           <div
-                            className="h-full bg-gradient-to-r from-red-600 to-red-400 transition-all duration-500"
+                            className={`h-full transition-all duration-500 ${
+                              (statsAvatarAtual.hp_atual / statsAvatarAtual.hp_maximo) > 0.5 ? 'bg-gradient-to-r from-green-600 to-green-400' :
+                              (statsAvatarAtual.hp_atual / statsAvatarAtual.hp_maximo) > 0.25 ? 'bg-gradient-to-r from-yellow-600 to-yellow-400' :
+                              'bg-gradient-to-r from-red-600 to-red-400'
+                            }`}
                             style={{ width: `${(statsAvatarAtual.hp_atual / statsAvatarAtual.hp_maximo) * 100}%` }}
                           ></div>
                         </div>
@@ -1046,13 +1075,30 @@ export default function ArenaSobrevivenciaPage() {
 
                       <div>
                         <div className="flex justify-between text-xs mb-1">
-                          <span className="text-blue-400">⚡ Energia</span>
-                          <span className="text-slate-400">{Math.floor(statsAvatarAtual.energia_atual)} / {statsAvatarAtual.energia_maxima}</span>
+                          <span className="text-blue-400 font-bold">⚡ Energia</span>
+                          <span className="text-slate-300 font-mono">{Math.floor(statsAvatarAtual.energia_atual)} / {statsAvatarAtual.energia_maxima}</span>
                         </div>
                         <div className="w-full bg-slate-800 rounded-full h-3 overflow-hidden">
                           <div
                             className="h-full bg-gradient-to-r from-blue-600 to-cyan-400 transition-all duration-500"
                             style={{ width: `${(statsAvatarAtual.energia_atual / statsAvatarAtual.energia_maxima) * 100}%` }}
+                          ></div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="flex justify-between text-xs mb-1">
+                          <span className="text-orange-400 font-bold">😰 Exaustão</span>
+                          <span className="text-slate-300 font-mono">{Math.floor(exaustaoAcumulada)}%</span>
+                        </div>
+                        <div className="w-full bg-slate-800 rounded-full h-3 overflow-hidden">
+                          <div
+                            className={`h-full transition-all duration-500 ${
+                              exaustaoAcumulada < 40 ? 'bg-gradient-to-r from-green-600 to-green-400' :
+                              exaustaoAcumulada < 60 ? 'bg-gradient-to-r from-yellow-600 to-orange-400' :
+                              'bg-gradient-to-r from-orange-600 to-red-600'
+                            }`}
+                            style={{ width: `${Math.min(exaustaoAcumulada, 100)}%` }}
                           ></div>
                         </div>
                       </div>
