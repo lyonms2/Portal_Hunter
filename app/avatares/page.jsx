@@ -82,45 +82,6 @@ export default function AvatarsPage() {
     }
   };
 
-  const descansarAvatar = async (avatarId) => {
-    try {
-      const response = await fetch("/api/descansar-avatar", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ avatarId, horasDescanso: 1 }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        await carregarAvatares(user.id);
-
-        let mensagens = [data.mensagem];
-        if (data.mensagens_adicionais) {
-          mensagens = mensagens.concat(data.mensagens_adicionais);
-        }
-
-        setModalConfirmacao({
-          tipo: 'sucesso',
-          mensagem: mensagens.join('\n'),
-          recuperacao: data.recuperacao
-        });
-        setAvatarSelecionado(null); // Fechar modal de detalhes
-      } else {
-        setModalConfirmacao({
-          tipo: 'erro',
-          mensagem: data.message || 'Erro ao descansar avatar'
-        });
-      }
-    } catch (error) {
-      console.error("Erro ao descansar avatar:", error);
-      setModalConfirmacao({
-        tipo: 'erro',
-        mensagem: 'Erro de conexão ao descansar avatar'
-      });
-    }
-  };
-
   // Funções auxiliares de estilo
   const getCorRaridade = (raridade) => {
     switch (raridade) {
@@ -381,7 +342,6 @@ export default function AvatarsPage() {
       <AvatarDetalhes
         avatar={avatarSelecionado}
         onClose={() => setAvatarSelecionado(null)}
-        onDescansar={descansarAvatar}
         getCorRaridade={getCorRaridade}
         getCorBorda={getCorBorda}
         getCorElemento={getCorElemento}

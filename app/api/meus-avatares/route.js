@@ -1,4 +1,5 @@
 import { getSupabaseClientSafe } from "@/lib/supabase/serverClient";
+import { processarRecuperacao } from "@/app/avatares/sistemas/exhaustionSystem";
 
 // MOVIDO PARA DENTRO DA FUNÇÃO: const supabase = getSupabaseClientSafe();
 
@@ -39,9 +40,70 @@ export async function GET(request) {
       );
     }
 
+    // ==================== RECUPERAÇÃO PASSIVA DE EXAUSTÃO ====================
+    // Para cada avatar vivo e inativo, calcular recuperação baseada em tempo real
+    const avataresAtualizados = [];
+    const agora = new Date();
+
+    for (const avatar of (avatares || [])) {
+      // Só processar avatares vivos com exaustão > 0
+      if (!avatar.vivo || (avatar.exaustao || 0) === 0) {
+        avataresAtualizados.push(avatar);
+        continue;
+      }
+
+      // Calcular tempo decorrido desde última atualização
+      const ultimaAtualizacao = new Date(avatar.updated_at);
+      const minutosPassados = Math.floor((agora - ultimaAtualizacao) / (1000 * 60));
+
+      // Só processar se passou pelo menos 5 minutos
+      if (minutosPassados < 5) {
+        avataresAtualizados.push(avatar);
+        continue;
+      }
+
+      const horasPassadas = minutosPassados / 60;
+      const exaustaoAtual = avatar.exaustao || 0;
+
+      // Avatar ATIVO não recupera (está em uso)
+      // Avatar INATIVO recupera mais devagar (8 pontos/hora)
+      const taxaRecuperacao = avatar.ativo ? 0 : 8; // pontos por hora
+      const recuperacao = Math.floor(taxaRecuperacao * horasPassadas);
+
+      if (recuperacao > 0) {
+        const novaExaustao = Math.max(0, exaustaoAtual - recuperacao);
+
+        console.log(`🌙 Recuperação passiva - Avatar ${avatar.nome}:`, {
+          exaustao_antes: exaustaoAtual,
+          exaustao_depois: novaExaustao,
+          minutos_passados: minutosPassados,
+          recuperacao_aplicada: recuperacao
+        });
+
+        // Atualizar no banco
+        const { data: avatarAtualizado, error: updateError } = await supabase
+          .from('avatares')
+          .update({
+            exaustao: novaExaustao,
+            updated_at: agora.toISOString()
+          })
+          .eq('id', avatar.id)
+          .select()
+          .single();
+
+        if (!updateError && avatarAtualizado) {
+          avataresAtualizados.push(avatarAtualizado);
+        } else {
+          avataresAtualizados.push(avatar);
+        }
+      } else {
+        avataresAtualizados.push(avatar);
+      }
+    }
+
     return Response.json({
-      avatares: avatares || [],
-      total: (avatares || []).length
+      avatares: avataresAtualizados,
+      total: avataresAtualizados.length
     });
   } catch (error) {
     console.error("Erro no servidor:", error);
