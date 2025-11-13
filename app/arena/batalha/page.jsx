@@ -96,16 +96,33 @@ export default function BatalhaPage() {
       novoEstado.rodada++;
       novoEstado.turno_atual = 'jogador';
 
-      // Regenerar energia
+      // Processar efeitos contínuos (dano/cura por turno, reduzir duração de buffs/debuffs)
       const turnoJogador = iniciarTurno(novoEstado.jogador, novoEstado);
-      novoEstado.jogador.energia_atual = turnoJogador.energia;
-
       const turnoInimigo = iniciarTurno(novoEstado.inimigo, novoEstado);
-      novoEstado.inimigo.energia_atual = turnoInimigo.energia;
+
+      // Registrar efeitos processados
+      if (turnoJogador.efeitosProcessados && turnoJogador.efeitosProcessados.length > 0) {
+        turnoJogador.efeitosProcessados.forEach(efeito => {
+          if (efeito.tipo === 'dano_continuo') {
+            adicionarLog(`🔥 ${novoEstado.jogador.nome} sofreu ${efeito.dano} de dano de ${efeito.nome}`);
+          } else if (efeito.tipo === 'cura_continua') {
+            adicionarLog(`💚 ${novoEstado.jogador.nome} recuperou ${efeito.cura} HP de ${efeito.nome}`);
+          }
+        });
+      }
+
+      if (turnoInimigo.efeitosProcessados && turnoInimigo.efeitosProcessados.length > 0) {
+        turnoInimigo.efeitosProcessados.forEach(efeito => {
+          if (efeito.tipo === 'dano_continuo') {
+            adicionarLog(`🔥 ${novoEstado.inimigo.nome} sofreu ${efeito.dano} de dano de ${efeito.nome}`);
+          } else if (efeito.tipo === 'cura_continua') {
+            adicionarLog(`💚 ${novoEstado.inimigo.nome} recuperou ${efeito.cura} HP de ${efeito.nome}`);
+          }
+        });
+      }
 
       adicionarLog('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       adicionarLog(`⏰ Rodada ${novoEstado.rodada}`);
-      adicionarLog(`⚡ Energia regenerada!`);
 
       setEstado(novoEstado);
       setTurnoIA(false);
