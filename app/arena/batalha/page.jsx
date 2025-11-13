@@ -301,38 +301,68 @@ export default function BatalhaPage() {
           {/* Arena de Combate */}
           <div className="lg:col-span-2 space-y-4">
             {/* Inimigo */}
-            <div className="bg-slate-900/80 rounded-lg p-6 border-2 border-red-500/50 shadow-lg shadow-red-900/50">
+            <div className="bg-gradient-to-br from-slate-900/90 via-red-950/30 to-slate-900/90 rounded-xl p-6 border-2 border-red-500/50 shadow-2xl shadow-red-900/50 backdrop-blur-sm">
               <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="text-2xl font-bold text-red-400">{estado.inimigo.nome}</h3>
-                  <div className="text-sm text-slate-400">
-                    Nv.{estado.inimigo.nivel} • {estado.inimigo.elemento}
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="text-2xl font-bold text-red-400">{estado.inimigo.nome}</h3>
+                    <span className="px-2 py-0.5 bg-red-900/50 border border-red-500/50 rounded text-xs text-red-300">
+                      Lv.{estado.inimigo.nivel}
+                    </span>
                   </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="px-2 py-0.5 bg-slate-800/50 rounded text-slate-400">
+                      {estado.inimigo.elemento}
+                    </span>
+                    <span className="text-slate-500">•</span>
+                    <span className="text-slate-400">{estado.inimigo.raridade}</span>
+                  </div>
+
+                  {/* Debuffs do Inimigo */}
+                  {estado.inimigo.debuffs && estado.inimigo.debuffs.length > 0 && (
+                    <div className="flex gap-1 mt-2 flex-wrap">
+                      {estado.inimigo.debuffs.map((debuff, idx) => (
+                        <span key={idx} className="text-lg" title={`${debuff.nome} (${debuff.turnos} turnos)`}>
+                          {debuff.icone}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <div className="relative drop-shadow-[0_0_20px_rgba(220,38,38,0.8)] hover:scale-110 transition-transform">
+
+                <div className="relative drop-shadow-[0_0_25px_rgba(220,38,38,0.9)] hover:scale-110 transition-transform">
                   {/* Avatar inimigo com filtros malignos */}
-                  <div className="filter brightness-50 contrast-150 saturate-150 hue-rotate-15">
+                  <div className="filter brightness-[0.4] contrast-150 saturate-150 hue-rotate-15">
                     <AvatarSVG avatar={estado.inimigo} tamanho={140} />
                   </div>
-                  {/* Olhos vermelhos sobrepondo */}
-                  <div className="absolute top-[42%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex gap-3 pointer-events-none">
-                    <div className="w-3 h-3 rounded-full bg-red-600 shadow-[0_0_10px_rgba(220,38,38,1)] animate-pulse"></div>
-                    <div className="w-3 h-3 rounded-full bg-red-600 shadow-[0_0_10px_rgba(220,38,38,1)] animate-pulse"></div>
+                  {/* Olhos vermelhos brilhantes - ajustados */}
+                  <div className="absolute top-[47%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex gap-4 pointer-events-none">
+                    <div className="w-4 h-4 rounded-full bg-red-500 shadow-[0_0_15px_rgba(239,68,68,1)] animate-pulse"
+                         style={{animationDuration: '1.5s'}}></div>
+                    <div className="w-4 h-4 rounded-full bg-red-500 shadow-[0_0_15px_rgba(239,68,68,1)] animate-pulse"
+                         style={{animationDuration: '1.5s', animationDelay: '0.1s'}}></div>
                   </div>
+                  {/* Aura maligna */}
+                  <div className="absolute inset-0 rounded-full bg-red-900/20 blur-xl -z-10"></div>
                 </div>
               </div>
 
               {/* HP do Inimigo */}
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="text-slate-400">HP</span>
-                  <span className="text-red-400 font-mono">{estado.inimigo.hp_atual} / {estado.inimigo.hp_maximo}</span>
+              <div className="space-y-1">
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-400 font-semibold">HP</span>
+                  <span className="text-red-400 font-mono font-bold">{estado.inimigo.hp_atual} / {estado.inimigo.hp_maximo}</span>
                 </div>
-                <div className="w-full bg-slate-700 rounded-full h-4 overflow-hidden">
-                  <div 
-                    className="bg-gradient-to-r from-red-500 to-red-600 h-4 transition-all duration-500"
+                <div className="relative w-full bg-slate-800 rounded-full h-5 overflow-hidden border border-slate-700">
+                  <div
+                    className="bg-gradient-to-r from-red-600 via-red-500 to-red-600 h-5 transition-all duration-500 relative"
                     style={{width: `${hpInimigoPercent}%`}}
-                  ></div>
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-white/10"></div>
+                  </div>
+                  <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                    {Math.round(hpInimigoPercent)}%
+                  </div>
                 </div>
               </div>
             </div>
@@ -348,47 +378,80 @@ export default function BatalhaPage() {
             </div>
 
             {/* Jogador */}
-            <div className="bg-slate-900/80 rounded-lg p-6 border-2 border-cyan-500/50 shadow-lg shadow-cyan-900/50">
+            <div className="bg-gradient-to-br from-slate-900/90 via-cyan-950/30 to-slate-900/90 rounded-xl p-6 border-2 border-cyan-500/50 shadow-2xl shadow-cyan-900/50 backdrop-blur-sm">
               <div className="flex items-center justify-between mb-4">
-                <div className="drop-shadow-[0_0_20px_rgba(6,182,212,0.8)] hover:scale-110 transition-transform">
+                <div className="relative drop-shadow-[0_0_25px_rgba(6,182,212,0.9)] hover:scale-110 transition-transform">
                   {/* Avatar jogador com filtros heróicos */}
                   <div className="filter brightness-110 saturate-125">
                     <AvatarSVG avatar={estado.jogador} tamanho={140} />
                   </div>
+                  {/* Aura heróica */}
+                  <div className="absolute inset-0 rounded-full bg-cyan-500/20 blur-xl -z-10"></div>
                 </div>
-                <div className="text-right">
-                  <h3 className="text-2xl font-bold text-cyan-400">{estado.jogador.nome}</h3>
-                  <div className="text-sm text-slate-400">
-                    Nv.{estado.jogador.nivel} • {estado.jogador.elemento}
+
+                <div className="text-right flex-1 ml-4">
+                  <div className="flex items-center justify-end gap-2 mb-1">
+                    <span className="px-2 py-0.5 bg-cyan-900/50 border border-cyan-500/50 rounded text-xs text-cyan-300">
+                      Lv.{estado.jogador.nivel}
+                    </span>
+                    <h3 className="text-2xl font-bold text-cyan-400">{estado.jogador.nome}</h3>
                   </div>
+                  <div className="flex items-center justify-end gap-2 text-sm">
+                    <span className="text-slate-400">{estado.jogador.raridade}</span>
+                    <span className="text-slate-500">•</span>
+                    <span className="px-2 py-0.5 bg-slate-800/50 rounded text-slate-400">
+                      {estado.jogador.elemento}
+                    </span>
+                  </div>
+
+                  {/* Buffs do Jogador */}
+                  {estado.jogador.buffs && estado.jogador.buffs.length > 0 && (
+                    <div className="flex gap-1 mt-2 flex-wrap justify-end">
+                      {estado.jogador.buffs.map((buff, idx) => (
+                        <span key={idx} className="text-lg" title={`${buff.nome} (${buff.turnos} turnos)`}>
+                          {buff.icone}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
 
               {/* HP do Jogador */}
-              <div className="mb-3">
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="text-slate-400">HP</span>
-                  <span className="text-green-400 font-mono">{estado.jogador.hp_atual} / {estado.jogador.hp_maximo}</span>
+              <div className="mb-3 space-y-1">
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-400 font-semibold">HP</span>
+                  <span className="text-green-400 font-mono font-bold">{estado.jogador.hp_atual} / {estado.jogador.hp_maximo}</span>
                 </div>
-                <div className="w-full bg-slate-700 rounded-full h-4 overflow-hidden">
-                  <div 
-                    className="bg-gradient-to-r from-green-500 to-green-600 h-4 transition-all duration-500"
+                <div className="relative w-full bg-slate-800 rounded-full h-5 overflow-hidden border border-slate-700">
+                  <div
+                    className="bg-gradient-to-r from-green-600 via-green-500 to-green-600 h-5 transition-all duration-500 relative"
                     style={{width: `${hpJogadorPercent}%`}}
-                  ></div>
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-white/10"></div>
+                  </div>
+                  <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                    {Math.round(hpJogadorPercent)}%
+                  </div>
                 </div>
               </div>
 
               {/* Energia do Jogador */}
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="text-slate-400">Energia</span>
-                  <span className="text-blue-400 font-mono">{estado.jogador.energia_atual} / 100</span>
+              <div className="space-y-1">
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-400 font-semibold">Energia</span>
+                  <span className="text-blue-400 font-mono font-bold">{estado.jogador.energia_atual} / 100</span>
                 </div>
-                <div className="w-full bg-slate-700 rounded-full h-3 overflow-hidden">
-                  <div 
-                    className="bg-gradient-to-r from-blue-500 to-cyan-500 h-3 transition-all duration-500"
+                <div className="relative w-full bg-slate-800 rounded-full h-4 overflow-hidden border border-slate-700">
+                  <div
+                    className="bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-600 h-4 transition-all duration-500 relative"
                     style={{width: `${energiaJogadorPercent}%`}}
-                  ></div>
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-white/10"></div>
+                  </div>
+                  <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                    {estado.jogador.energia_atual}
+                  </div>
                 </div>
               </div>
             </div>
