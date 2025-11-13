@@ -455,7 +455,15 @@ export default function BatalhaPage() {
               </div>
 
               {/* Ações Especiais */}
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-3">
+                <button
+                  onClick={() => !turnoIA && !processando && executarAcao('ataque_basico')}
+                  disabled={turnoIA || processando}
+                  className="px-4 py-3 bg-gradient-to-br from-red-900/60 to-red-800/40 hover:from-red-800/70 hover:to-red-700/50 rounded-lg border-2 border-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm font-semibold hover:scale-105 hover:shadow-lg hover:shadow-red-500/20"
+                >
+                  ⚔️ Ataque Básico <span className="text-xs text-red-300">(0 energia)</span>
+                </button>
+
                 <button
                   onClick={() => !turnoIA && !processando && executarAcao('defender')}
                   disabled={turnoIA || processando}
