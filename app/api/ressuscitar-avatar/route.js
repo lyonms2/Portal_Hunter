@@ -1,10 +1,7 @@
-import { createClient } from '@supabase/supabase-js';
+import { getSupabaseAnonClient } from '@/lib/supabase/serverClient';
 import { validarStats } from '../../avatares/sistemas/statsSystem';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
+const supabase = getSupabaseAnonClient();
 
 /**
  * Sistema de Ressurreição Balanceado

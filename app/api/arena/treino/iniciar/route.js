@@ -2,15 +2,12 @@
 // Arquivo: /app/api/arena/treino/iniciar/route.js
 
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabaseServiceClient } from '@/lib/supabase/serverClient';
 import { inicializarBatalha } from '@/lib/arena/batalhaEngine';
 import { selecionarHabilidadesIniciais } from '@/app/avatares/sistemas/abilitiesSystem';
 import { gerarStatsBalanceados } from '@/app/avatares/sistemas/statsSystem';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+const supabase = getSupabaseServiceClient();
 
 /**
  * Gera um avatar inimigo para treino

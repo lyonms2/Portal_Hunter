@@ -2,6 +2,7 @@
 // Arquivo: /app/avatares/sistemas/statsSystem.js
 
 import { CARACTERISTICAS_ELEMENTAIS } from './elementalSystem';
+import { calcularHPMaximoSimples } from '../../../lib/combat/statsCalculator';
 
 /**
  * Ranges de stats base por raridade (SEM overlap)
@@ -216,11 +217,10 @@ export function calcularStatsAposNivel(statsAtuais, niveisGanhos, raridade, elem
  * @param {number} resistencia - Valor de resistência
  * @param {number} nivel - Nível do avatar
  * @returns {number} HP máximo
+ * @deprecated Use calcularHPMaximoSimples de statsCalculator.js
  */
 export function calcularHPMaximo(resistencia, nivel) {
-  const hpBase = EFEITOS_STATS.resistencia.formula_hp(resistencia);
-  const bonusNivel = nivel * 5; // +5 HP por nível
-  return Math.floor(hpBase + bonusNivel);
+  return calcularHPMaximoSimples(resistencia, nivel);
 }
 
 /**
