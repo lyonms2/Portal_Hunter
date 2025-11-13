@@ -6,8 +6,10 @@ export const dynamic = 'force-dynamic';
 
 export async function PUT(request) {
   console.log("=== ATUALIZAR NOME DE OPERAÇÃO ===");
-  
+
   try {
+    // Inicializar Supabase dentro da função
+    const supabase = getSupabaseClientSafe(true);
     if (!supabase) {
       return Response.json(
         { message: "Serviço temporariamente indisponível" },
