@@ -4,10 +4,12 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseServiceClient } from '@/lib/supabase/serverClient';
 
-const supabase = getSupabaseServiceClient();
+// MOVIDO PARA DENTRO DA FUNÇÃO: const supabase = getSupabaseServiceClient();
 
 export async function POST(request) {
   try {
+    // Inicializar Supabase dentro da função
+    const supabase = getSupabaseServiceClient();
     const { userId, moedas, fragmentos } = await request.json();
     
     if (!userId) {

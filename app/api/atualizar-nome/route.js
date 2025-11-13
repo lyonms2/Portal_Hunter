@@ -1,6 +1,6 @@
 import { getSupabaseClientSafe } from "@/lib/supabase/serverClient";
 
-const supabase = getSupabaseClientSafe();
+// MOVIDO PARA DENTRO DA FUNÇÃO: const supabase = getSupabaseClientSafe();
 
 export const dynamic = 'force-dynamic';
 

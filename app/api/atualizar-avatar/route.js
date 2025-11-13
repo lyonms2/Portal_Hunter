@@ -6,18 +6,19 @@ import { getSupabaseServiceClient } from '@/lib/supabase/serverClient';
 import { processarGanhoXP } from '@/app/avatares/sistemas/progressionSystem';
 import { getNivelVinculo } from '@/app/avatares/sistemas/bondSystem';
 
-const supabase = getSupabaseServiceClient();
-
 export async function POST(request) {
   try {
     const { avatarId, experiencia, exaustao, vinculo } = await request.json();
-    
+
     if (!avatarId) {
       return NextResponse.json(
         { message: 'avatarId é obrigatório' },
         { status: 400 }
       );
     }
+
+    // Inicializar Supabase dentro da função
+    const supabase = getSupabaseServiceClient();
 
     // Buscar avatar atual
     const { data: avatarAtual, error: fetchError } = await supabase

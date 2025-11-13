@@ -7,8 +7,6 @@ import { inicializarBatalha } from '@/lib/arena/batalhaEngine';
 import { selecionarHabilidadesIniciais } from '@/app/avatares/sistemas/abilitiesSystem';
 import { gerarStatsBalanceados } from '@/app/avatares/sistemas/statsSystem';
 
-const supabase = getSupabaseServiceClient();
-
 /**
  * Gera um avatar inimigo para treino
  */
@@ -58,14 +56,17 @@ function gerarAvatarInimigo(nivel, dificuldade) {
 export async function POST(request) {
   try {
     const { userId, avatarId, dificuldade } = await request.json();
-    
+
     if (!userId || !avatarId || !dificuldade) {
       return NextResponse.json(
         { message: 'Dados incompletos' },
         { status: 400 }
       );
     }
-    
+
+    // Inicializar Supabase dentro da função
+    const supabase = getSupabaseServiceClient();
+
     // Buscar avatar do jogador
     const { data: avatar, error: avatarError } = await supabase
       .from('avatares')

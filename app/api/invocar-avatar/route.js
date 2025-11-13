@@ -6,7 +6,7 @@ import { gerarStatsBalanceados } from '../../avatares/sistemas/statsSystem';
 import { selecionarHabilidadesIniciais } from '../../avatares/sistemas/abilitiesSystem';
 import { gerarNomeCompleto, gerarDescricaoNarrativa } from '../../avatares/sistemas/loreSystem';
 
-const supabase = getSupabaseClientSafe();
+// MOVIDO PARA DENTRO DA FUNÇÃO: const supabase = getSupabaseClientSafe();
 
 // ==================== FUNÇÕES DE GERAÇÃO ====================
 
