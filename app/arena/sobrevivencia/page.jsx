@@ -14,6 +14,7 @@ export default function ArenaSobrevivenciaPage() {
   const [estadoJogo, setEstadoJogo] = useState('selecao'); // selecao, preparando, sobrevivendo, game_over
   const [ondaAtual, setOndaAtual] = useState(0);
   const [recordePessoal, setRecordePessoal] = useState(0);
+  const [autoPlay, setAutoPlay] = useState(false); // Modo auto-play
 
   // Estados para modais
   const [modalOndaCompleta, setModalOndaCompleta] = useState(null); // { onda, recompensas, exaustao }
@@ -103,7 +104,7 @@ export default function ArenaSobrevivenciaPage() {
     return { nome: 'IMPOSSÍVEL', cor: 'text-red-600' };
   };
 
-  const iniciarSobrevivencia = () => {
+  const iniciarSobrevivencia = (comAutoPlay = false) => {
     if (!avatarSelecionado) {
       setModalAlerta({
         titulo: '⚠️ Avatar não selecionado',
@@ -120,6 +121,7 @@ export default function ArenaSobrevivenciaPage() {
       return;
     }
 
+    setAutoPlay(comAutoPlay);
     setEstadoJogo('preparando');
     setOndaAtual(1);
 
@@ -145,7 +147,28 @@ export default function ArenaSobrevivenciaPage() {
       localStorage.setItem(`survival_record_${user.id}`, onda.toString());
     }
 
-    // Mostrar modal de onda completa
+    // Se autoPlay está ativo, continuar automaticamente
+    if (autoPlay) {
+      // Simular chance de derrota (aumenta com a onda)
+      const chanceMorte = Math.min(0.05 + (onda * 0.03), 0.85); // 5% na onda 1 até 85% no max
+      const morreu = Math.random() < chanceMorte;
+
+      if (morreu) {
+        // Morreu no auto-play
+        setAutoPlay(false);
+        finalizarSobrevivencia(onda, true);
+      } else {
+        // Continuar para próxima onda
+        const proximaOnda = onda + 1;
+        setOndaAtual(proximaOnda);
+        setTimeout(() => {
+          iniciarOndaAtual(proximaOnda);
+        }, 500); // Delay curto entre ondas no auto-play
+      }
+      return;
+    }
+
+    // Modo normal - mostrar modal de onda completa
     const recompensas = calcularRecompensasOnda(onda);
     const exaustao = calcularExaustaoOnda(onda);
 
@@ -407,26 +430,6 @@ export default function ArenaSobrevivenciaPage() {
           </div>
         )}
 
-        {/* Aviso de Desenvolvimento */}
-        <div className="mb-8 bg-gradient-to-r from-yellow-900/30 to-orange-900/30 border-2 border-yellow-500/50 rounded-xl p-6">
-          <div className="flex items-start gap-4">
-            <div className="text-4xl">🚧</div>
-            <div className="flex-1">
-              <h3 className="text-xl font-black text-yellow-400 mb-2">MODO EM DESENVOLVIMENTO</h3>
-              <p className="text-slate-300 text-sm leading-relaxed mb-3">
-                O sistema de batalhas de sobrevivência está em desenvolvimento. Você pode testar a interface e mecânicas básicas.
-              </p>
-              <div className="text-xs text-slate-400 space-y-1">
-                <div>✅ Seleção de avatares</div>
-                <div>✅ Sistema de ondas e dificuldade progressiva</div>
-                <div>✅ Cálculo de recompensas balanceadas</div>
-                <div>⏳ Batalhas em tempo real (em breve)</div>
-                <div>⏳ Ranking global (em breve)</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Sem avatares aptos */}
         {avatares.length === 0 && (
           <div className="max-w-2xl mx-auto text-center py-20 bg-slate-900/50 rounded-lg border border-slate-800">
@@ -653,8 +656,8 @@ export default function ArenaSobrevivenciaPage() {
                 })}
               </div>
 
-              {/* Botão Iniciar */}
-              <div className="max-w-2xl mx-auto space-y-4">
+              {/* Botões Iniciar */}
+              <div className="max-w-3xl mx-auto space-y-4">
                 {avatarSelecionado && avatarSelecionado.exaustao >= 40 && (
                   <div className="p-4 bg-orange-950/50 border-2 border-orange-500/50 rounded-lg">
                     <p className="text-sm text-orange-400 font-bold text-center">
@@ -663,8 +666,9 @@ export default function ArenaSobrevivenciaPage() {
                   </div>
                 )}
 
+                {/* Botão Principal */}
                 <button
-                  onClick={iniciarSobrevivencia}
+                  onClick={() => iniciarSobrevivencia(false)}
                   disabled={!avatarSelecionado}
                   className="w-full group relative disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -674,6 +678,26 @@ export default function ArenaSobrevivenciaPage() {
                     <span className="text-2xl font-black tracking-wider uppercase bg-gradient-to-r from-purple-300 to-pink-300 bg-clip-text text-transparent">
                       💀 INICIAR SOBREVIVÊNCIA
                     </span>
+                  </div>
+                </button>
+
+                {/* Botão Auto-Play */}
+                <button
+                  onClick={() => iniciarSobrevivencia(true)}
+                  disabled={!avatarSelecionado}
+                  className="w-full group relative disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <div className="absolute -inset-1 bg-gradient-to-r from-orange-500 via-red-500 to-red-700 rounded-xl blur opacity-40 group-hover:opacity-60 transition-all"></div>
+
+                  <div className="relative px-8 py-4 bg-slate-950 rounded-xl border-2 border-red-500/70 group-hover:border-red-400 transition-all">
+                    <div className="flex items-center justify-center gap-3">
+                      <span className="text-xl font-black tracking-wider uppercase bg-gradient-to-r from-red-300 to-orange-300 bg-clip-text text-transparent">
+                        ⚡ AUTO-PLAY (ATÉ MORRER)
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-500 mt-2 text-center">
+                      Passa automaticamente pelas ondas até a derrota
+                    </p>
                   </div>
                 </button>
 
@@ -723,7 +747,67 @@ export default function ArenaSobrevivenciaPage() {
                 </div>
 
                 <p className="text-slate-500 text-sm font-mono">
-                  Boa sorte, caçador...
+                  {autoPlay ? 'Modo AUTO-PLAY ativado...' : 'Boa sorte, caçador...'}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Estado: Sobrevivendo (Auto-Play) */}
+        {estadoJogo === 'sobrevivendo' && autoPlay && (
+          <div className="max-w-3xl mx-auto">
+            <div className="bg-gradient-to-br from-red-900/80 to-slate-950/80 backdrop-blur-xl rounded-2xl p-12 border-2 border-red-500/30">
+              <div className="text-center space-y-6">
+                <div className="relative">
+                  <div className="w-40 h-40 mx-auto relative">
+                    <div className="absolute inset-0 border-4 border-red-500/20 rounded-full"></div>
+                    <div className="absolute inset-0 border-4 border-red-500 border-t-transparent rounded-full animate-spin"></div>
+                    <div className="absolute inset-4 border-4 border-orange-500/20 rounded-full"></div>
+                    <div className="absolute inset-4 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1s' }}></div>
+                    <div className="absolute inset-0 flex items-center justify-center text-6xl animate-pulse">
+                      ⚡
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h2 className="text-4xl font-black text-red-400 mb-2 animate-pulse">
+                    AUTO-PLAY ATIVO
+                  </h2>
+                  <p className="text-white font-mono text-2xl mb-1">
+                    Onda {ondaAtual}
+                  </p>
+                  <p className={`font-bold ${getNomeDificuldadeOnda(ondaAtual).cor}`}>
+                    {getNomeDificuldadeOnda(ondaAtual).nome}
+                  </p>
+                </div>
+
+                <div className="bg-slate-950/50 rounded-lg p-6 border border-red-700/50">
+                  <div className="flex items-center gap-4 justify-center mb-4">
+                    <AvatarSVG avatar={avatarSelecionado} tamanho={80} />
+                    <div className="text-left">
+                      <div className="font-bold text-white text-lg">{avatarSelecionado.nome}</div>
+                      <div className="text-slate-400 text-sm">Nv.{avatarSelecionado.nivel} • {avatarSelecionado.elemento}</div>
+                    </div>
+                  </div>
+                  <p className="text-red-400 text-sm font-bold">
+                    ⚔️ Batalhando automaticamente...
+                  </p>
+                </div>
+
+                <button
+                  onClick={() => {
+                    setAutoPlay(false);
+                    finalizarSobrevivencia(ondaAtual, false);
+                  }}
+                  className="px-8 py-3 bg-red-900/50 hover:bg-red-900/70 text-red-300 rounded-lg border border-red-700 transition-colors font-bold"
+                >
+                  ✕ Parar Auto-Play
+                </button>
+
+                <p className="text-xs text-slate-500 font-mono">
+                  O auto-play continuará até seu avatar ser derrotado
                 </p>
               </div>
             </div>
