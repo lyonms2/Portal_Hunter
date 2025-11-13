@@ -55,6 +55,22 @@ export default function BatalhaPage() {
         adicionarLog(`⚡ -${resultado.energiaGasta} energia`);
       }
 
+      if (resultado.energiaRecuperada > 0) {
+        adicionarLog(`⚡ +${resultado.energiaRecuperada} energia recuperada`);
+      }
+
+      if (resultado.dano > 0) {
+        adicionarLog(`💥 ${resultado.dano} de dano causado`);
+      }
+
+      if (resultado.buffs && resultado.buffs.length > 0) {
+        resultado.buffs.forEach(buff => {
+          if (buff.tipo === 'defesa') {
+            adicionarLog(`🛡️ Defesa aumentada em ${buff.valor}% por 1 turno!`);
+          }
+        });
+      }
+
       // Verificar vitória
       const vitoria = verificarVitoria(novoEstado);
       
@@ -95,6 +111,15 @@ export default function BatalhaPage() {
       // === PRÓXIMA RODADA ===
       novoEstado.rodada++;
       novoEstado.turno_atual = 'jogador';
+
+      // Decrementar turnos dos buffs e remover expirados
+      novoEstado.jogador.buffs = novoEstado.jogador.buffs
+        .map(buff => ({ ...buff, turnos: buff.turnos - 1 }))
+        .filter(buff => buff.turnos > 0);
+
+      novoEstado.inimigo.buffs = novoEstado.inimigo.buffs
+        .map(buff => ({ ...buff, turnos: buff.turnos - 1 }))
+        .filter(buff => buff.turnos > 0);
 
       // Regenerar energia
       const turnoJogador = iniciarTurno(novoEstado.jogador, novoEstado);
