@@ -150,10 +150,21 @@ export default function ArenaPvPPage() {
   };
 
   const iniciarBatalha = () => {
-    // TODO: Implementar sistema de batalha PvP real
-    alert('Sistema de batalha PvP em desenvolvimento!\n\nFuncionalidades planejadas:\n- Turnos de 30 segundos\n- Sistema de ranking\n- Recompensas competitivas\n- Chat durante batalha');
-    setEstadoMatchmaking('selecao');
-    setOponenteEncontrado(null);
+    // Armazenar dados da partida PvP no sessionStorage
+    const dadosPartida = {
+      tipo: 'pvp',
+      avatarJogador: avatarSelecionado,
+      avatarOponente: oponenteEncontrado.avatar,
+      nomeOponente: oponenteEncontrado.nome,
+      pontosRankingJogador: pontosRanking,
+      pontosRankingOponente: oponenteEncontrado.avatar.nivel * 200 + 1000, // Simular pontos do oponente
+      tierJogador: getTierPorPontos(pontosRanking)
+    };
+
+    sessionStorage.setItem('batalha_pvp_dados', JSON.stringify(dadosPartida));
+
+    // Redirecionar para a página de batalha
+    router.push('/arena/batalha?modo=pvp');
   };
 
   const getAvisoExaustao = (exaustao) => {

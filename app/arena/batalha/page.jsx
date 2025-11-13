@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { processarAcaoJogador, verificarVitoria, iniciarTurno } from "@/lib/arena/batalhaEngine";
 import { processarTurnoIA, getMensagemIA } from "@/lib/arena/iaEngine";
 import { calcularRecompensasTreino } from "@/lib/arena/recompensasCalc";
+import { calcularRecompensasPvP, calcularPontosVitoria, calcularPerda } from "@/lib/pvp/rankingSystem";
 import AvatarSVG from "@/app/components/AvatarSVG";
 
 // CSS personalizado para animações
@@ -29,8 +30,11 @@ const styles = `
   }
 `;
 
-export default function BatalhaPage() {
+function BatalhaContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const modoPvP = searchParams.get('modo') === 'pvp';
+
   const [estado, setEstado] = useState(null);
   const [log, setLog] = useState([]);
   const [turnoIA, setTurnoIA] = useState(false);
@@ -45,29 +49,78 @@ export default function BatalhaPage() {
   const [animacaoDano, setAnimacaoDano] = useState(null); // { tipo: 'jogador'|'inimigo', valor: number, critico: bool }
   const [animacaoAcao, setAnimacaoAcao] = useState(null); // { tipo: 'ataque'|'defesa'|'habilidade', alvo: string }
 
+  // Dados PvP
+  const [dadosPvP, setDadosPvP] = useState(null);
+
   useEffect(() => {
     // Carregar estado da batalha
-    const batalhaJSON = localStorage.getItem('batalha_atual');
+    let batalhaJSON;
+
+    if (modoPvP) {
+      // Modo PvP - carregar de sessionStorage
+      batalhaJSON = sessionStorage.getItem('batalha_pvp_dados');
+      if (batalhaJSON) {
+        const dados = JSON.parse(batalhaJSON);
+        setDadosPvP(dados);
+
+        // Construir estado de batalha a partir dos dados PvP
+        const batalha = {
+          jogador: {
+            ...dados.avatarJogador,
+            hp_atual: dados.avatarJogador.hp || (dados.avatarJogador.resistencia * 10),
+            hp_maximo: dados.avatarJogador.hp || (dados.avatarJogador.resistencia * 10),
+            energia_atual: 100,
+            buffs: [],
+            debuffs: []
+          },
+          inimigo: {
+            ...dados.avatarOponente,
+            nome: dados.nomeOponente,
+            hp_atual: dados.avatarOponente.hp || (dados.avatarOponente.resistencia * 10),
+            hp_maximo: dados.avatarOponente.hp || (dados.avatarOponente.resistencia * 10),
+            energia_atual: 100,
+            buffs: [],
+            debuffs: []
+          },
+          dificuldade: 'pvp',
+          rodada: 1,
+          turno_atual: 'jogador'
+        };
+
+        setEstado(batalha);
+
+        adicionarLog('⚔️ BATALHA PvP INICIADA!');
+        adicionarLog(`Você: ${batalha.jogador.nome} (${batalha.jogador.elemento})`);
+        adicionarLog(`VS`);
+        adicionarLog(`${dados.nomeOponente}: ${batalha.inimigo.nome} (${batalha.inimigo.elemento})`);
+        adicionarLog(`Tier: ${dados.tierJogador.nome} ${dados.tierJogador.icone}`);
+        adicionarLog('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      }
+    } else {
+      // Modo Treino - carregar de localStorage
+      batalhaJSON = localStorage.getItem('batalha_atual');
+      if (batalhaJSON) {
+        const batalha = JSON.parse(batalhaJSON);
+        setEstado(batalha);
+
+        adicionarLog('🎮 Batalha iniciada!');
+        adicionarLog(`Você: ${batalha.jogador.nome} (${batalha.jogador.elemento})`);
+        adicionarLog(`VS`);
+        adicionarLog(`Oponente: ${batalha.inimigo.nome} (${batalha.inimigo.elemento})`);
+        adicionarLog(`Dificuldade: ${batalha.dificuldade.toUpperCase()}`);
+        adicionarLog('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      }
+    }
 
     if (!batalhaJSON) {
       router.push('/arena');
       return;
     }
 
-    const batalha = JSON.parse(batalhaJSON);
-    setEstado(batalha);
-
-    adicionarLog('🎮 Batalha iniciada!');
-    adicionarLog(`Você: ${batalha.jogador.nome} (${batalha.jogador.elemento})`);
-    adicionarLog(`VS`);
-    adicionarLog(`Oponente: ${batalha.inimigo.nome} (${batalha.inimigo.elemento})`);
-    adicionarLog(`Dificuldade: ${batalha.dificuldade.toUpperCase()}`);
-    adicionarLog('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-
     // Iniciar timer no primeiro turno
     setTimerAtivo(true);
     setTempoRestante(30);
-  }, [router]);
+  }, [router, modoPvP]);
 
   // Timer para turnos (especialmente útil para PvP)
   useEffect(() => {
@@ -218,9 +271,9 @@ export default function BatalhaPage() {
 
   const finalizarBatalha = (estadoFinal, vencedor) => {
     setTurnoIA(false);
-    
+
     adicionarLog('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    
+
     if (vencedor === 'jogador') {
       adicionarLog('🎉 VITÓRIA!');
     } else if (vencedor === 'inimigo') {
@@ -229,51 +282,125 @@ export default function BatalhaPage() {
       adicionarLog('⚖️ EMPATE!');
     }
 
-    // Calcular recompensas
-    const recompensas = calcularRecompensasTreino(estadoFinal, vencedor);
-    
+    let recompensas;
+    let pontosGanhos = 0;
+
+    if (modoPvP && dadosPvP) {
+      // Calcular recompensas PvP
+      const venceu = vencedor === 'jogador';
+      recompensas = calcularRecompensasPvP(venceu, dadosPvP.tierJogador, estadoFinal.rodada);
+
+      // Calcular pontos de ranking
+      if (venceu) {
+        pontosGanhos = calcularPontosVitoria(dadosPvP.pontosRankingJogador, dadosPvP.pontosRankingOponente);
+        adicionarLog(`🏆 +${pontosGanhos} pontos de ranking!`);
+      } else {
+        pontosGanhos = -calcularPerda(dadosPvP.pontosRankingOponente, dadosPvP.pontosRankingJogador);
+        adicionarLog(`📉 ${pontosGanhos} pontos de ranking`);
+      }
+
+      recompensas.pontos_ranking = pontosGanhos;
+    } else {
+      // Calcular recompensas de treino
+      recompensas = calcularRecompensasTreino(estadoFinal, vencedor);
+    }
+
     setResultado({
       vencedor,
       recompensas,
-      estado: estadoFinal
+      estado: estadoFinal,
+      pvp: modoPvP
     });
   };
 
   const voltarAoLobby = async () => {
-    if (resultado && resultado.vencedor === 'jogador') {
-      // Aplicar recompensas
-      const userData = JSON.parse(localStorage.getItem('user'));
-      
-      try {
-        // Atualizar stats do jogador
-        await fetch('/api/atualizar-stats', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userId: userData.id,
-            moedas: resultado.recompensas.moedas,
-            fragmentos: resultado.recompensas.fragmentos || 0
-          })
-        });
+    const userData = JSON.parse(localStorage.getItem('user'));
 
-        // Atualizar avatar (XP, exaustão e vínculo)
-        await fetch('/api/atualizar-avatar', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            avatarId: estado.jogador.id,
-            experiencia: resultado.recompensas.xp,
-            exaustao: resultado.recompensas.exaustao,
-            vinculo: resultado.recompensas.vinculo || 0
-          })
-        });
+    if (resultado) {
+      try {
+        if (modoPvP) {
+          // Modo PvP - atualizar ranking
+          const rankingKey = `pvp_ranking_${userData.id}`;
+          const rankingData = JSON.parse(localStorage.getItem(rankingKey) || '{"pontos": 1000, "vitorias": 0, "derrotas": 0}');
+
+          // Atualizar pontos e estatísticas
+          const novosPontos = Math.max(0, rankingData.pontos + (resultado.recompensas.pontos_ranking || 0));
+
+          if (resultado.vencedor === 'jogador') {
+            rankingData.vitorias = (rankingData.vitorias || 0) + 1;
+          } else if (resultado.vencedor === 'inimigo') {
+            rankingData.derrotas = (rankingData.derrotas || 0) + 1;
+          }
+
+          rankingData.pontos = novosPontos;
+
+          localStorage.setItem(rankingKey, JSON.stringify(rankingData));
+
+          // Aplicar recompensas (XP, moedas, etc.)
+          await fetch('/api/atualizar-stats', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userId: userData.id,
+              moedas: resultado.recompensas.moedas,
+              fragmentos: resultado.recompensas.fragmentos || 0
+            })
+          });
+
+          await fetch('/api/atualizar-avatar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              avatarId: estado.jogador.id,
+              experiencia: resultado.recompensas.xp,
+              exaustao: 15, // Exaustão fixa para PvP
+              vinculo: resultado.recompensas.vinculo || 0
+            })
+          });
+
+          sessionStorage.removeItem('batalha_pvp_dados');
+          router.push('/arena/pvp');
+        } else if (resultado.vencedor === 'jogador') {
+          // Modo Treino - aplicar recompensas normalmente
+          await fetch('/api/atualizar-stats', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userId: userData.id,
+              moedas: resultado.recompensas.moedas,
+              fragmentos: resultado.recompensas.fragmentos || 0
+            })
+          });
+
+          await fetch('/api/atualizar-avatar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              avatarId: estado.jogador.id,
+              experiencia: resultado.recompensas.xp,
+              exaustao: resultado.recompensas.exaustao,
+              vinculo: resultado.recompensas.vinculo || 0
+            })
+          });
+
+          localStorage.removeItem('batalha_atual');
+          router.push('/arena');
+        } else {
+          // Derrota no treino
+          localStorage.removeItem('batalha_atual');
+          router.push('/arena');
+        }
       } catch (error) {
         console.error('Erro ao aplicar recompensas:', error);
+        if (modoPvP) {
+          sessionStorage.removeItem('batalha_pvp_dados');
+          router.push('/arena/pvp');
+        } else {
+          localStorage.removeItem('batalha_atual');
+          router.push('/arena');
+        }
       }
     }
-
-    localStorage.removeItem('batalha_atual');
-    router.push('/arena');
   };
 
   if (!estado) {
@@ -342,12 +469,40 @@ export default function BatalhaPage() {
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-3 mb-4">
-                <div className="text-center p-3 bg-orange-900/30 rounded border border-orange-500/50">
-                  <span className="text-orange-400 text-sm">
-                    😰 +{resultado.recompensas.exaustao} Exaustão
-                  </span>
+              {/* Pontos de Ranking (PvP) */}
+              {resultado.pvp && resultado.recompensas.pontos_ranking !== undefined && (
+                <div className={`text-center p-4 rounded border mb-4 ${
+                  resultado.recompensas.pontos_ranking > 0
+                    ? 'bg-gradient-to-r from-yellow-900/30 to-orange-900/30 border-yellow-500/50'
+                    : 'bg-gradient-to-r from-red-900/30 to-orange-900/30 border-red-500/50'
+                }`}>
+                  <div className="text-4xl mb-2">
+                    {resultado.recompensas.pontos_ranking > 0 ? '🏆' : '📉'}
+                  </div>
+                  <div className={`text-3xl font-black ${
+                    resultado.recompensas.pontos_ranking > 0 ? 'text-yellow-400' : 'text-red-400'
+                  }`}>
+                    {resultado.recompensas.pontos_ranking > 0 ? '+' : ''}{resultado.recompensas.pontos_ranking}
+                  </div>
+                  <div className="text-sm text-slate-400">Pontos de Ranking</div>
                 </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                {!resultado.pvp && resultado.recompensas.exaustao && (
+                  <div className="text-center p-3 bg-orange-900/30 rounded border border-orange-500/50">
+                    <span className="text-orange-400 text-sm">
+                      😰 +{resultado.recompensas.exaustao} Exaustão
+                    </span>
+                  </div>
+                )}
+                {resultado.pvp && (
+                  <div className="text-center p-3 bg-orange-900/30 rounded border border-orange-500/50">
+                    <span className="text-orange-400 text-sm">
+                      😰 +15 Exaustão
+                    </span>
+                  </div>
+                )}
                 {resultado.recompensas.vinculo !== undefined && (
                   <div className={`text-center p-3 rounded border ${
                     resultado.recompensas.vinculo > 0
@@ -378,7 +533,7 @@ export default function BatalhaPage() {
               onClick={voltarAoLobby}
               className="w-full px-8 py-4 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-lg transition-colors"
             >
-              Voltar ao Lobby
+              {resultado.pvp ? '← Voltar ao PvP' : '← Voltar ao Lobby'}
             </button>
           </div>
         </div>
@@ -809,7 +964,7 @@ export default function BatalhaPage() {
           {/* Log de Combate */}
           <div className="bg-slate-900/80 rounded-lg p-4 border-2 border-slate-700 max-h-[calc(100vh-8rem)] overflow-hidden flex flex-col">
             <h3 className="text-cyan-400 font-bold mb-3">📜 LOG DE COMBATE</h3>
-            
+
             <div className="flex-1 overflow-y-auto space-y-1 text-sm font-mono">
               {log.map((entry, i) => (
                 <div key={i} className="text-slate-300">
@@ -821,5 +976,17 @@ export default function BatalhaPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function BatalhaPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-red-950 flex items-center justify-center">
+        <div className="text-red-400 font-mono animate-pulse">Carregando batalha...</div>
+      </div>
+    }>
+      <BatalhaContent />
+    </Suspense>
   );
 }
