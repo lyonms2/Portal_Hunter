@@ -15,6 +15,11 @@ export default function ArenaSobrevivenciaPage() {
   const [ondaAtual, setOndaAtual] = useState(0);
   const [recordePessoal, setRecordePessoal] = useState(0);
 
+  // Estados para modais
+  const [modalOndaCompleta, setModalOndaCompleta] = useState(null); // { onda, recompensas, exaustao }
+  const [modalGameOver, setModalGameOver] = useState(null); // { ondaFinal, recompensasTotais, novoRecorde }
+  const [modalAlerta, setModalAlerta] = useState(null); // { titulo, mensagem }
+
   useEffect(() => {
     const userData = localStorage.getItem("user");
     if (!userData) {
@@ -100,34 +105,37 @@ export default function ArenaSobrevivenciaPage() {
 
   const iniciarSobrevivencia = () => {
     if (!avatarSelecionado) {
-      alert('Selecione um avatar primeiro!');
+      setModalAlerta({
+        titulo: '⚠️ Avatar não selecionado',
+        mensagem: 'Selecione um avatar antes de começar o modo Sobrevivência!'
+      });
       return;
     }
 
     if (avatarSelecionado.exaustao >= 60) {
-      alert('Seu avatar está muito exausto! Modo Sobrevivência exige avatares em boa forma (< 60% exaustão).');
+      setModalAlerta({
+        titulo: '💀 Avatar Exausto',
+        mensagem: 'Seu avatar está muito exausto! Modo Sobrevivência exige avatares em boa forma (menos de 60% de exaustão).'
+      });
       return;
     }
 
     setEstadoJogo('preparando');
     setOndaAtual(1);
 
-    // Simular preparação
+    // Simular preparação (2 segundos de animação)
     setTimeout(() => {
       setEstadoJogo('sobrevivendo');
       iniciarOndaAtual(1);
-    }, 3000);
+    }, 2000);
   };
 
   const iniciarOndaAtual = (onda) => {
-    // TODO: Implementar sistema de batalha de sobrevivência
-    // Por enquanto, apenas simulação
-    alert(`Iniciando Onda ${onda}!\n\nInimigo: ${calcularMultiplicadorOnda(onda).toFixed(2)}x mais forte\n\nEm desenvolvimento: batalhas de sobrevivência`);
-
-    // Simular vitória (para teste)
+    // TODO: Integrar com sistema de batalha real
+    // Por enquanto, simular vitória após 3 segundos
     setTimeout(() => {
       ondaCompleta(onda);
-    }, 2000);
+    }, 3000);
   };
 
   const ondaCompleta = (onda) => {
@@ -137,41 +145,45 @@ export default function ArenaSobrevivenciaPage() {
       localStorage.setItem(`survival_record_${user.id}`, onda.toString());
     }
 
-    // Mostrar recompensas e opção de continuar
+    // Mostrar modal de onda completa
     const recompensas = calcularRecompensasOnda(onda);
     const exaustao = calcularExaustaoOnda(onda);
 
-    const continuar = confirm(
-      `🎉 ONDA ${onda} COMPLETADA!\n\n` +
-      `Recompensas:\n` +
-      `+${recompensas.xp} XP\n` +
-      `+${recompensas.moedas} Moedas\n` +
-      `Chance de Fragmento: ${(recompensas.chance_fragmento * 100).toFixed(0)}%\n\n` +
-      `Exaustão acumulada: +${exaustao}\n\n` +
-      `Deseja continuar para a Onda ${onda + 1}?`
-    );
+    setModalOndaCompleta({ onda, recompensas, exaustao });
+  };
 
-    if (continuar) {
-      setOndaAtual(onda + 1);
-      iniciarOndaAtual(onda + 1);
-    } else {
-      finalizarSobrevivencia(onda, false);
-    }
+  const continuarParaProximaOnda = () => {
+    const proximaOnda = modalOndaCompleta.onda + 1;
+    setModalOndaCompleta(null);
+    setOndaAtual(proximaOnda);
+    setEstadoJogo('preparando');
+
+    setTimeout(() => {
+      setEstadoJogo('sobrevivendo');
+      iniciarOndaAtual(proximaOnda);
+    }, 1500);
+  };
+
+  const desistirSobrevivencia = () => {
+    const ondaFinal = modalOndaCompleta.onda;
+    setModalOndaCompleta(null);
+    finalizarSobrevivencia(ondaFinal, false);
   };
 
   const finalizarSobrevivencia = (ondaFinal, derrota = true) => {
     const recompensasTotais = calcularRecompensasTotais(ondaFinal);
+    const novoRecorde = ondaFinal > recordePessoal;
 
-    alert(
-      `${derrota ? '💀 GAME OVER' : '🏆 SOBREVIVÊNCIA FINALIZADA'}\n\n` +
-      `Ondas Sobrevividas: ${ondaFinal}\n` +
-      `${ondaFinal > recordePessoal ? '🎊 NOVO RECORDE!' : ''}\n\n` +
-      `Recompensas Totais:\n` +
-      `+${recompensasTotais.xp} XP\n` +
-      `+${recompensasTotais.moedas} Moedas\n` +
-      `+${recompensasTotais.fragmentos} Fragmentos`
-    );
+    setModalGameOver({
+      ondaFinal,
+      recompensasTotais,
+      novoRecorde,
+      derrota
+    });
+  };
 
+  const voltarAoLobby = () => {
+    setModalGameOver(null);
     setEstadoJogo('selecao');
     setOndaAtual(0);
   };
@@ -213,6 +225,147 @@ export default function ArenaSobrevivenciaPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-purple-950 text-gray-100">
+      {/* Modal de Alerta */}
+      {modalAlerta && (
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="max-w-md w-full bg-gradient-to-br from-slate-900 to-slate-950 rounded-xl border-2 border-orange-500 p-8">
+            <div className="text-center mb-6">
+              <div className="text-6xl mb-4">{modalAlerta.titulo.split(' ')[0]}</div>
+              <h2 className="text-2xl font-black text-white mb-2">
+                {modalAlerta.titulo.substring(2)}
+              </h2>
+              <p className="text-slate-300">{modalAlerta.mensagem}</p>
+            </div>
+            <button
+              onClick={() => setModalAlerta(null)}
+              className="w-full px-6 py-3 bg-orange-600 hover:bg-orange-500 text-white font-bold rounded-lg transition-colors"
+            >
+              Entendi
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Onda Completa */}
+      {modalOndaCompleta && (
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="max-w-2xl w-full bg-gradient-to-br from-purple-900/50 to-slate-950 rounded-2xl border-2 border-purple-500 p-8">
+            <div className="text-center mb-8">
+              <div className="text-7xl mb-4 animate-bounce">🎉</div>
+              <h2 className="text-5xl font-black text-purple-400 mb-2">
+                ONDA {modalOndaCompleta.onda}
+              </h2>
+              <p className="text-2xl text-green-400 font-bold">COMPLETADA!</p>
+              {modalOndaCompleta.onda > recordePessoal - 1 && modalOndaCompleta.onda > recordePessoal && (
+                <div className="mt-2 text-yellow-400 font-black text-lg animate-pulse">
+                  🎊 NOVO RECORDE! 🎊
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="bg-slate-900/50 rounded-lg p-4 border border-blue-500/30">
+                <div className="text-xs text-blue-300 mb-2 uppercase font-bold">XP Ganho</div>
+                <div className="text-3xl font-black text-blue-400">+{modalOndaCompleta.recompensas.xp}</div>
+              </div>
+              <div className="bg-slate-900/50 rounded-lg p-4 border border-yellow-500/30">
+                <div className="text-xs text-yellow-300 mb-2 uppercase font-bold">Moedas</div>
+                <div className="text-3xl font-black text-yellow-400">+{modalOndaCompleta.recompensas.moedas}</div>
+              </div>
+            </div>
+
+            <div className="bg-slate-900/50 rounded-lg p-4 border border-purple-500/30 mb-6">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-slate-400">💎 Chance de Fragmento:</span>
+                <span className="text-lg font-bold text-purple-400">
+                  {(modalOndaCompleta.recompensas.chance_fragmento * 100).toFixed(0)}%
+                </span>
+              </div>
+              {modalOndaCompleta.recompensas.fragmentos_garantidos > 0 && (
+                <div className="mt-2 text-center text-purple-300 font-bold">
+                  +{modalOndaCompleta.recompensas.fragmentos_garantidos} Fragmento(s) Garantido(s)!
+                </div>
+              )}
+            </div>
+
+            <div className="bg-orange-950/30 border border-orange-500/50 rounded-lg p-4 mb-8">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-orange-300">😰 Exaustão Acumulada:</span>
+                <span className="text-2xl font-bold text-orange-400">+{modalOndaCompleta.exaustao}</span>
+              </div>
+              <div className="text-xs text-slate-400 mt-2 text-center">
+                Sua exaustão continua aumentando sem recuperação!
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                onClick={desistirSobrevivencia}
+                className="px-6 py-4 bg-red-900/50 hover:bg-red-900/70 border-2 border-red-600 text-red-300 font-bold rounded-lg transition-all"
+              >
+                💰 Coletar e Sair
+              </button>
+              <button
+                onClick={continuarParaProximaOnda}
+                className="px-6 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-black rounded-lg transition-all shadow-lg shadow-purple-500/30"
+              >
+                ⚔️ Próxima Onda ({modalOndaCompleta.onda + 1})
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Game Over */}
+      {modalGameOver && (
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="max-w-2xl w-full bg-gradient-to-br from-slate-900 to-slate-950 rounded-2xl border-2 border-purple-500 p-8">
+            <div className="text-center mb-8">
+              <div className="text-8xl mb-4">
+                {modalGameOver.derrota ? '💀' : '🏆'}
+              </div>
+              <h2 className="text-5xl font-black text-white mb-4">
+                {modalGameOver.derrota ? 'GAME OVER' : 'SOBREVIVÊNCIA FINALIZADA'}
+              </h2>
+              <div className="text-3xl font-bold text-purple-400 mb-2">
+                {modalGameOver.ondaFinal} Ondas Sobrevividas
+              </div>
+              {modalGameOver.novoRecorde && (
+                <div className="text-2xl text-yellow-400 font-black animate-pulse">
+                  🎊 NOVO RECORDE PESSOAL! 🎊
+                </div>
+              )}
+            </div>
+
+            <div className="bg-slate-900/50 rounded-lg p-6 border border-purple-500/30 mb-8">
+              <h3 className="text-cyan-400 font-bold mb-4 text-center text-xl">🎁 RECOMPENSAS TOTAIS</h3>
+
+              <div className="grid grid-cols-3 gap-4 mb-4">
+                <div className="text-center p-4 bg-slate-800 rounded">
+                  <div className="text-3xl font-bold text-blue-400">{modalGameOver.recompensasTotais.xp}</div>
+                  <div className="text-xs text-slate-400 mt-1">XP Total</div>
+                </div>
+                <div className="text-center p-4 bg-slate-800 rounded">
+                  <div className="text-3xl font-bold text-yellow-400">{modalGameOver.recompensasTotais.moedas}</div>
+                  <div className="text-xs text-slate-400 mt-1">Moedas</div>
+                </div>
+                <div className="text-center p-4 bg-slate-800 rounded">
+                  <div className="text-3xl font-bold text-purple-400">{modalGameOver.recompensasTotais.fragmentos}</div>
+                  <div className="text-xs text-slate-400 mt-1">💎 Fragmentos</div>
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={voltarAoLobby}
+              className="w-full px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-black rounded-lg transition-all text-lg shadow-lg shadow-purple-500/30"
+            >
+              ← Voltar ao Lobby
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
