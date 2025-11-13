@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { processarAcaoJogador, verificarVitoria, iniciarTurno } from "@/lib/arena/batalhaEngine";
 import { processarTurnoIA, getMensagemIA } from "@/lib/arena/iaEngine";
 import { calcularRecompensasTreino } from "@/lib/arena/recompensasCalc";
+import AvatarSVG from "@/app/components/AvatarSVG";
 
 export default function BatalhaPage() {
   const router = useRouter();
@@ -13,20 +14,6 @@ export default function BatalhaPage() {
   const [turnoIA, setTurnoIA] = useState(false);
   const [resultado, setResultado] = useState(null);
   const [processando, setProcessando] = useState(false);
-
-  // Função para obter emoji do avatar
-  const getAvatarEmoji = (elemento, isInimigo = false) => {
-    const avatares = {
-      'Fogo': isInimigo ? '😈' : '🧙‍♂️',
-      'Água': isInimigo ? '🧛‍♂️' : '🧜‍♂️',
-      'Terra': isInimigo ? '👹' : '🥷',
-      'Vento': isInimigo ? '👺' : '🧚‍♂️',
-      'Eletricidade': isInimigo ? '⚡😡' : '🧙‍♀️',
-      'Sombra': isInimigo ? '💀' : '🦹‍♂️',
-      'Luz': isInimigo ? '👿' : '🧙‍♂️✨'
-    };
-    return avatares[elemento] || (isInimigo ? '😈' : '🧙');
-  };
 
   useEffect(() => {
     // Carregar estado da batalha
@@ -322,14 +309,15 @@ export default function BatalhaPage() {
                     Nv.{estado.inimigo.nivel} • {estado.inimigo.elemento}
                   </div>
                 </div>
-                <div className="text-8xl drop-shadow-[0_0_15px_rgba(220,38,38,0.6)] hover:scale-110 transition-transform">
-                  <div className="relative inline-block">
-                    <span className="filter brightness-75 contrast-125 saturate-150">
-                      {getAvatarEmoji(estado.inimigo.elemento, true)}
-                    </span>
-                    <div className="absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-xs">
-                      👁️👁️
-                    </div>
+                <div className="relative drop-shadow-[0_0_20px_rgba(220,38,38,0.8)] hover:scale-110 transition-transform">
+                  {/* Avatar inimigo com filtros malignos */}
+                  <div className="filter brightness-50 contrast-150 saturate-150 hue-rotate-15">
+                    <AvatarSVG avatar={estado.inimigo} tamanho={140} />
+                  </div>
+                  {/* Olhos vermelhos sobrepondo */}
+                  <div className="absolute top-[42%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex gap-3 pointer-events-none">
+                    <div className="w-3 h-3 rounded-full bg-red-600 shadow-[0_0_10px_rgba(220,38,38,1)] animate-pulse"></div>
+                    <div className="w-3 h-3 rounded-full bg-red-600 shadow-[0_0_10px_rgba(220,38,38,1)] animate-pulse"></div>
                   </div>
                 </div>
               </div>
@@ -362,10 +350,11 @@ export default function BatalhaPage() {
             {/* Jogador */}
             <div className="bg-slate-900/80 rounded-lg p-6 border-2 border-cyan-500/50 shadow-lg shadow-cyan-900/50">
               <div className="flex items-center justify-between mb-4">
-                <div className="text-8xl drop-shadow-[0_0_15px_rgba(6,182,212,0.6)] hover:scale-110 transition-transform">
-                  <span className="filter brightness-110 saturate-125">
-                    {getAvatarEmoji(estado.jogador.elemento, false)}
-                  </span>
+                <div className="drop-shadow-[0_0_20px_rgba(6,182,212,0.8)] hover:scale-110 transition-transform">
+                  {/* Avatar jogador com filtros heróicos */}
+                  <div className="filter brightness-110 saturate-125">
+                    <AvatarSVG avatar={estado.jogador} tamanho={140} />
+                  </div>
                 </div>
                 <div className="text-right">
                   <h3 className="text-2xl font-bold text-cyan-400">{estado.jogador.nome}</h3>

@@ -73,14 +73,14 @@ export async function POST(request) {
       .eq('id', avatarId)
       .eq('user_id', userId)
       .single();
-    
+
     if (avatarError || !avatar) {
       return NextResponse.json(
         { message: 'Avatar não encontrado' },
         { status: 404 }
       );
     }
-    
+
     // Verificar se pode lutar
     if (!avatar.vivo) {
       return NextResponse.json(
@@ -88,17 +88,22 @@ export async function POST(request) {
         { status: 400 }
       );
     }
-    
+
     if (avatar.exaustao >= 100) {
       return NextResponse.json(
         { message: 'Avatar está colapsado! Precisa descansar.' },
         { status: 400 }
       );
     }
-    
+
+    // Garantir que o avatar do jogador tenha habilidades
+    if (!avatar.habilidades || avatar.habilidades.length === 0) {
+      avatar.habilidades = selecionarHabilidadesIniciais(avatar.elemento, avatar.raridade);
+    }
+
     // Gerar inimigo
     const inimigo = gerarAvatarInimigo(avatar.nivel, dificuldade);
-    
+
     // Inicializar batalha
     const estadoBatalha = inicializarBatalha(avatar, inimigo, dificuldade);
     
