@@ -7,6 +7,11 @@
  * Afeta diretamente o desempenho do avatar em combate
  */
 
+import {
+  calcularProgressoNivel as calcularProgressoNivelGenerico,
+  getProximoNivel as getProximoNivelGenerico
+} from '../../../lib/utils/progressUtils';
+
 /**
  * Configurações do sistema de vínculo
  */
@@ -231,9 +236,7 @@ export function getNivelVinculo(vinculo) {
  * @returns {number} Porcentagem de progresso
  */
 function calcularProgressoNivel(vinculo, nivelAtual) {
-  const range = nivelAtual.max - nivelAtual.min;
-  const progresso = vinculo - nivelAtual.min;
-  return (progresso / range) * 100;
+  return calcularProgressoNivelGenerico(vinculo, nivelAtual);
 }
 
 /**
@@ -242,18 +245,7 @@ function calcularProgressoNivel(vinculo, nivelAtual) {
  * @returns {Object|null} Próximo nível ou null se já está no máximo
  */
 function getProximoNivel(vinculo) {
-  const niveisOrdenados = Object.values(NIVEIS_VINCULO).sort((a, b) => a.min - b.min);
-  
-  for (const nivel of niveisOrdenados) {
-    if (vinculo < nivel.min) {
-      return {
-        ...nivel,
-        pontos_necessarios: nivel.min - vinculo
-      };
-    }
-  }
-
-  return null; // Já está no nível máximo
+  return getProximoNivelGenerico(vinculo, NIVEIS_VINCULO, 'pontos_necessarios');
 }
 
 /**

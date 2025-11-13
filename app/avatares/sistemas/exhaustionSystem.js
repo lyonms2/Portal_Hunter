@@ -6,6 +6,11 @@
  * Avatares ficam cansados após combates e precisam descansar
  */
 
+import {
+  calcularProgressoNivel as calcularProgressoNivelGenerico,
+  getProximoNivel as getProximoNivelGenerico
+} from '../../../lib/utils/progressUtils';
+
 /**
  * Configurações do sistema de exaustão
  */
@@ -263,28 +268,14 @@ export function getNivelExaustao(exaustao) {
  * Calcula progresso dentro do nível (0-100%)
  */
 function calcularProgressoNivel(exaustao, nivelAtual) {
-  const range = nivelAtual.max - nivelAtual.min;
-  if (range === 0) return 100;
-  const progresso = exaustao - nivelAtual.min;
-  return (progresso / range) * 100;
+  return calcularProgressoNivelGenerico(exaustao, nivelAtual);
 }
 
 /**
  * Retorna próximo nível de exaustão
  */
 function getProximoNivel(exaustao) {
-  const niveisOrdenados = Object.values(NIVEIS_EXAUSTAO).sort((a, b) => a.min - b.min);
-  
-  for (const nivel of niveisOrdenados) {
-    if (exaustao < nivel.min) {
-      return {
-        ...nivel,
-        pontos_ate: nivel.min - exaustao
-      };
-    }
-  }
-  
-  return null;
+  return getProximoNivelGenerico(exaustao, NIVEIS_EXAUSTAO, 'pontos_ate');
 }
 
 /**

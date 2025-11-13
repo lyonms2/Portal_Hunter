@@ -2,6 +2,7 @@
 // Arquivo: /app/avatares/sistemas/progressionSystem.js
 
 import { calcularStatsAposNivel } from './statsSystem';
+import { calcularProgressoXP } from '../../../lib/utils/progressUtils';
 
 /**
  * Configurações de níveis
@@ -215,12 +216,7 @@ function processarRecompensasLevelUp(raridade, nivel) {
  * @returns {number} Porcentagem (0-100)
  */
 export function calcularProgressoNivel(xpAtual, nivelAtual) {
-  if (nivelAtual >= CONFIG_NIVEIS.NIVEL_MAXIMO) {
-    return 100;
-  }
-
-  const xpNecessario = calcularXPNecessario(nivelAtual);
-  return Math.min(100, (xpAtual / xpNecessario) * 100);
+  return calcularProgressoXP(xpAtual, nivelAtual, calcularXPNecessario, CONFIG_NIVEIS.NIVEL_MAXIMO);
 }
 
 /**
