@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { processarAcaoJogador, verificarVitoria, iniciarTurno } from "@/lib/arena/batalhaEngine";
 import { processarTurnoIA, getMensagemIA } from "@/lib/arena/iaEngine";
 import { calcularRecompensasTreino } from "@/lib/arena/recompensasCalc";
+import AvatarSVG from "@/app/components/AvatarSVG";
 
 export default function BatalhaPage() {
   const router = useRouter();
@@ -313,17 +314,11 @@ export default function BatalhaPage() {
                 <div>
                   <h3 className="text-2xl font-bold text-red-400">{estado.inimigo.nome}</h3>
                   <div className="text-sm text-slate-400">
-                    Nv.{estado.inimigo.nivel} • {estado.inimigo.elemento}
+                    Nv.{estado.inimigo.nivel} • {estado.inimigo.elemento} • {estado.inimigo.raridade}
                   </div>
                 </div>
-                <div className="text-6xl">
-                  {estado.inimigo.elemento === 'Fogo' && '🔥'}
-                  {estado.inimigo.elemento === 'Água' && '💧'}
-                  {estado.inimigo.elemento === 'Terra' && '🪨'}
-                  {estado.inimigo.elemento === 'Vento' && '💨'}
-                  {estado.inimigo.elemento === 'Eletricidade' && '⚡'}
-                  {estado.inimigo.elemento === 'Sombra' && '🌑'}
-                  {estado.inimigo.elemento === 'Luz' && '✨'}
+                <div className="w-24 h-24 flex-shrink-0">
+                  <AvatarSVG avatar={estado.inimigo} tamanho={96} isEnemy={true} />
                 </div>
               </div>
 
@@ -352,19 +347,13 @@ export default function BatalhaPage() {
             {/* Jogador */}
             <div className="bg-slate-900/80 rounded-lg p-6 border-2 border-cyan-500/50">
               <div className="flex items-center justify-between mb-4">
-                <div className="text-6xl">
-                  {estado.jogador.elemento === 'Fogo' && '🔥'}
-                  {estado.jogador.elemento === 'Água' && '💧'}
-                  {estado.jogador.elemento === 'Terra' && '🪨'}
-                  {estado.jogador.elemento === 'Vento' && '💨'}
-                  {estado.jogador.elemento === 'Eletricidade' && '⚡'}
-                  {estado.jogador.elemento === 'Sombra' && '🌑'}
-                  {estado.jogador.elemento === 'Luz' && '✨'}
+                <div className="w-24 h-24 flex-shrink-0">
+                  <AvatarSVG avatar={estado.jogador} tamanho={96} isEnemy={false} />
                 </div>
                 <div className="text-right">
                   <h3 className="text-2xl font-bold text-cyan-400">{estado.jogador.nome}</h3>
                   <div className="text-sm text-slate-400">
-                    Nv.{estado.jogador.nivel} • {estado.jogador.elemento}
+                    Nv.{estado.jogador.nivel} • {estado.jogador.elemento} • {estado.jogador.raridade}
                   </div>
                 </div>
               </div>
@@ -422,26 +411,37 @@ export default function BatalhaPage() {
 
               {/* Habilidades */}
               <div className="grid grid-cols-2 gap-3 mb-4">
-                {estado.jogador.habilidades.map((hab, index) => {
-                  const podeUsar = estado.jogador.energia_atual >= hab.custo_energia && !turnoIA && !processando;
-                  
-                  return (
-                    <button
-                      key={index}
-                      onClick={() => podeUsar && executarAcao('habilidade', index)}
-                      disabled={!podeUsar}
-                      className={`p-3 rounded-lg border-2 transition-all text-left ${
-                        podeUsar
-                          ? 'border-purple-500 bg-purple-900/30 hover:bg-purple-900/50'
-                          : 'border-slate-700 bg-slate-800/30 opacity-50 cursor-not-allowed'
-                      }`}
-                    >
-                      <div className="font-bold text-purple-300 text-sm mb-1">{hab.nome}</div>
-                      <div className="text-xs text-slate-400 mb-2 line-clamp-2">{hab.descricao}</div>
-                      <div className="text-xs text-blue-400">⚡ {hab.custo_energia} energia</div>
-                    </button>
-                  );
-                })}
+                {estado.jogador.habilidades && estado.jogador.habilidades.length > 0 ? (
+                  estado.jogador.habilidades.map((hab, index) => {
+                    // Debug: garantir que custo_energia existe
+                    const custoEnergia = hab.custo_energia || hab.custoEnergia || 20;
+                    const podeUsar = estado.jogador.energia_atual >= custoEnergia && !turnoIA && !processando;
+
+                    return (
+                      <button
+                        key={index}
+                        onClick={() => podeUsar && executarAcao('habilidade', index)}
+                        disabled={!podeUsar}
+                        className={`p-3 rounded-lg border-2 transition-all text-left ${
+                          podeUsar
+                            ? 'border-purple-500 bg-purple-900/30 hover:bg-purple-900/50'
+                            : 'border-slate-700 bg-slate-800/30 opacity-50 cursor-not-allowed'
+                        }`}
+                      >
+                        <div className="font-bold text-purple-300 text-sm mb-1">{hab.nome}</div>
+                        <div className="text-xs text-slate-400 mb-2 line-clamp-2">{hab.descricao}</div>
+                        <div className="text-xs text-blue-400">⚡ {custoEnergia} energia</div>
+                        {!podeUsar && estado.jogador.energia_atual < custoEnergia && (
+                          <div className="text-xs text-red-400 mt-1">Energia insuficiente</div>
+                        )}
+                      </button>
+                    );
+                  })
+                ) : (
+                  <div className="col-span-2 text-center text-slate-500 py-4">
+                    Nenhuma habilidade disponível
+                  </div>
+                )}
               </div>
 
               {/* Ações Especiais */}
