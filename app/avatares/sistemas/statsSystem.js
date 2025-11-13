@@ -257,9 +257,15 @@ export function calcularEvasao(agilidade) {
 }
 
 /**
- * Calcula chance de crítico baseado em foco
+ * Calcula chance de crítico BASE baseado em foco
+ * IMPORTANTE: Esta é a versão simplificada para exibição de stats base.
+ * Para cálculos em combate, use calcularChanceCritico() de batalhaEngine.js
+ * que considera vínculo, exaustão e outros modificadores de combate.
+ *
  * @param {number} foco - Valor de foco
- * @returns {number} Porcentagem de crítico (0-50)
+ * @returns {number} Porcentagem de crítico base (0-50)
+ *
+ * @see {@link ../../lib/arena/batalhaEngine.js#calcularChanceCritico} Para versão completa de combate
  */
 export function calcularChanceCritico(foco) {
   return EFEITOS_STATS.foco.formula_critico(foco);
