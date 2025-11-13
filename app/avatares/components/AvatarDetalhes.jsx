@@ -59,9 +59,10 @@ const BarraExaustao = ({ exaustao }) => {
   );
 };
 
-export default function AvatarDetalhes({ 
-  avatar, 
+export default function AvatarDetalhes({
+  avatar,
   onClose,
+  onDescansar,
   getCorRaridade,
   getCorBorda,
   getCorElemento,
@@ -218,6 +219,22 @@ export default function AvatarDetalhes({
                       <h4 className="text-cyan-400 font-bold text-xs uppercase tracking-wider mb-3">Condição Física</h4>
                       <div className="bg-slate-900/50 rounded-lg p-3">
                         <BarraExaustao exaustao={avatar.exaustao} />
+
+                        {/* Botão Descansar */}
+                        {avatar.vivo && (avatar.exaustao || 0) > 0 && (
+                          <button
+                            onClick={() => onDescansar(avatar.id)}
+                            className="w-full mt-3 px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-bold rounded-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                          >
+                            💤 Descansar (1 hora)
+                          </button>
+                        )}
+
+                        {avatar.vivo && (avatar.exaustao || 0) === 0 && (
+                          <div className="mt-3 text-center text-xs text-green-400 font-mono">
+                            ✨ Totalmente descansado!
+                          </div>
+                        )}
                       </div>
                     </div>
 
