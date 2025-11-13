@@ -376,7 +376,25 @@ export default function BatalhaPage() {
             {/* Ações */}
             <div className="bg-slate-900/80 rounded-lg p-6 border-2 border-slate-700">
               <h3 className="text-cyan-400 font-bold mb-4">⚡ SUAS AÇÕES</h3>
-              
+
+              {/* Ataque Básico */}
+              <div className="mb-4">
+                <button
+                  onClick={() => !turnoIA && !processando && executarAcao('atacar')}
+                  disabled={turnoIA || processando}
+                  className="w-full p-4 rounded-lg border-2 transition-all text-left bg-gradient-to-r from-red-900/40 to-orange-900/40 border-red-500 hover:from-red-900/60 hover:to-orange-900/60 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-bold text-red-300 text-lg mb-1">⚔️ Ataque Básico</div>
+                      <div className="text-xs text-slate-300">Ataque físico rápido • Sem custo de energia</div>
+                    </div>
+                    <div className="text-3xl">⚔️</div>
+                  </div>
+                  <div className="mt-2 text-xs text-green-400">✅ Sempre disponível • Pode causar crítico</div>
+                </button>
+              </div>
+
               {/* Habilidades */}
               <div className="grid grid-cols-2 gap-3 mb-4">
                 {estado.jogador.habilidades.map((hab, index) => {
