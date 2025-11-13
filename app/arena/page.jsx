@@ -61,20 +61,20 @@ export default function ArenaLobby() {
       nome: 'Sobrevivência',
       emoji: '💀',
       descricao: 'Quantas ondas você consegue sobreviver?',
-      detalhes: 'Enfrente ondas infinitas de inimigos cada vez mais fortes. Sem descanso, sem pausa. Apenas você e sua habilidade.',
+      detalhes: 'Sistema de ondas progressivas com dificuldade crescente. Teste suas habilidades no modo mais difícil da arena.',
       recursos: [
-        'Ondas progressivamente mais difíceis',
-        'Inimigos aleatórios',
-        'Sem recuperação entre lutas',
-        'Ranking de sobrevivência'
+        'Ondas infinitas e progressivas',
+        'Dificuldade crescente balanceada',
+        'Recompensas acumulativas',
+        'Sistema de recordes pessoais'
       ],
       cor: 'from-purple-600 to-purple-900',
       corBorda: 'border-purple-500',
       corBg: 'bg-purple-900/10',
       corHover: 'hover:border-purple-400',
-      disponivel: false, // EM DESENVOLVIMENTO
+      disponivel: true, // INTERFACE DISPONÍVEL
       rota: '/arena/sobrevivencia',
-      emBreve: true
+      beta: true // Badge BETA
     }
   ];
 
