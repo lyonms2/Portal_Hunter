@@ -96,9 +96,14 @@ export async function POST(request) {
       );
     }
     
+    // Garantir que o avatar tenha habilidades
+    if (!avatar.habilidades || avatar.habilidades.length === 0) {
+      avatar.habilidades = selecionarHabilidadesIniciais(avatar.elemento, avatar.raridade);
+    }
+
     // Gerar inimigo
     const inimigo = gerarAvatarInimigo(avatar.nivel, dificuldade);
-    
+
     // Inicializar batalha
     const estadoBatalha = inicializarBatalha(avatar, inimigo, dificuldade);
     
